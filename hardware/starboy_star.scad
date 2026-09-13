@@ -27,45 +27,117 @@
 //   rings — it's included because you asked for it in the file, but
 //   for something you'll actually clip to your pants every day, a
 //   real metal jump ring/carabiner clip is the safer call.
+//
+// ============================================================
+// COMPONENT FIT — measured, and what drives the dimensions
+// ============================================================
+// Every number below was used to size the shell. If you swap a part
+// for a different one, re-check this table before printing.
+//
+//   PART                        L x W x H (mm)      WHERE IT GOES
+//   GC9A01 1.28" round display  32.4 dia x 4.8      front pocket, centred
+//   ESP32-C3 SuperMini          22.5 x 18.0 x 3.2   behind display, centred
+//   MPU6050 (headers removed)   21.2 x 16.4 x 1.6   stacked behind ESP32
+//   LiPo 402030 (300mAh)        30.0 x 20.0 x 4.0   stacked at the back
+//   DS18B20 (TO-92)              4.3 dia x 5.2      at the temp vent, 144deg arm
+//   MAX4466 mic board           15.6 x 10.5 x 5.0   at the mic port, 288deg arm
+//   OV2640 camera (optional)     8.0 dia lens       camera pocket, 72deg arm
+//
+// DEPTH BUDGET (the tight axis):
+//   body 17.0 - front wall/pocket 5.5 - back wall 2.2   = 9.3 available
+//   ESP32 3.2 + MPU6050 1.6 + battery 4.0               = 8.8 used
+//   -> 0.5mm slack. Do not reduce body_thickness below 17.
+//
+// WIDTH CHECK (the centre region, bounded by the valleys):
+//   usable central circle = 2 x (inner_radius - wall) = 39.6 dia
+//   battery diagonal sqrt(30^2+20^2) = 36.1  -> fits
+//   ESP32 diagonal sqrt(22.5^2+18^2) = 28.8  -> fits
+//
+// The ESP32-C3 must be oriented with its USB-C facing the 180deg valley
+// so it lines up with the charging cutout. If your board's USB-C won't
+// reach the wall, use a short USB-C pigtail rather than moving the port.
 // ============================================================
 
 /* [Overall size] */
+// Proportions taken off the reference photos: a BIG central mass with
+// SHORT, crisp points (the medallion reads ~55% of total width), not
+// long thin spikes. The fat centre is also what makes the hardware fit —
+// the 32.4mm display needs a ~40mm flat central region to sit in.
 star_points      = 5;      // number of lobes
-outer_radius     = 34;     // mm, tip-to-center of each lobe — long, sleek arms;
-                            // sized up so the fixed-size real display reads smaller
-                            // in proportion to the body, instead of dominating it
-inner_radius     = 8.5;    // mm, valley depth between lobes — slim, defined points
-body_thickness   = 12.5;   // mm, total puffy thickness front+back combined
+outer_radius     = 35;     // mm, tip-to-centre of each point
+inner_radius     = 22;     // mm, valley radius. ~0.63 x outer = reference proportion.
+                            // Do NOT drop this below ~20: the display pocket is
+                            // 16.75mm in radius and would overhang into empty space
+                            // in the valley directions.
+body_thickness   = 17;     // mm, total thickness. Sized directly from the measured
+                            // component stack — see COMPONENT FIT below. Leaves
+                            // 9.3mm behind the display for a 8.8mm stack.
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
-tip_round        = 3.6;    // mm, radius of the rounded tip cap — soft point, not blunt
-valley_round     = 4;      // mm, how rounded each inner valley is
-mid_frac         = 0.62;   // where along each arm the "mid" taper waypoint sits (0-1)
-mid_r_ratio      = 0.62;   // mid-arm radius vs center lobe — a gentle continuous taper
-                            // (organic curved point, not a straight-sided cone)
+tip_round        = 1.8;    // mm, how rounded each outer tip is in the flat 2D outline
+valley_round     = 4;      // mm, how rounded each inner valley is in the flat 2D outline
 wall             = 2.2;    // mm, shell wall thickness where hollowed for electronics
 
+/* [Chamfer] */
+// The body is a flat-faced slab (screen/medallion sit flush in true
+// flat planes) with a tapered bevel near the top/bottom edges — this
+// is what gives the faceted, jewel-cut look in the reference photos,
+// instead of an organic rounded blob.
+bevel_edge  = 2.2;    // mm, how much of the thickness is tapered at each face
+bevel_scale = 0.93;   // profile shrink factor at the very edge of the bevel.
+                       // Keep this HIGH (>=0.90). scale() shrinks toward the
+                       // origin, so an aggressive value pulls the front face in
+                       // past the display pocket edge in the valley directions
+                       // and the screen ends up overhanging empty space.
+
 /* [Eye / screen] */
-screen_offset_x     = -3;   // mm, shift eye left/right from body center
-screen_offset_y     = 2;    // mm, shift eye up/down from body center
-screen_diameter     = 33.5; // mm, fits a 1.28" GC9A01 round module (~32.4mm) with clearance
-screen_pocket_depth = 6;    // mm, how deep the screen sits into the front half
-bezel_wall          = 1.6;  // mm, thickness of the printable chrome bezel ring — kept
+// GC9A01 1.28" round module, measured: 32.4mm dia PCB, 4.8mm thick
+// (glass + PCB), FPC tail off one edge.
+screen_offset_x     = 0;    // centred — the margin to the valley edge is only
+screen_offset_y     = 0;    // ~2mm, so don't offset this without re-checking fit
+screen_diameter     = 33.5; // mm, 32.4mm module + 1.1mm clearance
+screen_pocket_depth = 5.5;  // mm, module is 4.8mm thick; sits flush with 0.7 spare
+bezel_wall          = 1.4;  // mm, thickness of the printable chrome bezel ring — kept
                               // slim so the display doesn't dominate the face
 bezel_height        = 3;    // mm
 ribbon_slot_w    = 10;      // mm, width of the notch for the display's ribbon cable
 ribbon_slot_h    = 4;       // mm
 
-/* [Details] */
-sensor_hole_dia  = 5;       // mm, the small "sensor dot" on the left lobe
-sensor_offset_x  = -20;
-sensor_offset_y  = 6;
+/* [Camera — optional] */
+// Physical mounting space for a small camera module (e.g. OV2640),
+// styled like the lens turret in the reference photos. Not required
+// for the shake/cold/sound reactions — only matters if you later add
+// face or gesture detection (needs an ESP32-S3 + real image processing,
+// well beyond the C3). Cheap to include the hole now either way.
+// Sits on the 72-degree arm at r=24: the arm is ~13.2mm wide there, so an
+// 8mm lens leaves ~2.6mm of wall each side, and its inner edge clears the
+// display bezel (r=18.15) by 1.85mm.
+camera_dia          = 8;    // mm, lens opening
+camera_bezel_wall   = 1.4;  // mm, raised ring around the lens
+camera_pocket_depth = 2.6;  // mm
+camera_r            = 24;   // mm from centre, along its arm
+camera_ang          = 72;   // degrees
 
-// small angled facet on the opposite arm — a secondary sensor-style
-// accent like the faceted cut visible in the reference photos
-facet_dia        = 6.5;     // mm, footprint of the facet
-facet_depth      = 1.1;     // mm, how deep it's cut
-facet_offset_x   = 17;
-facet_offset_y   = 11;
+/* [Sensor vents] */
+// The DS18B20 must see OUTSIDE air or it just reads the board's own heat
+// and the cold/shiver behaviour never fires. The mic needs a sound path.
+temp_vent_dia  = 4;    // mm, DS18B20 TO-92 body is 4.3mm dia — sits just inside
+temp_vent_r    = 25;
+temp_vent_ang  = 144;
+mic_port_dia   = 2.5;  // mm
+mic_port_r     = 25;
+mic_port_ang   = 288;
+
+/* [Charging port] */
+// USB-C cutout in the valley opposite the keyring, like the port on the
+// bottom edge of the reference photo. This exposes the ESP32-C3
+// SuperMini's OWN USB-C — most SuperMini boards carry a single-cell LiPo
+// charger on that same port plus a battery pad pair. CHECK YOUR BOARD: if
+// yours has no charge IC, add a TP4056 module instead and line it up here.
+charge_port_w     = 9.8;   // mm, USB-C receptacle is 9.0 wide + clearance
+charge_port_h     = 3.8;   // mm, 3.2 tall + clearance
+charge_port_ang   = 180;   // degrees — the valley opposite the bail
+charge_port_z     = 1.5;   // mm, height of the port centre — lines up with the
+                            // USB-C on an ESP32-C3 sitting directly behind the display
 
 /* [Keyring bail] */
 // A real integrated loop (not just a disc-with-hole) so a bought
@@ -77,11 +149,15 @@ bail_maj_r   = 5.5;   // mm, loop radius (tube-center to loop-center)
 bail_min_r   = 2.0;   // mm, thickness of the loop's material
 
 /* [Back medallion] */
-back_medallion_dia   = 20;   // mm, shallow dish on the back — sized to sit within
-                              // the slim core, not slice into the tapered arms
+// Reference proportion: the disc reads ~55% of the star's width, with two
+// small arcs of text around the rim and a single star mark in the middle.
+back_medallion_dia   = 36;   // mm (star is 70mm across). Max is ~41 before it
+                              // runs past the back face's valley edge.
 back_medallion_depth = 1.6;  // mm, keep shallow so a glued tag (or paint) sits flush
-back_text            = "SRIPADBUILDS";
-back_text_size       = 1.9;
+back_text_top        = "SRIPADBUILDS";
+back_text_bottom     = "STARBOY  PROTOTYPE";
+back_text_size       = 2.2;  // mm — deliberately small; the star mark is the hero
+back_badge_frac      = 0.30; // centre star size as a fraction of medallion radius
 
 /* [Pants clip] */
 clip_tab_len   = 15;   // mm, short inner tab (mounts to the star / holds the ring)
@@ -104,7 +180,12 @@ part = "preview"; // "front" | "back" | "bezel" | "ring" | "clip" | "preview"
 // printing (can take several minutes to render, be patient).
 quality = "fast";
 
-$fn      = (quality == "fine") ? 64 : 24;
+// NOTE: $fn must stay >= ~48 here. Below that, the offset() chain in
+// star_shape_2d() (used for both the body AND the hollow cavity) can
+// produce degenerate/self-intersecting 2D geometry at these tight
+// tip/valley radii — it silently unions away to an empty solid rather
+// than erroring, which is a nasty bug to chase. Confirmed by testing.
+$fn      = (quality == "fine") ? 96 : 48;
 mink_fn  = (quality == "fine") ? 16 : 6;
 
 // ------------------------------------------------------------
@@ -116,52 +197,69 @@ function star_pt(i) =
     let(r = (i % 2 == 0) ? outer_radius : inner_radius)
     [r*cos(ang), r*sin(ang)];
 
-module sharp_star() {
-    polygon(points = [for (i = [0:star_points*2-1]) star_pt(i)]);
+// parametrized so the hollow cavity can be built as its OWN valid
+// star shape at smaller radii, instead of chaining another offset()
+// onto the already-4x-offset rounded profile — chaining a 5th offset
+// onto that produced degenerate/self-intersecting geometry on some
+// arms (a Clipper numerical edge case at these tighter radii)
+function star_pts_at(orad, irad) = [for (i = [0:star_points*2-1])
+    let(ang = i * 360 / (star_points*2))
+    let(r = (i % 2 == 0) ? orad : irad)
+    [r*cos(ang), r*sin(ang)]];
+
+module star_shape_2d(orad, irad, tipr, valr) {
+    offset(r = valr) offset(r = -valr)   // rounds the inner valleys
+    offset(r = -tipr) offset(r = tipr)    // rounds the outer tips
+        polygon(points = star_pts_at(orad, irad));
 }
 
 module rounded_star_2d() {
-    offset(r = valley_round) offset(r = -valley_round)   // rounds the inner valleys
-    offset(r = -tip_round)   offset(r = tip_round)        // rounds the outer tips
-        sharp_star();
+    star_shape_2d(outer_radius, inner_radius, tip_round, valley_round);
 }
 
 // ------------------------------------------------------------
-// Puffy 3D body — built as a union of hulled ellipsoids (one
-// shared center lobe + one per star tip). This is the robust,
-// fast way to get an organic rounded blob-star: no minkowski,
-// no offset()-chain artifacts, renders in seconds.
+// Flat-faced, chamfered star body — matches the reference photos:
+// true flat front/back planes (screen and medallion sit flush in
+// them) with a tapered bevel edge running all around the silhouette.
+// That taper is what reads as "faceted"/jewel-cut instead of an
+// organic rounded blob. Built from a thick flat core slab plus two
+// tapered cap layers (top and bottom), all linear_extrude — fast,
+// no minkowski, no CGAL slowdowns.
 // ------------------------------------------------------------
-module ellipsoid(rxy, rz) {
-    scale([1, 1, max(rz,0.05)/max(rxy,0.05)]) sphere(r = max(rxy,0.05));
-}
+core_h = body_thickness - 2*bevel_edge;
 
-center_lobe_rxy = inner_radius + tip_round*0.7;
-mid_r           = center_lobe_rxy * mid_r_ratio;
-body_rz         = body_thickness/2;
-
-module puffy_body() {
-    union() {
-        for (i = [0:star_points-1]) {
-            tip = star_pt(2*i);
-            mid = [tip[0]*mid_frac, tip[1]*mid_frac];
-            // three-sphere hull per arm — center lobe stays thick through
-            // a mid-arm sphere, then rounds down only near the very tip,
-            // so the arm reads as a chubby rounded point, not a cone
-            hull() {
-                ellipsoid(center_lobe_rxy, body_rz);
-                translate([mid[0], mid[1], 0]) ellipsoid(mid_r, body_rz);
-            }
-            hull() {
-                translate([mid[0], mid[1], 0]) ellipsoid(mid_r, body_rz);
-                translate([tip[0], tip[1], 0]) ellipsoid(tip_round, body_rz);
-            }
-        }
+module chamfer_cap(top = true) {
+    if (top) {
+        translate([0, 0, core_h/2])
+            linear_extrude(height = bevel_edge, scale = bevel_scale)
+                rounded_star_2d();
+    } else {
+        translate([0, 0, -core_h/2])
+            mirror([0,0,1])
+                linear_extrude(height = bevel_edge, scale = bevel_scale)
+                    rounded_star_2d();
     }
 }
 
+module puffy_body() {
+    union() {
+        translate([0, 0, -core_h/2])
+            linear_extrude(height = core_h)
+                rounded_star_2d();
+        chamfer_cap(true);
+        chamfer_cap(false);
+    }
+}
+
+// A true uniform inset of the silhouette. This is only safe because the
+// centre is fat: an earlier version shrank the tip/valley radii in POLAR
+// terms, which cut the valley radius by ~50% while barely touching the
+// tips — the cavity's arms then hollowed out nearly the whole body and
+// left just a stub of material in the middle.
 module hollow_cavity() {
-    ellipsoid(max(center_lobe_rxy - wall, 1), max(body_rz - wall, 1));
+    translate([0, 0, -body_thickness/2 + wall])
+        linear_extrude(height = body_thickness - 2*wall)
+            offset(r = -wall) rounded_star_2d();
 }
 
 // ------------------------------------------------------------
@@ -180,9 +278,10 @@ bail_c   = tip0 + tip0_dir * bail_offset;
 module bail_assembly(add=true) {
     if (add) {
         union() {
-            // smooth tapered bridge from the tip into the loop's footprint
+            // smooth tapered bridge from the tip into the loop's footprint —
+            // rod matches the core slab's thickness so it fuses cleanly
             hull() {
-                translate([tip0[0], tip0[1], 0]) sphere(r = tip_round*1.05, $fn=24);
+                translate([tip0[0], tip0[1], 0]) cylinder(r = tip_round, h = core_h, center = true, $fn=24);
                 translate([bail_c[0], bail_c[1], 0])
                     cylinder(r = bail_maj_r + bail_min_r, h = body_thickness*0.55, center = true, $fn=32);
             }
@@ -216,17 +315,56 @@ module screen_pocket() {
         cube([ribbon_slot_w, ribbon_slot_h, screen_pocket_depth+1], center = true);
 }
 
-module sensor_hole() {
-    translate([sensor_offset_x, sensor_offset_y, 0])
-        cylinder(d = sensor_hole_dia, h = body_thickness + 2, center = true);
+// polar helper — put a feature at radius r along angle a
+function polar(r, a) = [r*cos(a), r*sin(a)];
+
+camera_pos = polar(camera_r, camera_ang);
+
+// Camera lens pocket + raised bezel ring — optional mounting space,
+// see the [Camera] notes above.
+module camera_pocket() {
+    translate([camera_pos[0], camera_pos[1], body_thickness/2 - camera_pocket_depth/2 + 0.01])
+        cylinder(d = camera_dia, h = camera_pocket_depth + 1, center = true, $fn = 48);
 }
 
-// small angled facet cut on the opposite arm — a secondary
-// sensor-style accent, low-poly so it catches light like a cut facet
-module secondary_facet() {
-    translate([facet_offset_x, facet_offset_y, body_thickness/2 - facet_depth/2 + 0.3])
-        rotate([0,0,20])
-            cylinder(d1 = facet_dia, d2 = facet_dia*0.65, h = facet_depth + 0.5, $fn = 6, center = true);
+module camera_bezel() {
+    ring_h = 1.4;
+    top_z = body_thickness/2 - ring_h + 0.5;
+    translate([camera_pos[0], camera_pos[1], top_z])
+        difference() {
+            cylinder(d = camera_dia + 2*camera_bezel_wall, h = ring_h, $fn = 48);
+            translate([0,0,-1]) cylinder(d = camera_dia, h = ring_h + 2, $fn = 48);
+        }
+}
+
+// visual-only lens mockup so the preview shows where the camera goes
+module camera_lens_mockup() {
+    face_z = body_thickness/2 - camera_pocket_depth + 0.35;
+    translate([camera_pos[0], camera_pos[1], face_z])
+        color([0.03,0.03,0.05]) cylinder(d = camera_dia - 1, h = 1, $fn = 48);
+}
+
+// DS18B20 vent — straight through so the sensor reads ambient air,
+// not the electronics' own heat
+module temp_vent() {
+    p = polar(temp_vent_r, temp_vent_ang);
+    translate([p[0], p[1], 0])
+        cylinder(d = temp_vent_dia, h = body_thickness + 4, center = true, $fn = 32);
+}
+
+// MAX4466 sound port — straight through to the mic capsule
+module mic_port() {
+    p = polar(mic_port_r, mic_port_ang);
+    translate([p[0], p[1], 0])
+        cylinder(d = mic_port_dia, h = body_thickness + 4, center = true, $fn = 24);
+}
+
+// USB-C charging cutout through the valley wall
+module charge_port() {
+    p = polar(inner_radius, charge_port_ang);
+    translate([p[0], p[1], charge_port_z])
+        rotate([0, 0, charge_port_ang])
+            cube([wall*6, charge_port_w, charge_port_h], center = true);
 }
 
 // single shared reference plane so the recess, the engraving, and
@@ -242,14 +380,18 @@ module back_medallion_recess() {
         cylinder(d = back_medallion_dia, h = body_thickness, $fn = 96);
 }
 
-// text wrapped around an arc, each letter rotated to sit tangent to the circle
-module circular_text(txt, radius, arc=340, size=2.6, depth=1) {
+// text wrapped around an arc. center_ang picks where the run is centred
+// (90 = top of the disc, 270 = bottom); flip turns the letters upright
+// again for the bottom run so it still reads left-to-right.
+module arc_text(txt, radius, center_ang, arc, size, depth, flip=false) {
     n = len(txt);
+    sweep = flip ? -arc : arc;
     for (i = [0:n-1]) {
-        a = (n <= 1) ? 0 : (-arc/2 + arc * i/(n-1));
-        rotate([0,0,a - 90])
+        a = center_ang + ((n <= 1) ? 0 : (-sweep/2 + sweep * i/(n-1)));
+        // `a` is the polar angle of the letter directly: 90 = top, 270 = bottom
+        rotate([0, 0, a])
             translate([radius, 0, 0])
-                rotate([0,0,90])
+                rotate([0, 0, flip ? -90 : 90])
                     linear_extrude(height = depth)
                         text(txt[i], size=size, halign="center", valign="center",
                              font = "Liberation Sans:style=Bold");
@@ -259,56 +401,67 @@ module circular_text(txt, radius, arc=340, size=2.6, depth=1) {
 // engraved sunburst + curved logo text + little star badge, cut/added
 // into the back medallion floor. Depth is measured from the outer
 // back face inward.
+// Minimal engraving, matching the reference: two small arcs of text
+// hugging the rim, a fine rim groove, and nothing in the middle except
+// the star mark (added separately by back_badge).
 module back_decor() {
     cut = 0.7;
     z0 = back_floor_z - 0.01; // engraving cuts FROM the floor INTO the solid (+z)
+    r_text = back_medallion_dia/2 * 0.80;
 
-    // sunburst grooves (engraved)
-    for (a = [0:18:342])
-        rotate([0,0,a])
-            translate([back_medallion_dia/2*0.32, 0, z0 + cut/2])
-                cube([back_medallion_dia/2*0.6, 0.9, cut], center = true);
+    // NOTE: angles are in model space. The back is viewed from the far
+    // side, which flips top/bottom, so the "top" string sits at 270 here.
+    translate([0,0, z0]) {
+        arc_text(back_text_top,    radius = r_text, center_ang = 270, arc = 120,
+                 size = back_text_size, depth = cut, flip = true);
+        arc_text(back_text_bottom, radius = r_text, center_ang =  90, arc = 150,
+                 size = back_text_size, depth = cut);
+    }
 
-    // curved wordmark (engraved)
-    translate([0,0, z0])
-        circular_text(back_text, radius = back_medallion_dia/2*0.72, arc=330,
-                       size=back_text_size, depth=cut);
-
-    // defined rim groove near the medallion edge, like a bezel line
+    // fine rim groove just outside the text, like a bezel line
     translate([0,0, z0 + cut/2])
         difference() {
-            cylinder(d = back_medallion_dia*0.94, h = cut, center = true, $fn = 96);
-            cylinder(d = back_medallion_dia*0.94 - 1.2, h = cut + 0.4, center = true, $fn = 96);
+            cylinder(d = back_medallion_dia*0.93, h = cut, center = true, $fn = 96);
+            cylinder(d = back_medallion_dia*0.93 - 0.9, h = cut + 0.4, center = true, $fn = 96);
         }
 }
 
 module back_badge() {
-    // small raised star "logo" proud of the recess floor: sits in the
-    // dish, sticking OUT toward the viewer (-z, away from the floor)
-    badge_h = 0.6;
+    // the star mark in the middle of the dish — the one hero element,
+    // raised proud of the recess floor so it catches light
+    // stands slightly proud of the back face so it actually catches light —
+    // exactly flush reads as a flat shadow and disappears
+    badge_h = back_medallion_depth + 0.4;
+    s = back_medallion_dia/2 * back_badge_frac / outer_radius;
     translate([0,0, back_floor_z - badge_h])
         linear_extrude(height = badge_h)
-            scale([back_medallion_dia/2*0.22/outer_radius, back_medallion_dia/2*0.22/outer_radius])
+            scale([s, s])
                 rounded_star_2d();
 }
 
 module full_star() {
-    difference() {
-        union() {
-            puffy_body();
-            bail_assembly(add=true);
-            back_badge();
+    // the badge is unioned AFTER the cuts: it sits on the medallion floor,
+    // which is inside the recess volume, so if it were part of the input
+    // union the recess would simply carve it straight back off again
+    union() {
+        difference() {
+            union() {
+                puffy_body();
+                bail_assembly(add=true);
+            }
+            hollow_cavity();
+            screen_pocket();
+            camera_pocket();
+            temp_vent();
+            mic_port();
+            charge_port();
+            back_medallion_recess();
+            // mirrored in X: the back face is read from the far side, which
+            // reverses handedness, so un-mirrored text comes out backwards
+            mirror([1,0,0]) back_decor();
+            bail_assembly(add=false);
         }
-        hollow_cavity();
-        screen_pocket();
-        sensor_hole();
-        secondary_facet();
-        back_medallion_recess();
-        // mirrored: viewed from outside the back face (looking in +Z),
-        // text drawn the normal way would read backwards, like an
-        // un-mirrored coin die
-        mirror([0,1,0]) back_decor();
-        bail_assembly(add=false);
+        back_badge();
     }
 }
 
@@ -420,7 +573,9 @@ if (part == "front") {
     // you want to see that option too
     color([0.78,0.79,0.81]) full_star();
     color([0.9,0.91,0.93])  bezel_ring();
+    color([0.9,0.91,0.93])  camera_bezel();
     screen_face_mockup();
+    camera_lens_mockup();
     tip = star_pt(0);
     translate([tip[0] + 6, tip[1], -2])
         rotate([0,0,180])
@@ -431,6 +586,8 @@ if (part == "front") {
 } else { // "preview" — just the star itself, assembled, as you'll actually build it
     color([0.78,0.79,0.81]) full_star();
     color([0.9,0.91,0.93])  bezel_ring();
+    color([0.9,0.91,0.93])  camera_bezel();
     screen_face_mockup();
+    camera_lens_mockup();
     color([0.85,0.86,0.9])  keyring_mockup(); // cosmetic only — buy a real one
 }

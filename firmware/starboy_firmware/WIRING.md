@@ -1,4 +1,58 @@
-# STARBOY DIY — Wiring & Libraries (v2.0 firmware)
+# STARBOY DIY — Wiring, Libraries & Physical Build
+
+## Shell dimensions (final, print-ready)
+
+| | |
+|---|---|
+| Star width (point to point) | 70 mm |
+| Thickness | 17 mm |
+| Display | GC9A01 1.28" round, centred in the front face |
+| Charging | USB-C cutout in the valley opposite the keyring |
+
+The 17mm thickness is not arbitrary — it's driven by the component stack.
+See the COMPONENT FIT table at the top of `hardware/starboy_star.scad`.
+
+## Component placement
+
+Looking at the **front** (display facing you), with the keyring at the right
+(0°), features sit on the arms at these angles:
+
+| Angle | Feature |
+|-------|---------|
+| 0° | Keyring bail |
+| 72° | Camera lens pocket (8mm) — optional |
+| 144° | DS18B20 temperature vent (4mm, through-hole) |
+| 180° (valley) | USB-C charging cutout |
+| 288° | MAX4466 mic sound port (2.5mm, through-hole) |
+
+**The temperature vent is a through-hole on purpose.** If you seal the
+DS18B20 inside, it reads the board's own waste heat and the cold/shiver
+behaviour never triggers. It has to see outside air.
+
+## Internal stack (front to back)
+
+```
+front face
+  ├─ GC9A01 display        4.8mm   (sits in the 5.5mm pocket)
+  ├─ ESP32-C3 SuperMini    3.2mm   (USB-C facing the 180° valley)
+  ├─ MPU6050 (no headers)  1.6mm
+  └─ LiPo 402030 300mAh    4.0mm
+back face
+```
+Total 8.8mm into 9.3mm available — 0.5mm slack. Snug, so dry-fit before
+gluing anything.
+
+## Charging
+
+The cutout exposes the **ESP32-C3 SuperMini's own USB-C**. Most SuperMini
+boards carry a single-cell LiPo charge IC on that same port plus a pair of
+battery pads — check yours before you rely on it. If your board doesn't
+have charging, add a TP4056 module and line it up with the same cutout
+instead.
+
+---
+
+# Wiring & Libraries (v2.0 firmware)
 
 ## 1. Install TFT_eSPI (requires one-time config)
 
