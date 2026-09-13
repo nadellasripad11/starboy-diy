@@ -8,35 +8,12 @@ A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point 
 
 ## Buying list
 
-Prices checked **2026-09-13** from AliExpress — they move, and shipping/tax aren't included.
-Shipping to the US is free on most of these; expect 2–4 weeks from China.
+Full bill of materials with exact buy links and prices: **[BOM.md](BOM.md)**
 
-> **Pants clip:** The carabiner listing below ships 20 pcs — keep one on your pants and stash the rest.
+Quick summary: **~$45.94 total** across 11 line items (electronics + build supplies), sourced mostly from AliExpress with the spray paint from Amazon (aerosols don't ship well internationally). Every part links straight to the listing used to price it.
 
-### Electronics
-
-| Part | Price | Buy from | Notes |
-|------|-------|----------|-------|
-| Seeed XIAO ESP32C3 | ~$5.36 | [AliExpress search](https://www.aliexpress.com/w/wholesale-seeed-xiao-esp32c3.html) | **Must be the Seeed XIAO** — built-in LiPo charger. The cheaper SuperMini has none. 21 × 17.8mm |
-| 1.28" Round TFT LCD (GC9A01, 240×240) | ~$2.92 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gc9a01-1.28-round-tft-display.html) | Must be a **round PCB** (Φ37.5mm). Listings labelled "1.28 round LCD SPI GC9A01" |
-| GY-521 MPU6050 accelerometer/gyro | ~$1.29 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gy-521-mpu6050.html) | Comes with pins pre-soldered — **leave them off** when you order or remove them before assembly |
-| MAX4466 microphone amp module | ~$0.87 | [AliExpress search](https://www.aliexpress.com/w/wholesale-max4466-microphone-amplifier-module.html) | Adjustable gain via on-board pot |
-| DS18B20 waterproof probe + adapter module | ~$1.09 | [AliExpress search](https://www.aliexpress.com/w/wholesale-ds18b20-waterproof-probe-adapter-module.html) | Get the one that says "100cm + adapter module". ⚠️ **AliExpress does NOT include the 4.7kΩ resistor** — order it separately |
-| 4.7kΩ resistor (100pcs kit) | ~$0.50 | [AliExpress search](https://www.aliexpress.com/w/wholesale-4.7k-ohm-resistor-kit.html) | Pull-up for DS18B20 data line |
-| LiPo 402530 3.7V 300mAh | ~$3.75 | [AliExpress](https://www.aliexpress.com/item/32798545712.html) | 4 × 25 × 30mm. **Verify listing says "protection circuit" or "PCM"** before buying |
-| **Electronics subtotal** | **~$15.78** | | |
-
-### Build supplies
-
-| Item | Price | Buy from |
-|------|-------|----------|
-| Mini carabiner clips, 20-pack (aluminum D-ring) | ~$1.09 | [AliExpress](https://www.aliexpress.us/item/3256805821292670.html) — clip one to a belt loop, save the rest |
-| Stainless split key rings, 25mm | ~$1.00 | [AliExpress search](https://www.aliexpress.com/w/wholesale-25mm-stainless-key-ring-split.html) |
-| Chrome/silver spray paint | ~$8–12 | Local hardware store (Rust-Oleum Mirror Effect or similar) — hard to beat locally vs AliExpress shipping on aerosols |
-| 30AWG silicone wire kit (6 colours) | ~$3.50 | [AliExpress search](https://www.aliexpress.com/w/wholesale-30awg-silicone-wire-kit-6-color.html) |
-| **Supplies subtotal** | **~$14–18** | |
-
-**Total: ~$30–34** plus shipping. You'll also need PLA or PETG filament and a USB-C cable.
+> **Pants clip:** [BOM.md](BOM.md) item #8 ships 20 carabiners — keep one on your pants and stash the rest.
+> **Resistor:** the DS18B20 (item #5) does **not** include its 4.7kΩ pull-up on AliExpress like Adafruit's does — that's item #6.
 
 ### Don't swap these without re-checking the fit
 
