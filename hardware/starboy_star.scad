@@ -44,9 +44,13 @@
 //   OV2640 camera (optional)     8.0 dia lens       camera pocket, 72deg arm
 //
 // DEPTH BUDGET (the tight axis):
-//   body 17.0 - front wall/pocket 5.5 - back wall 2.2   = 9.3 available
+//   body 18.0 - display pocket 5.5 - back wall 3.0      = 9.5 available
 //   ESP32 3.2 + MPU6050 1.6 + battery 4.0               = 8.8 used
-//   -> 0.5mm slack. Do not reduce body_thickness below 17.
+//   -> 0.7mm slack. Do not reduce body_thickness below 18.
+//
+//   The back wall is 3.0 rather than 2.2 because the medallion dish and
+//   its engraving are cut into it. At 2.2 the engraved text punched
+//   straight through into the cavity. There is an assert() guarding this.
 //
 // WIDTH CHECK (the centre region, bounded by the valleys):
 //   usable central circle = 2 x (inner_radius - wall) = 39.6 dia
@@ -69,13 +73,17 @@ inner_radius     = 22;     // mm, valley radius. ~0.63 x outer = reference propo
                             // Do NOT drop this below ~20: the display pocket is
                             // 16.75mm in radius and would overhang into empty space
                             // in the valley directions.
-body_thickness   = 17;     // mm, total thickness. Sized directly from the measured
+body_thickness   = 18;     // mm, total thickness. Sized directly from the measured
                             // component stack — see COMPONENT FIT below. Leaves
-                            // 9.3mm behind the display for a 8.8mm stack.
+                            // 9.5mm behind the display for an 8.8mm stack.
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
 tip_round        = 1.8;    // mm, how rounded each outer tip is in the flat 2D outline
 valley_round     = 4;      // mm, how rounded each inner valley is in the flat 2D outline
-wall             = 2.2;    // mm, shell wall thickness where hollowed for electronics
+wall             = 2.2;    // mm, side + front shell wall thickness
+back_wall        = 3.0;    // mm, BACK wall is thicker on purpose: the medallion
+                            // dish (1.2) plus its engraving (0.5) eat into it, and
+                            // at 2.2 the engraved text cut straight through into
+                            // the electronics cavity. Leaves a 1.8mm solid floor.
 
 /* [Chamfer] */
 // The body is a flat-faced slab (screen/medallion sit flush in true
@@ -153,7 +161,8 @@ bail_min_r   = 2.0;   // mm, thickness of the loop's material
 // small arcs of text around the rim and a single star mark in the middle.
 back_medallion_dia   = 36;   // mm (star is 70mm across). Max is ~41 before it
                               // runs past the back face's valley edge.
-back_medallion_depth = 1.6;  // mm, keep shallow so a glued tag (or paint) sits flush
+back_medallion_depth = 1.2;  // mm, kept shallow — this plus the engraving depth
+                              // has to stay inside back_wall or it breaks through
 back_text_top        = "SRIPADBUILDS";
 back_text_bottom     = "STARBOY  PROTOTYPE";
 back_text_size       = 2.2;  // mm — deliberately small; the star mark is the hero
@@ -187,6 +196,18 @@ quality = "fast";
 // than erroring, which is a nasty bug to chase. Confirmed by testing.
 $fn      = (quality == "fine") ? 96 : 48;
 mink_fn  = (quality == "fine") ? 16 : 6;
+
+// ─── build-time sanity checks ────────────────────────────────
+// These each caught a real defect during design. If you change the
+// numbers above, these stop you shipping a broken print.
+assert(back_medallion_depth + 0.5 < back_wall,
+       "Back engraving breaks through into the electronics cavity. Increase back_wall or reduce back_medallion_depth.");
+assert(body_thickness - back_wall - 5.5 >= 8.8,
+       "Not enough depth behind the display for the ESP32 + MPU6050 + battery stack (needs 8.8mm).");
+assert(inner_radius - 2.2 > 33.5/2,
+       "Display pocket is wider than the body at the valleys - the screen would overhang empty space. Raise inner_radius.");
+assert(bevel_scale * inner_radius > 33.5/2 + bezel_wall,
+       "Chamfer pulls the front face in past the display bezel. Raise bevel_scale.");
 
 // ------------------------------------------------------------
 // Rounded/puffy star profile (2D) — double-offset so BOTH the
@@ -257,8 +278,8 @@ module puffy_body() {
 // tips — the cavity's arms then hollowed out nearly the whole body and
 // left just a stub of material in the middle.
 module hollow_cavity() {
-    translate([0, 0, -body_thickness/2 + wall])
-        linear_extrude(height = body_thickness - 2*wall)
+    translate([0, 0, -body_thickness/2 + back_wall])
+        linear_extrude(height = body_thickness - back_wall - wall)
             offset(r = -wall) rounded_star_2d();
 }
 
@@ -405,7 +426,7 @@ module arc_text(txt, radius, center_ang, arc, size, depth, flip=false) {
 // hugging the rim, a fine rim groove, and nothing in the middle except
 // the star mark (added separately by back_badge).
 module back_decor() {
-    cut = 0.7;
+    cut = 0.5;   // must satisfy: back_medallion_depth + cut < back_wall
     z0 = back_floor_z - 0.01; // engraving cuts FROM the floor INTO the solid (+z)
     r_text = back_medallion_dia/2 * 0.80;
 
@@ -465,17 +486,21 @@ module full_star() {
     }
 }
 
+// The two halves split exactly on z=0 with no overlap. They used to be cut
+// with a (body_thickness/2 + 1) tall box each, which gave both halves an
+// extra 0.5mm — stacked, the assembly came out 1mm too tall and the mating
+// faces fought each other.
 module front_half() {
     intersection() {
         full_star();
-        translate([0,0,body_thickness/4]) cube([200,200,body_thickness/2+1], center=true);
+        translate([0,0,body_thickness/4]) cube([200,200,body_thickness/2], center=true);
     }
 }
 
 module back_half() {
     intersection() {
         full_star();
-        translate([0,0,-body_thickness/4]) cube([200,200,body_thickness/2+1], center=true);
+        translate([0,0,-body_thickness/4]) cube([200,200,body_thickness/2], center=true);
     }
 }
 

@@ -6,6 +6,20 @@ A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point 
 
 ---
 
+## Printing it
+
+Ready-to-slice STLs are in [`stl/`](stl/). Print `starboy_front.stl`,
+`starboy_back.stl` and `starboy_bezel.stl`, each flat-side-down (no supports
+needed in that orientation).
+
+**Read [BUILD.md](BUILD.md) before ordering parts** — several components have
+variants that won't fit (display pin headers, MPU6050 headers, battery
+thickness). The depth budget has only 0.7mm of slack.
+
+Shell is **70mm point-to-point, 18mm thick**.
+
+---
+
 ## Hardware (~$12 total)
 
 | Part | Price |
