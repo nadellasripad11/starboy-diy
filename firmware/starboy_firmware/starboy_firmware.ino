@@ -103,15 +103,28 @@ uint8_t  d_shineStyle;    // 0=single 1=double 2=triple 3=arc
 uint8_t  d_rarity;        // 0=common 1=uncommon 2=rare 3=legendary
 bool     d_limbalRing;
 uint16_t d_irisC, d_irisC2, d_scleraC;
+// flat-style extras (see drawEye): the reference eyes vary the pupil
+// colour rather than always using black, and some carry a bright streak
+uint16_t d_pupilC;
+uint16_t d_hiC;
+bool     d_hasHighlight;
 
 // ─── Eye geometry ────────────────────────────────────────
-// Two eyes side-by-side, each offset from center
-#define EYE_L_X   74    // left eye center x
-#define EYE_R_X   166   // right eye center x
-#define EYE_Y     125   // both eyes center y
-#define IRIS_R    42    // iris radius
-#define SCLERA_R  54    // sclera (white) radius
-#define PUPIL_R   22    // default pupil radius
+// Styled off creature.company/eyes: there is NO white sclera. Each eye
+// is a single flat block of colour sitting straight on black, with a
+// small dark pupil dot. The two ovals are large and close together so
+// they nearly fill the round display.
+#define EYE_L_X   82    // left eye center x
+#define EYE_R_X   158   // right eye center x
+#define EYE_Y     122   // both eyes center y
+#define IRIS_RX   40    // eye half-width  (ovals are taller than wide)
+#define IRIS_RY   50    // eye half-height
+#define PUPIL_R   9     // pupil dot — small, like the reference
+// There is no sclera any more, but the special-FX code positions things
+// against these two names — keep them pointing at the eye's extent so it
+// all still builds and lands in sensible places.
+#define IRIS_R    IRIS_RY
+#define SCLERA_R  IRIS_RY
 
 // ─── Animation expression table (50 base targets) ───────
 // Each entry: gazeX, gazeY, blinkT, pupilR%, irisRx%, irisRy%,
@@ -402,6 +415,18 @@ void initEyeDesign() {
   d_irisC   = IRIS_PAL[d_irisIdx];
   d_irisC2  = IRIS_PAL2[d_iris2Idx];
   d_scleraC = SCLERA_PAL[d_scleraIdx];
+
+  // Pupil: mostly a near-black dot, but a slice of variants use a
+  // contrasting colour instead — that mix is what gives the reference
+  // grid its variety (green eyes w/ red pupils, cream w/ blue, etc.)
+  uint8_t pupRoll = rnd(100);
+  d_pupilC = (pupRoll < 65) ? 0x0000
+           : (pupRoll < 85) ? IRIS_PAL2[rnd(20)]
+                            : IRIS_PAL[rnd(20)];
+
+  // A minority carry a bright vertical streak
+  d_hasHighlight = (rnd(100) < 28);
+  d_hiC = (rnd(2) == 0) ? 0xFFFF : SCLERA_PAL[rnd(4)];
 
   Serial.printf("Eye seed: 0x%08X | rarity: %d | iris: %d | pattern: %d | pupil: %d\n",
                 eyeSeed, d_rarity, d_irisIdx, d_irisPattern, d_pupilShape);
@@ -900,39 +925,38 @@ void drawEye(int cx, int cy, bool isLeft) {
 
   int ex = cx + (int)gx;
   int ey = cy + (int)gy;
-  int irx = (int)(IRIS_R * eye.irX);
-  int iry = (int)(IRIS_R * eye.irY);
-  irx = constrain(irx, 8, IRIS_R + 12);
-  iry = constrain(iry, 4, IRIS_R + 12);
+  int irx = (int)(IRIS_RX * eye.irX);
+  int iry = (int)(IRIS_RY * eye.irY);
+  irx = constrain(irx, 6, IRIS_RX + 10);
+  iry = constrain(iry, 4, IRIS_RY + 10);
 
-  // 1. Sclera
-  spr.fillCircle(ex, ey, SCLERA_R, d_scleraC);
+  // 1. The eye body — one flat block of colour straight on black.
+  //    No sclera: that is the whole look on creature.company/eyes.
+  uint16_t c = (eye.colMix > 0.5f) ? eye.colOvr
+                                   : blend565(d_irisC, eye.colOvr, eye.colMix);
+  sprFillEllipse(ex, ey, irx, iry, c);
 
-  // 2. Iris
-  drawIrisPattern(ex, ey, irx, iry);
-
-  // 3. Pupil (unless special FX overrides)
+  // 2. Pupil — a small dot, not a big black disc
   if (eye.fx != 15 && eye.fx != 9) {  // not dead-X or derp
-    drawPupilShape(ex, ey, (int)(PUPIL_R * eye.pupR));
+    int pr = constrain((int)(PUPIL_R * eye.pupR), 2, irx - 2);
+    // sits slightly toward the middle of the face, like the reference
+    int px = ex + (isLeft ? 4 : -4);
+    sprFillEllipse(px, ey + 2, pr, pr, d_pupilC);
   }
 
-  // 4. Limbal ring
-  if (d_limbalRing) {
-    spr.drawCircle(ex, ey, irx, TFT_BLACK);
-    spr.drawCircle(ex, ey, irx - 1, 0x2104); // dark grey
+  // 3. Optional bright highlight streak (some variants have one)
+  if (d_hasHighlight) {
+    sprFillEllipse(ex - irx/3, ey - iry/5, max(2, irx/6), max(4, iry/3), d_hiC);
   }
 
-  // 5. Eyelids
+  // 4. Eyelids — black, so they read as the eye closing against the field
   drawEyelids(cx, cy, irx, iry);
 
-  // 6. Brow
+  // 5. Brow
   if (isLeft)  drawBrow(cx, cy, eye.bwL, eye.bwY);
   else         drawBrow(cx, cy, eye.bwR, eye.bwY);
 
-  // 7. Highlights
-  drawHighlights(ex, ey);
-
-  // 8. Special FX overlay
+  // 6. Special FX overlay
   if (eye.fx != 0 && eye.fx != 5 && eye.fx != 19) {
     drawSpecialFX(ex, ey);
   }
