@@ -1,0 +1,17 @@
+# OpenSCAD outputs
+*.stl
+*.png
+*.amf
+*.dxf
+
+# Arduino build
+build/
+*.elf
+*.bin
+*.hex
+*.map
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
