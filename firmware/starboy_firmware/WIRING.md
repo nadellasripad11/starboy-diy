@@ -88,7 +88,7 @@ Also set: **USB CDC On Boot → Enabled** (so Serial.print debug works)
 | DC      | GPIO 2   |
 | CS      | GPIO 3   |
 | RST     | 3.3V (tied high) |
-| BL      | 3.3V (always on) |
+| BL      | GPIO 7 (PWM — firmware dims it when asleep; do NOT tie to 3.3V) |
 
 ### MPU6050 (I2C)
 | MPU6050 | ESP32-C3 |
@@ -167,7 +167,9 @@ unit is more/less sensitive:
 ```cpp
 #define SHAKE_ON_G    16.0f   // how hard a shake must be
 #define COLD_C        10.0f   // °C that triggers shiver
-#define LOUD_ADC      650     // mic ADC level that triggers anxious
+#define LOUD_P2P      600     // mic peak-to-peak swing that triggers anxious
+                              // (depends on the mic board's gain trimmer —
+                              // set DEBUG_SENSORS 1 and watch Serial to tune)
 #define IDLE_DOZE_MS  25000UL // ms of stillness before dozing
 #define IDLE_SLEEP_MS 75000UL // ms before full sleep
 ```

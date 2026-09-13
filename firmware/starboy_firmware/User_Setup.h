@@ -17,7 +17,9 @@
 #define TFT_CS    3
 #define TFT_DC    2
 #define TFT_RST  -1   // Tie TFT RST to 3.3V, or set to a GPIO if needed
-#define TFT_BL   -1   // Tie TFT BL to 3.3V (always on)
+// TFT_BL deliberately NOT defined: the backlight is on GPIO 7 and the
+// firmware drives it with PWM so it can dim in sleep. Defining it here would
+// let TFT_eSPI grab the pin and force it fully on.
 
 // SPI clock speeds
 #define SPI_FREQUENCY       40000000  // 40MHz

@@ -174,9 +174,12 @@ back_medallion_dia   = 36;   // mm (star is 70mm across). Max is ~41 before it
                               // runs past the back face's valley edge.
 back_medallion_depth = 1.2;  // mm, kept shallow — this plus the engraving depth
                               // has to stay inside back_wall or it breaks through
-back_text_top        = "SRIPADBUILDS";
-back_text_bottom     = "STARBOY  PROTOTYPE";
+// Three runs spaced evenly round the rim, small star marks between them.
+back_text_1          = "SRIPADBUILDS";   // across the top
+back_text_2          = "2026-2027";      // lower left
+back_text_3          = "NO TWO ALIKE";   // lower right — every unit seeds its own eyes
 back_text_size       = 2.2;  // mm — deliberately small; the star mark is the hero
+back_text_step       = 8.8;  // degrees per character along the rim
 back_badge_frac      = 0.30; // centre star size as a fraction of medallion radius
 
 /* [Pants clip] */
@@ -460,13 +463,32 @@ module back_decor() {
     z0 = back_floor_z - 0.01; // engraving cuts FROM the floor INTO the solid (+z)
     r_text = back_medallion_dia/2 * 0.80;
 
-    // NOTE: angles are in model space. The back is viewed from the far
-    // side, which flips top/bottom, so the "top" string sits at 270 here.
+    // lay the three runs out counter-clockwise from the top with equal gaps
+    w  = [len(back_text_1), len(back_text_2), len(back_text_3)] * back_text_step;
+    g  = (360 - (w[0] + w[1] + w[2])) / 3;
+    assert(g >= 12, "Back rim text is too long to fit round the medallion. Shorten a string or reduce back_text_step.");
+    v1 = 90;
+    v2 = v1 + w[0]/2 + g + w[1]/2;
+    v3 = v2 + w[1]/2 + g + w[2]/2;
+    runs = [[back_text_1, v1], [back_text_2, v2], [back_text_3, v3]];
+    seps = [v1 + w[0]/2 + g/2, v2 + w[1]/2 + g/2, v3 + w[2]/2 + g/2];
+
+    // Angles above are where things land when you LOOK at the back (90 = top).
+    // The back is read from the far side (mirrored, then flipped), which works
+    // out to model = visual + 180. Runs in the top half need their letters
+    // flipped so they still read left to right.
     translate([0,0, z0]) {
-        arc_text(back_text_top,    radius = r_text, center_ang = 270, arc = 120,
-                 size = back_text_size, depth = cut, flip = true);
-        arc_text(back_text_bottom, radius = r_text, center_ang =  90, arc = 150,
-                 size = back_text_size, depth = cut);
+        for (r = runs) {
+            v = r[1] % 360;
+            arc_text(r[0], radius = r_text, center_ang = r[1] + 180,
+                     arc = (len(r[0]) - 1) * back_text_step,
+                     size = back_text_size, depth = cut, flip = (v > 0 && v < 180));
+        }
+        for (s = seps)
+            rotate([0, 0, s + 180]) translate([r_text, 0, 0])
+                linear_extrude(height = cut)
+                    scale([back_text_size*0.45/outer_radius, back_text_size*0.45/outer_radius])
+                        rounded_star_2d();
     }
 
     // fine rim groove just outside the text, like a bezel line

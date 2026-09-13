@@ -38,6 +38,18 @@
 #define MIC_PIN       0
 #define HAS_MIC       true    // set false to disable mic checks
 
+// Display backlight on a PWM pin so sleep can actually dim it. Wire the
+// module's BL pin HERE, not to 3.3V — tied to 3.3V it's full brightness
+// forever, even with the eyes shut, and the battery lasts a few hours.
+#define BL_PIN        7
+#define BL_PWM_FREQ   5000
+#define BL_PWM_BITS   8
+#define BL_CH         0       // only used on ESP32 Arduino core 2.x
+#define BL_AWAKE      255
+#define BL_DOZE       70
+#define BL_SLEEP      10
+#define DEBUG_SENSORS 0       // 1 = print shake / temp / sound once a second for tuning
+
 // ─── Display ─────────────────────────────────────────────
 TFT_eSPI    tft;
 TFT_eSprite spr(&tft);        // off-screen sprite — zero flicker
@@ -265,7 +277,11 @@ float  tiltAngleX=0, tiltAngleY=0;
 #define SHAKE_MS      1000     // must shake this long to trigger
 #define COLD_C        10.0f    // °C below this → cold state
 #define HOT_C         32.0f    // °C above → warm/cozy (future)
-#define LOUD_ADC      650      // ADC raw (0-4095) → anxious
+#define LOUD_P2P      600      // mic peak-to-peak swing (0-4095) → anxious.
+                               // The MAX4466 idles at mid-rail (~2048), so a raw
+                               // reading means nothing on its own — only the swing
+                               // matters. Depends on the board's gain trimmer:
+                               // tune with DEBUG_SENSORS 1.
 #define IDLE_DOZE_MS  25000UL
 #define IDLE_SLEEP_MS 75000UL
 #define RARE_PERIOD_MS 90000UL // check every 90s for a rare animation
@@ -332,9 +348,19 @@ void setup() {
   // Temperature
   ds18b20.begin();
   ds18b20.setResolution(10);
+  ds18b20.setWaitForConversion(false);   // non-blocking, see readSensors()
 
   // Mic
   analogReadResolution(12);
+
+  // Backlight PWM (see BL_PIN). The ledc API changed in ESP32 Arduino core 3.
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+  ledcAttach(BL_PIN, BL_PWM_FREQ, BL_PWM_BITS);
+#else
+  ledcSetup(BL_CH, BL_PWM_FREQ, BL_PWM_BITS);
+  ledcAttachPin(BL_PIN, BL_CH);
+#endif
+  setBacklight(BL_AWAKE);
 
   // Eye design (load or generate)
   initEyeDesign();
@@ -362,6 +388,7 @@ void loop() {
   readSensors();
   updateState();
   updateInterp();
+  updateBacklight();
   drawFrame();
 
   // Target ~33ms per frame (30fps)
@@ -464,21 +491,47 @@ void readSensors() {
     }
   }
 
-  // Temperature (every 5s)
-  if (now - lastTempRead > 5000) {
-    lastTempRead = now;
+  // Temperature — non-blocking. The old blocking requestTemperatures() froze
+  // the animation for ~190ms every 5s. Now: request, keep animating, read
+  // once the conversion has had time to finish.
+  static bool     tempPending = false;
+  static uint32_t tempReqMs   = 0;
+  if (!tempPending && now - lastTempRead > 5000) {
     ds18b20.requestTemperatures();
+    tempPending = true;
+    tempReqMs   = now;
+  } else if (tempPending && now - tempReqMs >= 200) {   // 10-bit conversion ≈ 188ms
+    tempPending  = false;
+    lastTempRead = now;
     float t = ds18b20.getTempCByIndex(0);
-    if (t != DEVICE_DISCONNECTED_C && t > -50 && t < 100)
+    // 85.0 is the sensor's power-on value — it means no conversion happened
+    if (t != DEVICE_DISCONNECTED_C && t != 85.0f && t > -50 && t < 100)
       ambientTemp = t;
   }
 
-  // Mic
+  // Mic — peak-to-peak over a short burst. The MAX4466 output sits at
+  // mid-rail (~2048) in silence, so the raw value made every room look loud
+  // and the eye got stuck in "anxious". Max minus min over the burst is the
+  // real sound level regardless of that offset. 32 samples ≈ a few ms.
   if (HAS_MIC) {
-    int raw = analogRead(MIC_PIN);
-    if (raw > soundPeak) soundPeak = raw;
-    else soundPeak = (int)(soundPeak * 0.93f);
+    int lo = 4095, hi = 0;
+    for (int i = 0; i < 32; i++) {
+      int raw = analogRead(MIC_PIN);
+      if (raw < lo) lo = raw;
+      if (raw > hi) hi = raw;
+    }
+    int p2p = hi - lo;
+    if (p2p > soundPeak) soundPeak = p2p;                 // fast attack
+    else soundPeak = (int)(soundPeak * 0.93f);            // slow decay
   }
+
+#if DEBUG_SENSORS
+  static uint32_t lastDbg = 0;
+  if (now - lastDbg > 1000) {
+    lastDbg = now;
+    Serial.printf("shake %.1f  temp %.1fC  sound %d\n", shakeE, ambientTemp, soundPeak);
+  }
+#endif
 }
 
 // ════════════════════════════════════════════════════════
@@ -499,7 +552,7 @@ void updateState() {
   // ── Interruptions (always checked, high priority) ──
   bool shaking = mpuOK && shakeStart > 0 && (now - shakeStart) > SHAKE_MS;
   bool isCold  = ambientTemp < COLD_C;
-  bool isLoud  = HAS_MIC && soundPeak > LOUD_ADC;
+  bool isLoud  = HAS_MIC && soundPeak > LOUD_P2P;
 
   // Rare specials can't be interrupted mid-play
   if (curState >= S_RARE_RAINBOW && age < 5000) return;
@@ -581,7 +634,7 @@ void updateState() {
       break;
 
     case S_SLEEP:
-      if (shakeE > 5 || isLoud || (HAS_MIC && soundPeak > LOUD_ADC * 0.5f)) {
+      if (shakeE > 5 || isLoud || (HAS_MIC && soundPeak > LOUD_P2P * 0.5f)) {
         setState(S_IDLE); dozeLevel=0; lastInteract=now;
         setTarget(45); // just woke up
       }
@@ -1450,4 +1503,26 @@ uint16_t blend565(uint16_t a, uint16_t b, float t) {
   return ((uint16_t)((uint8_t)(ar+(br-ar)*t) & 0x1F) << 11) |
          ((uint16_t)((uint8_t)(ag+(bg-ag)*t) & 0x3F) << 5) |
           (uint16_t)((uint8_t)(ab+(bb-ab)*t) & 0x1F);
+}
+
+// ─── Backlight ───────────────────────────────────────────
+void setBacklight(uint8_t duty) {
+#if ESP_ARDUINO_VERSION_MAJOR >= 3
+  ledcWrite(BL_PIN, duty);
+#else
+  ledcWrite(BL_CH, duty);
+#endif
+}
+
+// Dims with the eyes: full while awake, easing down through doze, nearly off
+// asleep. Wakes fast, fades slow, so nothing snaps.
+void updateBacklight() {
+  static float bl = BL_AWAKE;
+  float target = BL_AWAKE;
+  if (curState == S_DOZE)
+    target = BL_AWAKE + (BL_DOZE - BL_AWAKE) * min(1.0f, dozeLevel);
+  else if (curState == S_SLEEP || curState == S_DREAMING)
+    target = BL_SLEEP;
+  bl += (target - bl) * ((target > bl) ? 0.25f : 0.02f);
+  setBacklight((uint8_t)constrain(bl, 0.0f, 255.0f));
 }
