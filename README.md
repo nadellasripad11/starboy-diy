@@ -18,7 +18,7 @@ Shipping to the US is free on most of these; expect 2–4 weeks from China.
 | Part | Price | Buy from | Notes |
 |------|-------|----------|-------|
 | Seeed XIAO ESP32C3 | ~$5.36 | [AliExpress search](https://www.aliexpress.com/w/wholesale-seeed-xiao-esp32c3.html) | **Must be the Seeed XIAO** — built-in LiPo charger. The cheaper SuperMini has none. 21 × 17.8mm |
-| 1.28" Round TFT LCD (GC9A01, 240×240) | ~$2.92 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gc9a01-1.28-round-tft-display.html) | Must be a **round PCB** (Φ37.5mm). Listings labelled "1.28 round LCD SPI GC9A01" |
+| 1.28" Round TFT LCD (GC9A01, 240×240) | ~$2.92 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gc9a01-1.28-round-tft-display.html) | Must be a **round PCB** (diameter 37.5mm). Listings labelled "1.28 round LCD SPI GC9A01" |
 | GY-521 MPU6050 accelerometer/gyro | ~$1.29 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gy-521-mpu6050.html) | Comes with pins pre-soldered — **leave them off** when you order or remove them before assembly |
 | MAX4466 microphone amp module | ~$0.87 | [AliExpress search](https://www.aliexpress.com/w/wholesale-max4466-microphone-amplifier-module.html) | Adjustable gain via on-board pot |
 | DS18B20 waterproof probe + adapter module | ~$1.09 | [AliExpress search](https://www.aliexpress.com/w/wholesale-ds18b20-waterproof-probe-adapter-module.html) | Get the one that says "100cm + adapter module". ⚠️ **AliExpress does NOT include the 4.7kΩ resistor** — order it separately |
