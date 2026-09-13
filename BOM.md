@@ -13,7 +13,7 @@ Prices exclude shipping/tax and will drift over time — re-check before orderin
 | # | Part | Qty | Unit price | Line total | Buy link | Notes |
 |---|------|-----|-----------|-----------|----------|-------|
 | 1 | Seeed Studio XIAO ESP32C3 | 1 | $6.45 | $6.45 | [AliExpress](https://www.aliexpress.com/item/1005004723068527.html) | Select the **"1pc"** variant. Must be genuine Seeed XIAO — built-in LiPo charger, the cheaper "SuperMini" has none |
-| 2 | GC9A01 1.28" round TFT, 240×240 SPI | 1 | $2.92 | $2.92 | [AliExpress](https://www.aliexpress.com/item/1005004360047964.html) | Confirmed **round PCB** (Φ37.5mm) — the shell pocket is stepped for this exact size |
+| 2 | GC9A01 1.28" round TFT, 240×240 SPI | 1 | $2.92 | $2.92 | [AliExpress](https://www.aliexpress.com/item/1005004360047964.html) | Confirmed **round PCB** (diameter 37.5mm) — the shell pocket is stepped for this exact size |
 | 3 | GY-521 MPU6050 accel/gyro | 1 | $1.14 | $1.14 | [AliExpress](https://www.aliexpress.com/item/32340949017.html) | Ships with header pins pre-soldered — desolder or clip them flush before assembly |
 | 4 | MAX4466 electret mic amp | 1 | $0.79 | $0.79 | [AliExpress](https://www.aliexpress.com/item/32786459312.html) | Adjustable gain via on-board trim pot |
 | 5 | DS18B20 waterproof probe + adapter (100cm) | 1 | $1.09 | $1.09 | [AliExpress](https://www.aliexpress.com/item/32839776524.html) | ⚠️ Does **not** include the pull-up resistor — that's line 6 |
@@ -46,7 +46,7 @@ Plus, not itemized here (already on hand or negligible cost):
 
 Don't swap these without re-checking `hardware/starboy_star.scad`:
 
-- **#2 Display** must be a round-PCB module (Φ37.5mm). A rectangular-PCB GC9A01 board (common on generic listings) will not fit the stepped pocket.
+- **#2 Display** must be a round-PCB module (diameter 37.5mm). A rectangular-PCB GC9A01 board (common on generic listings) will not fit the stepped pocket.
 - **#1 MCU** must be the genuine Seeed XIAO. Cheaper ESP32-C3 "SuperMini" clones have no battery charger circuit.
 - **#7 Battery** must be ≤4.0mm thick with a protection circuit (PCM). The shell cavity has 0.5mm of clearance to spare — no more.
 - **#3 / #5 Headers**: leave pins off (or remove them) on the MPU6050 and DS18B20 adapter, and wire flat — populated headers break the stack height budget.
