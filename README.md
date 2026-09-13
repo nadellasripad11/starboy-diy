@@ -8,31 +8,35 @@ A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point 
 
 ## Buying list
 
-Prices checked **2026-09-13** — they move, and shipping/tax aren't included.
-The parts come from a few different stores, so expect separate shipping charges.
+Prices checked **2026-09-13** from AliExpress — they move, and shipping/tax aren't included.
+Shipping to the US is free on most of these; expect 2–4 weeks from China.
+
+> **Pants clip:** The carabiner listing below ships 20 pcs — keep one on your pants and stash the rest.
 
 ### Electronics
 
-| Part | Price | Buy from | Why this one |
-|------|-------|----------|--------------|
-| Seeed Studio XIAO ESP32C3 | $4.99 | [Seeed Studio](https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html) | **Built-in LiPo charger** — the cheaper ESP32-C3 SuperMini has none. 21 × 17.8mm |
-| Waveshare 1.28" Round LCD Module (GC9A01, 240×240) | $22.07 | [Amazon](https://www.amazon.com/1-28inch-Resolution-Raspberry-Interface-Displaying/dp/B09N2NC7NS) | Round Φ37.5mm PCB — what the display pocket is sized for |
-| GY-521 MPU6050 accelerometer/gyro | $3.95 | [ProtoSupplies](https://protosupplies.com/product/mpu-6050-gy-521-3-axis-accel-gryo-sensor-module/) | Ships with the headers loose — leave them off |
-| DS18B20 temperature sensor | $3.95 | [Adafruit #374](https://www.adafruit.com/product/374) | Includes the 4.7kΩ pull-up resistor you need |
-| MAX4466 electret microphone amp | $6.95 | [Adafruit #1063](https://www.adafruit.com/product/1063) | Adjustable gain, reliable part |
-| LiPo battery, 3.7V 300mAh, 402530 | $5.94 | [eBay](https://www.ebay.com/itm/122834377805) | 4 × 25 × 30mm, **built-in protection circuit** |
-| **Electronics subtotal** | **$47.85** | | |
+| Part | Price | Buy from | Notes |
+|------|-------|----------|-------|
+| Seeed XIAO ESP32C3 | ~$5.36 | [AliExpress search](https://www.aliexpress.com/w/wholesale-seeed-xiao-esp32c3.html) | **Must be the Seeed XIAO** — built-in LiPo charger. The cheaper SuperMini has none. 21 × 17.8mm |
+| 1.28" Round TFT LCD (GC9A01, 240×240) | ~$2.92 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gc9a01-1.28-round-tft-display.html) | Must be a **round PCB** (Φ37.5mm). Listings labelled "1.28 round LCD SPI GC9A01" |
+| GY-521 MPU6050 accelerometer/gyro | ~$1.29 | [AliExpress search](https://www.aliexpress.com/w/wholesale-gy-521-mpu6050.html) | Comes with pins pre-soldered — **leave them off** when you order or remove them before assembly |
+| MAX4466 microphone amp module | ~$0.87 | [AliExpress search](https://www.aliexpress.com/w/wholesale-max4466-microphone-amplifier-module.html) | Adjustable gain via on-board pot |
+| DS18B20 waterproof probe + adapter module | ~$1.09 | [AliExpress search](https://www.aliexpress.com/w/wholesale-ds18b20-waterproof-probe-adapter-module.html) | Get the one that says "100cm + adapter module". ⚠️ **AliExpress does NOT include the 4.7kΩ resistor** — order it separately |
+| 4.7kΩ resistor (100pcs kit) | ~$0.50 | [AliExpress search](https://www.aliexpress.com/w/wholesale-4.7k-ohm-resistor-kit.html) | Pull-up for DS18B20 data line |
+| LiPo 402530 3.7V 300mAh | ~$3.75 | [AliExpress](https://www.aliexpress.com/item/32798545712.html) | 4 × 25 × 30mm. **Verify listing says "protection circuit" or "PCM"** before buying |
+| **Electronics subtotal** | **~$15.78** | | |
 
 ### Build supplies
 
 | Item | Price | Buy from |
 |------|-------|----------|
-| CREST 316L stainless split key rings, 25mm, 5-pack | $7.98 | [Amazon](https://www.amazon.com/CREST-Products-Stainless-Steel-Rings/dp/B08QR8RSJ9) |
-| Rust-Oleum Mirror Effect spray paint, silver, 6oz | $12.59 | [Amazon](https://www.amazon.com/Rust-Oleum-267727-Specialty-Mirror-6-Ounce/dp/B00FMRXJW2) |
-| CBAZY 30AWG silicone hook-up wire kit, 6 colours | $13.99 | [Amazon](https://www.amazon.com/CBAZY-Stranded-Flexible-Silicone-Electric/dp/B073RDGTPB) |
-| **Supplies subtotal** | **$34.56** | |
+| Mini carabiner clips, 20-pack (aluminum D-ring) | ~$1.09 | [AliExpress](https://www.aliexpress.us/item/3256805821292670.html) — clip one to a belt loop, save the rest |
+| Stainless split key rings, 25mm | ~$1.00 | [AliExpress search](https://www.aliexpress.com/w/wholesale-25mm-stainless-key-ring-split.html) |
+| Chrome/silver spray paint | ~$8–12 | Local hardware store (Rust-Oleum Mirror Effect or similar) — hard to beat locally vs AliExpress shipping on aerosols |
+| 30AWG silicone wire kit (6 colours) | ~$3.50 | [AliExpress search](https://www.aliexpress.com/w/wholesale-30awg-silicone-wire-kit-6-color.html) |
+| **Supplies subtotal** | **~$14–18** | |
 
-**Total: $82.41** plus shipping. You'll also need PLA or PETG filament and a USB-C cable.
+**Total: ~$30–34** plus shipping. You'll also need PLA or PETG filament and a USB-C cable.
 
 ### Don't swap these without re-checking the fit
 
