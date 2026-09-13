@@ -5,11 +5,12 @@
 | | |
 |---|---|
 | Body | ~65 × 64 mm (78 mm including the keyring loop) |
-| Thickness | 18 mm |
+| Thickness | 20.5 mm |
+| Board | Seeed XIAO ESP32C3 (built-in LiPo charger) |
 | Display | GC9A01 1.28" round, centred in the front face |
-| Charging | USB-C cutout in the valley opposite the keyring |
+| Charging | XIAO's USB-C, through a cutout in the valley opposite the keyring |
 
-The 18mm thickness is not arbitrary — it's driven by the component stack.
+The 20.5mm thickness is not arbitrary — it's driven by the component stack.
 See the COMPONENT FIT table at the top of `hardware/starboy_star.scad`.
 
 ## Component placement
@@ -22,7 +23,7 @@ Looking at the **front** (display facing you), with the keyring at the right
 | 0° | Keyring bail |
 | 72° | Camera lens pocket (8mm) — optional |
 | 144° | DS18B20 temperature vent (4mm, through-hole) |
-| 180° (valley) | USB-C charging cutout |
+| 180° (valley) | USB-C charging cutout (12.5 × 7.0mm) |
 | 288° | MAX4466 mic sound port (2.5mm, through-hole) |
 
 **The temperature vent is a through-hole on purpose.** If you seal the
@@ -34,22 +35,19 @@ behaviour never triggers. It has to see outside air.
 ```
 front face
   ├─ GC9A01 display        5.4mm   (inserted from inside, against the lip)
-  ├─ ESP32-C3 SuperMini    3.2mm   (USB-C facing the 180° valley)
-  ├─ MPU6050 (no headers)  1.6mm
-  └─ LiPo 402030 300mAh    4.0mm
+  ├─ XIAO ESP32C3          4.5mm   (USB-C flush against the 180° wall)
+  ├─ GY-521 (no headers)  ~3.0mm
+  └─ LiPo 402530 300mAh    4.0mm
 back face
 ```
-Total 8.8mm into 9.5mm available — 0.7mm slack. That assumes a 3.2mm-thick
-SuperMini, which no source actually confirms; measure yours. Snug, so dry-fit before
-gluing anything.
+Total 11.5mm into 12.0mm available — 0.5mm slack. The GY-521 figure is an
+estimate; measure yours. Snug, so dry-fit before gluing anything.
 
 ## Charging
 
-The cutout exposes the **ESP32-C3 SuperMini's own USB-C**. Most SuperMini
-boards carry a single-cell LiPo charge IC on that same port plus a pair of
-battery pads — check yours before you rely on it. If your board doesn't
-have charging, add a TP4056 module and line it up with the same cutout
-instead.
+The XIAO ESP32C3 has a LiPo charger built in (380mA fast / 40mA trickle).
+Plug USB-C into the cutout and it charges the battery on its BAT pads. No
+extra charger module is needed.
 
 ---
 
@@ -72,50 +70,60 @@ instead.
 | DallasTemperature | Miles Burton |
 | OneWire | Jim Studt |
 
-Board: **ESP32 (by Espressif)** → pick **ESP32C3 Dev Module**
+Board: **ESP32 (by Espressif)** → pick **XIAO_ESP32C3**
 Also set: **USB CDC On Boot → Enabled** (so Serial.print debug works)
 
 ---
 
 ## Wiring
 
-### GC9A01 1.28" Round TFT (SPI)
-| TFT Pin | ESP32-C3 |
-|---------|----------|
-| VCC     | 3.3V     |
-| GND     | GND      |
-| SCL/SCK | GPIO 4   |
-| SDA/MOSI| GPIO 6   |
-| DC      | GPIO 2   |
-| CS      | GPIO 3   |
-| RST     | 3.3V (tied high) |
-| BL      | GPIO 7 (PWM — firmware dims it when asleep; do NOT tie to 3.3V) |
+Pins are written as the XIAO's silkscreen label, with the GPIO number the
+firmware uses in brackets. D0 (GPIO2) and D9 (GPIO9) are left free on
+purpose — they're boot-mode strapping pins.
 
-### MPU6050 (I2C)
-| MPU6050 | ESP32-C3 |
-|---------|----------|
-| VCC     | 3.3V     |
-| GND     | GND      |
-| SDA     | GPIO 8   |
-| SCL     | GPIO 9   |
+### GC9A01 1.28" Round TFT (SPI)
+| TFT Pin | XIAO ESP32C3 |
+|---------|--------------|
+| VCC     | 3V3          |
+| GND     | GND          |
+| SCL/SCK | D8 (GPIO8)   |
+| SDA/MOSI| D10 (GPIO10) |
+| DC      | D6 (GPIO21)  |
+| CS      | D3 (GPIO5)   |
+| RST     | 3V3 (tied high) |
+| BL      | D2 (GPIO4) — PWM, firmware dims it when asleep; do NOT tie to 3.3V |
+
+### MPU6050 / GY-521 (I2C)
+| GY-521  | XIAO ESP32C3 |
+|---------|--------------|
+| VCC     | 3V3          |
+| GND     | GND          |
+| SDA     | D4 (GPIO6)   |
+| SCL     | D5 (GPIO7)   |
 | AD0     | GND (address 0x68) |
 
 ### DS18B20 (OneWire)
-| DS18B20 | ESP32-C3 |
-|---------|----------|
-| VDD     | 3.3V     |
-| GND     | GND      |
-| DATA    | GPIO 5   |
-| (4.7kΩ resistor between DATA and VDD) |
+| DS18B20 | XIAO ESP32C3 |
+|---------|--------------|
+| VDD     | 3V3          |
+| GND     | GND          |
+| DATA    | D7 (GPIO20)  |
+| (4.7kΩ resistor between DATA and VDD — included with Adafruit #374) |
 
-### MAX4466 Mic (analog — buy this next)
-| MAX4466 | ESP32-C3 |
-|---------|----------|
-| VCC     | 3.3V     |
-| GND     | GND      |
-| OUT     | GPIO 0 (A0) |
+### MAX4466 Mic (analog)
+| MAX4466 | XIAO ESP32C3 |
+|---------|--------------|
+| VCC     | 3V3          |
+| GND     | GND          |
+| OUT     | D1 (GPIO3)   |
 
-Once wired, set `#define HAS_MIC true` in the .ino (already the default).
+### LiPo battery
+| Battery | XIAO ESP32C3 |
+|---------|--------------|
+| +       | BAT+ pad (underside) |
+| −       | BAT− pad (underside) |
+
+Cut the JST plug off and solder. **Check polarity with a multimeter first.**
 
 ---
 
@@ -130,8 +138,8 @@ Once wired, set `#define HAS_MIC true` in the .ino (already the default).
 | Temp < 10°C | Chill → shiver → freeze (progressively icier, blue tint, crystalline overlay) |
 | Loud sound | Startled → anxious darting eyes → overwhelmed |
 | Tilt the device | Eyes track the direction of gravity |
-| 25s no interaction | Doze — eyes half close, brows droop |
-| 75s no interaction | Full sleep — slow breathing blink, occasional dream state (REM eye movement) |
+| 25s no interaction | Doze — eyes half close, brows droop, backlight dims |
+| 75s no interaction | Full sleep — slow breathing blink, occasional dream state, backlight nearly off |
 | Shake or sound during sleep | Wakes up ("just woke" expression) |
 
 **Idle personality (cycles automatically, ~2.5-7s):**
@@ -145,20 +153,17 @@ spiral · loading spinner · error/X eyes · derp/cross-eyed · smug · crying �
 laughing · shocked · "dead" eyes · galaxy swirl · heartbeat pulse · fire
 pupils · starfield dream · scanline glitch — 20 total, ~5 seconds each.
 
-**Eye design:** each unit generates a unique eye on first boot (seed stored
-in flash) — 20 iris colors × 6 patterns × 6 pupil shapes × 4 sclera tints ×
-4 highlight styles = **6,480 possible combinations**, with rarity tiers
-(common → legendary) gating the rarer colors/patterns/pupils.
+**Eye design:** each unit generates its own eye on first boot (seed stored
+in flash) — eye colour, pupil colour and highlight style, with rarity tiers
+(common → legendary) gating the rarer colours.
 
 ---
 
 ## Upload Settings (Arduino IDE)
 
-- Board: ESP32C3 Dev Module
-- Flash Mode: DIO
-- Flash Frequency: 80MHz
-- Upload Speed: 921600
+- Board: XIAO_ESP32C3
 - USB CDC On Boot: Enabled
+- If an upload won't start: hold the **BOOT** button, tap **RESET**, release BOOT, then upload.
 
 ## Tuning
 

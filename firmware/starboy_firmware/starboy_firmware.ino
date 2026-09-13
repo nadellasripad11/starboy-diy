@@ -7,11 +7,12 @@
 //   tilt-tracking · doze · sleep · 20 rare special effects
 //
 // Hardware:
-//   ESP32-C3 SuperMini
-//   GC9A01 1.28" Round TFT (240×240) — SPI
-//   MPU6050 Accelerometer/Gyro — I2C (SDA=GPIO8, SCL=GPIO9)
-//   DS18B20 Temperature — OneWire (GPIO5, 4.7kΩ to 3.3V)
-//   MAX4466 Mic — Analog (GPIO0) — optional
+//   Seeed XIAO ESP32C3 (built-in LiPo charger; 300mAh 402530 on BAT pads)
+//   GC9A01 1.28" Round TFT (240×240) — SPI: SCK D8, MOSI D10, CS D3, DC D6
+//   Backlight — PWM on D2 (GPIO4)
+//   MPU6050 Accelerometer/Gyro — I2C (SDA=D4/GPIO6, SCL=D5/GPIO7)
+//   DS18B20 Temperature — OneWire (D7/GPIO20, 4.7kΩ to 3.3V)
+//   MAX4466 Mic — Analog (D1/GPIO3)
 //
 // Libraries (Arduino Library Manager):
 //   TFT_eSPI by Bodmer        ← ALSO copy User_Setup.h to library folder!
@@ -20,7 +21,7 @@
 //   DallasTemperature
 //   OneWire
 //
-// Board settings: ESP32C3 Dev Module · USB CDC On Boot: Enabled
+// Board settings: XIAO_ESP32C3 · USB CDC On Boot: Enabled
 // ============================================================
 
 #include <TFT_eSPI.h>
@@ -34,14 +35,17 @@
 
 // ─── Pins ────────────────────────────────────────────────
 // TFT pins defined in User_Setup.h
-#define ONE_WIRE_BUS  5
-#define MIC_PIN       0
+// Pins are for the Seeed XIAO ESP32C3 (built-in LiPo charger). Inputs are
+// kept off the strapping pins GPIO2/8/9; GPIO8 is only used as SPI clock,
+// which is what the XIAO routes it for.
+#define ONE_WIRE_BUS  20      // D7  — DS18B20 data
+#define MIC_PIN       3       // D1  — ADC1_CH3, MAX4466 OUT
 #define HAS_MIC       true    // set false to disable mic checks
 
 // Display backlight on a PWM pin so sleep can actually dim it. Wire the
 // module's BL pin HERE, not to 3.3V — tied to 3.3V it's full brightness
 // forever, even with the eyes shut, and the battery lasts a few hours.
-#define BL_PIN        7
+#define BL_PIN        4       // D2
 #define BL_PWM_FREQ   5000
 #define BL_PWM_BITS   8
 #define BL_CH         0       // only used on ESP32 Arduino core 2.x
@@ -337,7 +341,7 @@ void setup() {
   }
 
   // MPU6050
-  Wire.begin(8, 9);  // SDA=8, SCL=9 for ESP32-C3 SuperMini
+  Wire.begin(6, 7);  // XIAO ESP32C3 default I2C: SDA=D4 (GPIO6), SCL=D5 (GPIO7)
   if (mpu.begin()) {
     mpuOK = true;
     mpu.setAccelerometerRange(MPU6050_RANGE_8_G);

@@ -34,26 +34,27 @@
 // Every number below was used to size the shell. If you swap a part
 // for a different one, re-check this table before printing.
 //
-//   PART                        L x W x H (mm)      WHERE IT GOES
-//   GC9A01 1.28" round display  37.5 dia x 5.4      front pocket, centred
+//   PART                          L x W x H (mm)      WHERE IT GOES
+//   GC9A01 1.28" round display    37.5 dia x 5.4      front pocket, centred
 //     ^ the PCB. The 32.4 quoted everywhere is the GLASS - sizing to that
 //       number is exactly why the pocket had to be re-cut as a step.
-//   ESP32-C3 SuperMini          22.5 x 18.0 x 3.2   behind display, centred
-//     ^ 3.2 is UNVERIFIED — no source lists the thickness, and the USB-C
-//       socket alone is ~3.2 tall. If yours measures ~4.2 the slack is gone:
-//       raise body_thickness by 1 before printing the final shell.
-//   MPU6050 (headers removed)   21.2 x 16.4 x 1.6   stacked behind ESP32
-//   LiPo 402030 (300mAh)        30.0 x 20.0 x 4.0   stacked at the back
-//   DS18B20 (TO-92)              4.3 dia x 5.2      at the temp vent, 144deg arm
-//   MAX4466 mic board (Adafruit #1063)     x 7.8   at the mic port, 288deg arm
-//     ^ 7.8 is Adafruit's figure with the mic fitted. Depth there is 12.8 so it
+//   Seeed XIAO ESP32C3            21.0 x 17.8 x 4.5   behind display, USB-C
+//                                                     flush to the 180deg wall
+//     ^ has the LiPo charger built in (the SuperMini does NOT). 4.5 is the
+//       height over the USB-C socket; the PCB itself is 1.2.
+//   MPU6050 GY-521 (no headers)   21 x 16 x ~3.0      stacked behind the XIAO
+//     ^ ~3.0 is an estimate (1.6 PCB + chips); not published anywhere.
+//   LiPo 402530 (300mAh)          30.0 x 25.0 x 4.0   stacked at the back
+//   DS18B20 (TO-92)                4.3 dia x 5.2      at the temp vent, 144deg arm
+//   MAX4466 mic board (Adafruit #1063)       x 7.8   at the mic port, 288deg arm
+//     ^ 7.8 is Adafruit's figure with the mic fitted. Depth there is ~15 so it
 //       fits; footprint wasn't published, so dry-fit it against the arm.
-//   OV2640 camera (optional)     8.0 dia lens       camera pocket, 72deg arm
+//   OV2640 camera (optional)       8.0 dia lens       camera pocket, 72deg arm
 //
 // DEPTH BUDGET (the tight axis):
-//   body 18.0 - display pocket 5.5 - back wall 3.0      = 9.5 available
-//   ESP32 3.2 + MPU6050 1.6 + battery 4.0               = 8.8 used
-//   -> 0.7mm slack. Do not reduce body_thickness below 18.
+//   body 20.5 - display pocket 5.5 - back wall 3.0      = 12.0 available
+//   XIAO 4.5 + GY-521 3.0 + battery 4.0                 = 11.5 used
+//   -> 0.5mm slack. Do not reduce body_thickness below 20.5.
 //
 //   The back wall is 3.0 rather than 2.2 because the medallion dish and
 //   its engraving are cut into it. At 2.2 the engraved text punched
@@ -61,12 +62,11 @@
 //
 // WIDTH CHECK (the centre region, bounded by the valleys):
 //   usable central circle = 2 x (inner_radius - wall) = 41.6 dia
-//   battery diagonal sqrt(30^2+20^2) = 36.1  -> fits
-//   ESP32 diagonal sqrt(22.5^2+18^2) = 28.8  -> fits
+//   battery diagonal sqrt(30^2+25^2) = 39.1  -> fits
 //
-// The ESP32-C3 must be oriented with its USB-C facing the 180deg valley
-// so it lines up with the charging cutout. If your board's USB-C won't
-// reach the wall, use a short USB-C pigtail rather than moving the port.
+// The XIAO sits off-centre toward the 180deg valley so its USB-C is flush
+// with the inside of the wall; the charge cutout is sized for a cable's
+// plastic overmold so the plug fully seats.
 // ============================================================
 
 /* [Overall size] */
@@ -80,9 +80,9 @@ inner_radius     = 23;     // mm, valley radius. ~0.64 x outer = reference propo
                             // Do NOT drop this: the display's PCB ledge is 19.3mm in
                             // radius and the cavity wall has to clear it. Guarded by
                             // an assert below.
-body_thickness   = 18;     // mm, total thickness. Sized directly from the measured
+body_thickness   = 20.5;   // mm, total thickness. Sized directly from the measured
                             // component stack — see COMPONENT FIT below. Leaves
-                            // 9.5mm behind the display for an 8.8mm stack.
+                            // 12.0mm behind the display for an 11.5mm stack.
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
 tip_round        = 1.8;    // mm, how rounded each outer tip is in the flat 2D outline
 valley_round     = 4;      // mm, how rounded each inner valley is in the flat 2D outline
@@ -153,15 +153,16 @@ mic_port_ang   = 288;
 
 /* [Charging port] */
 // USB-C cutout in the valley opposite the keyring, like the port on the
-// bottom edge of the reference photo. This exposes the ESP32-C3
-// SuperMini's OWN USB-C — most SuperMini boards carry a single-cell LiPo
-// charger on that same port plus a battery pad pair. CHECK YOUR BOARD: if
-// yours has no charge IC, add a TP4056 module instead and line it up here.
-charge_port_w     = 9.8;   // mm, USB-C receptacle is 9.0 wide + clearance
-charge_port_h     = 3.8;   // mm, 3.2 tall + clearance
+// bottom edge of the reference photo. It exposes the Seeed XIAO ESP32C3's
+// own USB-C, which has a LiPo charger built in (380mA fast / 40mA trickle).
+// Sized for a cable's plastic overmold, not just the metal plug: a tight
+// hole lets the overmold hit the wall before the plug seats. So mount the
+// XIAO with its USB-C face flush against the inside of this wall.
+charge_port_w     = 12.5;  // mm, typical USB-C overmold width + clearance
+charge_port_h     = 7.0;   // mm, typical overmold thickness + clearance
 charge_port_ang   = 180;   // degrees — the valley opposite the bail
-charge_port_z     = 1.5;   // mm, height of the port centre — lines up with the
-                            // USB-C on an ESP32-C3 sitting directly behind the display
+charge_port_z     = 3.05;  // mm, centre of the XIAO's USB-C when the board
+                            // sits directly behind the display (4.5mm tall)
 
 /* [Keyring bail] */
 // A real integrated loop (not just a disc-with-hole) so a bought
@@ -221,8 +222,8 @@ mink_fn  = (quality == "fine") ? 16 : 6;
 // numbers above, these stop you shipping a broken print.
 assert(back_medallion_depth + 0.5 < back_wall,
        "Back engraving breaks through into the electronics cavity. Increase back_wall or reduce back_medallion_depth.");
-assert(body_thickness - back_wall - 5.5 >= 8.8,
-       "Not enough depth behind the display for the ESP32 + MPU6050 + battery stack (needs 8.8mm).");
+assert(body_thickness - back_wall - 5.5 >= 11.5,
+       "Not enough depth behind the display for the XIAO (4.5) + GY-521 (3.0) + battery (4.0) stack (needs 11.5mm).");
 // NOTE: the binding constraint is the display's PCB (38.6mm ledge), NOT the
 // 32.4mm glass. Sizing to the glass is exactly the mistake that made the
 // module not fit in the first place.
