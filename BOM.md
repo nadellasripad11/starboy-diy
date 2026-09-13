@@ -53,7 +53,7 @@ The XIAO fast-charges at 380mA (~1.3× this battery's C rating); charge where yo
 
 ## Fit-critical substitution rules
 
-Don't swap these without re-checking `hardware/starboy_star.scad`:
+Don't swap these without re-checking `CAD/starboy_star.scad`:
 
 - **#2 Display** must be a **round**-PCB module (diameter 37.5mm). Rectangular-PCB GC9A01 boards (common on generic listings) will not fit the stepped pocket.
 - **#1 MCU** must be the genuine Seeed XIAO. Cheaper ESP32-C3 "SuperMini" clones have no battery charger circuit.

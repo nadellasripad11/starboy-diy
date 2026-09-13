@@ -63,7 +63,7 @@ Every unit's eye is unique — its colours and style are generated from a random
 
 ## 3D Shell
 
-`hardware/starboy_star.scad` — parametric OpenSCAD model of the star shell.
+`CAD/starboy_star.scad` — parametric OpenSCAD model of the star shell.
 
 - Flat-faced star with chamfered edges, sized from the measured parts
 - Stepped display pocket (narrow opening at the face, wider ledge that holds the board)

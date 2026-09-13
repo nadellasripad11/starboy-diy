@@ -11,7 +11,7 @@
 | Charging | XIAO's USB-C, through a cutout in the valley opposite the keyring |
 
 The 20.5mm thickness is not arbitrary — it's driven by the component stack.
-See the COMPONENT FIT table at the top of `hardware/starboy_star.scad`.
+See the COMPONENT FIT table at the top of `CAD/starboy_star.scad`.
 
 ## Component placement
 

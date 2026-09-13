@@ -1,0 +1,14 @@
+Item Name,Quantity,Unit Price (USD),Total Price (USD),Supplier,Link,Notes
+Seeed Studio XIAO ESP32C3,1,6.45,6.45,AliExpress,https://www.aliexpress.us/item/3256804536753775.html,Select 1pc variant — must be genuine Seeed XIAO; built-in LiPo charger
+GC9A01 1.28-inch Round TFT LCD 240x240 SPI,1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/3256804173733212.html,Round PCB (diameter 37.5mm) — required for the shell display pocket
+GY-521 MPU6050 Accelerometer/Gyroscope Module,1,2.68,2.68,AliExpress,https://www.aliexpress.us/item/2251832154634265.html,Remove pre-soldered header pins before assembly
+GY-MAX4466 Electret Microphone Amplifier Module,1,1.33,1.33,AliExpress,https://www.aliexpress.us/item/3256803608057399.html,Adjustable gain via on-board trim pot
+DS18B20 Waterproof Temperature Sensor + Adapter 100cm,1,0.77,0.77,AliExpress,https://www.aliexpress.us/item/3256801415671848.html,Select waterproof variant; 4.7k pull-up resistor needed separately (next item)
+1/4W Metal Film Resistor Kit 30 Values 10-1M Ohm (300pcs),1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/2251832449705392.html,Select 300pcs Kit no Box; includes 4.7k ohm for DS18B20 pull-up
+LiPo Rechargeable Battery 402530 3.7V 300mAh (2-pack),1,8.99,8.99,Amazon,https://www.amazon.com/ZhanMazwj-Lithium-Polymer-Battery-Rechargeable/dp/B09QHTSPZC,4x25x30mm — fits shell cavity; cut JST plug and solder to XIAO BAT+/BAT- pads
+Mini Carabiner Clips Aluminum D-Ring (20-pack),1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/3256805821292670.html,Clip to belt loop or pants; 19 spares included
+Stainless Steel Split Key Rings 25mm (20-pack),1,1.54,1.54,AliExpress,https://www.aliexpress.us/item/3256808292111279.html,For the keychain loop on the shell top
+30AWG Silicone Hook-Up Wire Kit 6 Colors x 20m,1,3.33,3.33,AliExpress,https://www.aliexpress.us/item/3256811467401195.html,Select 30AWG 6x20M option; tinned copper heat-resistant wire
+Rust-Oleum Bright Coat Metallic Chrome Spray Paint 11oz,1,13.01,13.01,Amazon,https://www.amazon.com/Rust-Oleum-7718830-7718-830-Automotive-Accessories/dp/B000Z8DGXK,Chrome finish for the 3D-printed shell; apply over primer
+,,,,,,
+TOTAL,,,41.37,,,
