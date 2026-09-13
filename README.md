@@ -8,9 +8,9 @@ A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point 
 
 ## Printing it
 
-Ready-to-slice STLs are in [`stl/`](stl/). Print `starboy_front.stl`,
-`starboy_back.stl` and `starboy_bezel.stl`, each flat-side-down (no supports
-needed in that orientation).
+Ready-to-slice STLs are in [`stl/`](stl/): `starboy_front.stl`,
+`starboy_back.stl` and `starboy_bezel.stl`. Orientation matters and both
+halves need a little support — see the Printing section of [BUILD.md](BUILD.md).
 
 **Read [BUILD.md](BUILD.md) before ordering parts** — several components have
 variants that won't fit (display pin headers, MPU6050 headers, battery

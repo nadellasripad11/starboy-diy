@@ -39,10 +39,15 @@
 //     ^ the PCB. The 32.4 quoted everywhere is the GLASS - sizing to that
 //       number is exactly why the pocket had to be re-cut as a step.
 //   ESP32-C3 SuperMini          22.5 x 18.0 x 3.2   behind display, centred
+//     ^ 3.2 is UNVERIFIED — no source lists the thickness, and the USB-C
+//       socket alone is ~3.2 tall. If yours measures ~4.2 the slack is gone:
+//       raise body_thickness by 1 before printing the final shell.
 //   MPU6050 (headers removed)   21.2 x 16.4 x 1.6   stacked behind ESP32
 //   LiPo 402030 (300mAh)        30.0 x 20.0 x 4.0   stacked at the back
 //   DS18B20 (TO-92)              4.3 dia x 5.2      at the temp vent, 144deg arm
-//   MAX4466 mic board           15.6 x 10.5 x 5.0   at the mic port, 288deg arm
+//   MAX4466 mic board (Adafruit #1063)     x 7.8   at the mic port, 288deg arm
+//     ^ 7.8 is Adafruit's figure with the mic fitted. Depth there is 12.8 so it
+//       fits; footprint wasn't published, so dry-fit it against the arm.
 //   OV2640 camera (optional)     8.0 dia lens       camera pocket, 72deg arm
 //
 // DEPTH BUDGET (the tight axis):
@@ -357,17 +362,23 @@ module screen_pocket() {
         // visible opening — cut a little proud of the face so it opens cleanly
         translate([0, 0, top - screen_lip_depth/2 + 0.5])
             cylinder(d = screen_diameter, h = screen_lip_depth + 1, center = true);
-        // wider PCB ledge behind it
+        // wider PCB ledge behind it. Must stop EXACTLY at the lip: it used to
+        // run 0.5mm past, thinning the retaining lip from 1.2 to 0.7mm.
         translate([0, 0, top - screen_pocket_depth - 0.5])
-            cylinder(d = screen_pcb_dia, h = (screen_pocket_depth - screen_lip_depth) + 1.0);
+            cylinder(d = screen_pcb_dia, h = (screen_pocket_depth - screen_lip_depth) + 0.5);
     }
-    // notch clearing the module's header tab. Aimed at the 216 deg arm:
-    // that one carries no other feature, and it keeps the 0 deg bail arm
-    // solid since that is what takes the keyring load.
+    // notch clearing the module's header tab. The tab is part of the PCB, so
+    // the notch lives at PCB depth only and stops under the lip — it used to
+    // cut all the way out through the front face, leaving a visible slot
+    // outside the bezel. Aimed at the 216 deg arm: no other feature there,
+    // and it keeps the 0 deg bail arm solid for the keyring load.
+    notch_bot = top_face() - screen_pocket_depth - 0.5;
+    notch_top = top_face() - screen_lip_depth;
     rotate([0, 0, 216])
-        translate([screen_pcb_dia/2, 0, body_thickness/2 - screen_pocket_depth/2])
-            cube([ribbon_slot_radial*2, ribbon_slot_wide, screen_pocket_depth+1], center = true);
+        translate([screen_pcb_dia/2 - ribbon_slot_radial, -ribbon_slot_wide/2, notch_bot])
+            cube([ribbon_slot_radial*2, ribbon_slot_wide, notch_top - notch_bot]);
 }
+function top_face() = body_thickness/2;
 
 // polar helper — put a feature at radius r along angle a
 function polar(r, a) = [r*cos(a), r*sin(a)];
@@ -560,8 +571,11 @@ module back_half() {
 // Printable chrome bezel ring — sits in the screen pocket,
 // frames the round display like the metal ring in the photos.
 // ------------------------------------------------------------
+// It is wider than the 33.5mm face opening, so it can't sit IN the pocket —
+// it glues ON the front face around the opening. (It used to be drawn sunk
+// 2.4mm into solid plastic, which no real part can do.)
 module bezel_ring() {
-    top_z = body_thickness/2 - bezel_height + 0.6;
+    top_z = body_thickness/2;
     translate([screen_offset_x, screen_offset_y, top_z])
         difference() {
             cylinder(d = screen_diameter + 2*bezel_wall, h = bezel_height, $fn=96);

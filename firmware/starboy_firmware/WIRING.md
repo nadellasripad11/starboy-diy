@@ -4,8 +4,8 @@
 
 | | |
 |---|---|
-| Star width (point to point) | 70 mm |
-| Thickness | 17 mm |
+| Body | ~65 × 64 mm (78 mm including the keyring loop) |
+| Thickness | 18 mm |
 | Display | GC9A01 1.28" round, centred in the front face |
 | Charging | USB-C cutout in the valley opposite the keyring |
 
@@ -39,7 +39,8 @@ front face
   └─ LiPo 402030 300mAh    4.0mm
 back face
 ```
-Total 8.8mm into 9.3mm available — 0.5mm slack. Snug, so dry-fit before
+Total 8.8mm into 9.5mm available — 0.7mm slack. That assumes a 3.2mm-thick
+SuperMini, which no source actually confirms; measure yours. Snug, so dry-fit before
 gluing anything.
 
 ## Charging

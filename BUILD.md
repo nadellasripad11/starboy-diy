@@ -1,6 +1,6 @@
 # STARBOY DIY — Build & Buy Guide
 
-Shell: **70mm point-to-point, 18mm thick.** Print `stl/starboy_front.stl`,
+Shell: **body ~65 × 64mm (78mm including the keyring loop), 18mm thick.** Print `stl/starboy_front.stl`,
 `stl/starboy_back.stl`, and `stl/starboy_bezel.stl`.
 
 ---
@@ -97,8 +97,15 @@ the hole; that plugs it.
 
 ## Printing
 
-- **Orientation:** each half flat-side-down on the bed. That puts the
-  cavity opening upward, so no supports are needed.
+- **Front half:** outer face **down** on the bed. Add a small support
+  (build plate only) under the keyring loop — it overhangs 2–4mm off the
+  bed. Nothing else needs support.
+- **Back half:** flat mating side **down**, engraving facing up. Supports
+  (build plate only; tree supports come out easiest) inside the hollow —
+  its roof is an unsupported span. Don't print it face-down: the 36mm
+  medallion dish would print as a sagging bridge and wreck the text.
+- **Bezel ring:** flat, no supports. It glues **on top of** the front face
+  around the opening.
 - **Layer height:** 0.16mm or finer — the back engraving is only 0.5mm deep.
 - **Walls:** 3+ perimeters. The shell is load-bearing at the bail.
 - **Material:** PLA is fine for the shell. The bail takes the keyring load,
@@ -116,7 +123,9 @@ halves seating. Polish with 0000 steel wool.
 
 1. Dry-fit the whole stack first. Confirm the lid closes before any glue.
 2. Desolder display + MPU headers, wire flat.
-3. Seat display in the front pocket, bezel ring over it.
+3. Drop the display into the front half **from the inside** — the board
+   (Φ37.5mm) is wider than the 33.5mm face opening, so it seats against the
+   lip from behind. Then glue the bezel ring onto the outside of the face.
 4. ESP32 behind the display, **USB-C aligned to the 180° cutout.**
 5. MPU6050 flat behind the ESP32 — orientation matters for shake/tilt;
    keep it parallel to the star's face.
