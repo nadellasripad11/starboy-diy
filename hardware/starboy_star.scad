@@ -31,12 +31,15 @@
 
 /* [Overall size] */
 star_points      = 5;      // number of lobes
-outer_radius     = 27;     // mm, tip-to-center of each lobe
-inner_radius     = 8;      // mm, valley depth between lobes (smaller = pointier, sharper star)
-body_thickness   = 14;     // mm, total puffy thickness front+back combined
+outer_radius     = 28;     // mm, tip-to-center of each lobe
+inner_radius     = 11;     // mm, valley depth between lobes (chubby/rounded like the reference photos)
+body_thickness   = 15;     // mm, total puffy thickness front+back combined
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
-tip_round        = 3;      // mm, how rounded each star tip is (smaller = sleeker/sharper points)
-valley_round     = 3.5;    // mm, how rounded each inner valley is (smaller = crisper neck)
+tip_round        = 7;      // mm, radius of the rounded tip cap at the very end of each arm
+valley_round     = 6;      // mm, how rounded each inner valley is (bigger = smoother, no crisp neck)
+mid_frac         = 0.55;   // where along each arm the "mid" thickness point sits (0-1)
+mid_r_ratio      = 0.8;    // mid-arm radius as a fraction of the center lobe — keeps the
+                            // arm thick along its length instead of tapering to a cone
 wall             = 2.4;    // mm, shell wall thickness where hollowed for electronics
 
 /* [Eye / screen] */
@@ -54,11 +57,24 @@ sensor_hole_dia  = 5;       // mm, the small "sensor dot" on the left lobe
 sensor_offset_x  = -20;
 sensor_offset_y  = 6;
 
-keyring_hole_dia = 4.5;     // mm, hole for the ring, through the top tip
-keyring_boss_dia = 9;       // mm, reinforced boss around the keyring hole
+// small angled facet on the opposite arm — a secondary sensor-style
+// accent like the faceted cut visible in the reference photos
+facet_dia        = 6.5;     // mm, footprint of the facet
+facet_depth      = 1.1;     // mm, how deep it's cut
+facet_offset_x   = 17;
+facet_offset_y   = 11;
+
+/* [Keyring bail] */
+// A real integrated loop (not just a disc-with-hole) so a bought
+// keyring/carabiner threads through it exactly like the reference:
+// the loop lies flat against the star's face, hole runs front-to-back,
+// and material tapers smoothly from the star tip out into the loop.
+bail_offset  = 6.5;   // mm beyond the tip, where the loop is centered
+bail_maj_r   = 5.5;   // mm, loop radius (tube-center to loop-center)
+bail_min_r   = 2.0;   // mm, thickness of the loop's material
 
 /* [Back medallion] */
-back_medallion_dia   = 24;   // mm, shallow dish on the back
+back_medallion_dia   = 26;   // mm, shallow dish on the back
 back_medallion_depth = 1.6;  // mm, keep shallow so a glued tag (or paint) sits flush
 back_text            = "SRIPADBUILDS";
 back_text_size       = 2.4;
@@ -117,14 +133,23 @@ module ellipsoid(rxy, rz) {
 }
 
 center_lobe_rxy = inner_radius + tip_round*0.7;
+mid_r           = center_lobe_rxy * mid_r_ratio;
 body_rz         = body_thickness/2;
 
 module puffy_body() {
     union() {
         for (i = [0:star_points-1]) {
             tip = star_pt(2*i);
+            mid = [tip[0]*mid_frac, tip[1]*mid_frac];
+            // three-sphere hull per arm — center lobe stays thick through
+            // a mid-arm sphere, then rounds down only near the very tip,
+            // so the arm reads as a chubby rounded point, not a cone
             hull() {
                 ellipsoid(center_lobe_rxy, body_rz);
+                translate([mid[0], mid[1], 0]) ellipsoid(mid_r, body_rz);
+            }
+            hull() {
+                translate([mid[0], mid[1], 0]) ellipsoid(mid_r, body_rz);
                 translate([tip[0], tip[1], 0]) ellipsoid(tip_round, body_rz);
             }
         }
@@ -135,12 +160,49 @@ module hollow_cavity() {
     ellipsoid(max(center_lobe_rxy - wall, 1), max(body_rz - wall, 1));
 }
 
-module keyring_feature(add=true) {
-    tip = star_pt(0); // an outer tip at angle 0 (rotate in your slicer so this points "up")
-    translate([tip[0], tip[1], 0]) {
-        if (add) cylinder(d = keyring_boss_dia, h = body_thickness, center = true, $fn=32);
-        else     rotate([90,0,0]) cylinder(d = keyring_hole_dia, h = keyring_boss_dia*2, center = true, $fn=32);
+// ------------------------------------------------------------
+// Keyring bail — a real standalone loop, not a disc with a hole.
+// A tapered bridge of material flows from the star tip out to a
+// rounded torus loop; a bought keyring/carabiner threads through
+// the loop's hole, which runs front-to-back (same axis as the
+// body's thickness) so the loop hangs face-on, exactly like the
+// reference photos.
+// ------------------------------------------------------------
+tip0     = star_pt(0);
+tip0_len = norm(tip0);
+tip0_dir = tip0 / tip0_len;
+bail_c   = tip0 + tip0_dir * bail_offset;
+
+module bail_assembly(add=true) {
+    if (add) {
+        union() {
+            // smooth tapered bridge from the tip into the loop's footprint
+            hull() {
+                translate([tip0[0], tip0[1], 0]) sphere(r = tip_round*1.05, $fn=24);
+                translate([bail_c[0], bail_c[1], 0])
+                    cylinder(r = bail_maj_r + bail_min_r, h = body_thickness*0.55, center = true, $fn=32);
+            }
+            // the rounded loop itself (torus, lying flat against the face)
+            translate([bail_c[0], bail_c[1], 0])
+                rotate_extrude($fn=48)
+                    translate([bail_maj_r, 0])
+                        circle(r = bail_min_r, $fn=24);
+        }
+    } else {
+        // pass-through hole — clears the loop's inner opening
+        translate([bail_c[0], bail_c[1], 0])
+            cylinder(r = bail_maj_r - bail_min_r + 0.3, h = body_thickness*3, center = true, $fn=48);
     }
+}
+
+// Cosmetic-only mockup of a bought keyring hooked through the bail,
+// so the assembled preview matches the reference photos. Not printed.
+module keyring_mockup() {
+    translate([bail_c[0], bail_c[1], 0])
+        rotate([90,0,0])
+            rotate_extrude($fn=48)
+                translate([bail_maj_r*1.55, 0])
+                    circle(r = 1.1, $fn=16);
 }
 
 module screen_pocket() {
@@ -153,6 +215,14 @@ module screen_pocket() {
 module sensor_hole() {
     translate([sensor_offset_x, sensor_offset_y, 0])
         cylinder(d = sensor_hole_dia, h = body_thickness + 2, center = true);
+}
+
+// small angled facet cut on the opposite arm — a secondary
+// sensor-style accent, low-poly so it catches light like a cut facet
+module secondary_facet() {
+    translate([facet_offset_x, facet_offset_y, body_thickness/2 - facet_depth/2 + 0.3])
+        rotate([0,0,20])
+            cylinder(d1 = facet_dia, d2 = facet_dia*0.65, h = facet_depth + 0.5, $fn = 6, center = true);
 }
 
 // single shared reference plane so the recess, the engraving, and
@@ -199,6 +269,13 @@ module back_decor() {
     translate([0,0, z0])
         circular_text(back_text, radius = back_medallion_dia/2*0.72, arc=330,
                        size=back_text_size, depth=cut);
+
+    // defined rim groove near the medallion edge, like a bezel line
+    translate([0,0, z0 + cut/2])
+        difference() {
+            cylinder(d = back_medallion_dia*0.94, h = cut, center = true, $fn = 96);
+            cylinder(d = back_medallion_dia*0.94 - 1.2, h = cut + 0.4, center = true, $fn = 96);
+        }
 }
 
 module back_badge() {
@@ -215,18 +292,19 @@ module full_star() {
     difference() {
         union() {
             puffy_body();
-            keyring_feature(add=true);
+            bail_assembly(add=true);
             back_badge();
         }
         hollow_cavity();
         screen_pocket();
         sensor_hole();
+        secondary_facet();
         back_medallion_recess();
         // mirrored: viewed from outside the back face (looking in +Z),
         // text drawn the normal way would read backwards, like an
         // un-mirrored coin die
         mirror([0,1,0]) back_decor();
-        keyring_feature(add=false);
+        bail_assembly(add=false);
     }
 }
 
@@ -352,4 +430,5 @@ if (part == "front") {
     color([0.78,0.79,0.81]) full_star();
     color([0.9,0.91,0.93])  bezel_ring();
     screen_face_mockup();
+    color([0.85,0.86,0.9])  keyring_mockup(); // cosmetic only — buy a real one
 }
