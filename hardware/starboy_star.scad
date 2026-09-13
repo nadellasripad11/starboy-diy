@@ -35,7 +35,9 @@
 // for a different one, re-check this table before printing.
 //
 //   PART                        L x W x H (mm)      WHERE IT GOES
-//   GC9A01 1.28" round display  32.4 dia x 4.8      front pocket, centred
+//   GC9A01 1.28" round display  37.5 dia x 5.4      front pocket, centred
+//     ^ the PCB. The 32.4 quoted everywhere is the GLASS - sizing to that
+//       number is exactly why the pocket had to be re-cut as a step.
 //   ESP32-C3 SuperMini          22.5 x 18.0 x 3.2   behind display, centred
 //   MPU6050 (headers removed)   21.2 x 16.4 x 1.6   stacked behind ESP32
 //   LiPo 402030 (300mAh)        30.0 x 20.0 x 4.0   stacked at the back
@@ -68,11 +70,11 @@
 // long thin spikes. The fat centre is also what makes the hardware fit —
 // the 32.4mm display needs a ~40mm flat central region to sit in.
 star_points      = 5;      // number of lobes
-outer_radius     = 35;     // mm, tip-to-centre of each point
-inner_radius     = 22;     // mm, valley radius. ~0.63 x outer = reference proportion.
-                            // Do NOT drop this below ~20: the display pocket is
-                            // 16.75mm in radius and would overhang into empty space
-                            // in the valley directions.
+outer_radius     = 36;     // mm, tip-to-centre of each point
+inner_radius     = 23;     // mm, valley radius. ~0.64 x outer = reference proportion.
+                            // Do NOT drop this: the display's PCB ledge is 19.3mm in
+                            // radius and the cavity wall has to clear it. Guarded by
+                            // an assert below.
 body_thickness   = 18;     // mm, total thickness. Sized directly from the measured
                             // component stack — see COMPONENT FIT below. Leaves
                             // 9.5mm behind the display for an 8.8mm stack.
@@ -98,17 +100,26 @@ bevel_scale = 0.93;   // profile shrink factor at the very edge of the bevel.
                        // and the screen ends up overhanging empty space.
 
 /* [Eye / screen] */
-// GC9A01 1.28" round module, measured: 32.4mm dia PCB, 4.8mm thick
-// (glass + PCB), FPC tail off one edge.
-screen_offset_x     = 0;    // centred — the margin to the valley edge is only
-screen_offset_y     = 0;    // ~2mm, so don't offset this without re-checking fit
-screen_diameter     = 33.5; // mm, 32.4mm module + 1.1mm clearance
-screen_pocket_depth = 5.5;  // mm, module is 4.8mm thick; sits flush with 0.7 spare
+// GC9A01 1.28" round module (Waveshare spec): the 32.4mm figure quoted
+// everywhere is the DISPLAY GLASS, not the board — the PCB is Φ37.5mm.
+// Sizing a 33.5mm pocket to "32.4mm module" does not fit. So the pocket
+// is stepped: a 33.5mm opening at the face that the glass shows through,
+// over a wider 38.6mm ledge that actually holds the PCB.
+screen_offset_x     = 0;    // centred — margin to the valley edge is tight,
+screen_offset_y     = 0;    // don't offset without re-running the asserts
+screen_diameter     = 33.5; // mm, the visible opening (glass is 32.4)
+screen_pcb_dia      = 38.6; // mm, Φ37.5 PCB + 1.1 clearance
+screen_lip_depth    = 1.2;  // mm, depth of the narrow opening = retaining lip
+screen_pocket_depth = 5.5;  // mm total; module is ~5.4mm thick
 bezel_wall          = 1.4;  // mm, thickness of the printable chrome bezel ring — kept
                               // slim so the display doesn't dominate the face
 bezel_height        = 3;    // mm
-ribbon_slot_w    = 10;      // mm, width of the notch for the display's ribbon cable
-ribbon_slot_h    = 4;       // mm
+// The round module is Φ37.5 with a small tab sticking out to 40.4 overall
+// that carries the 8-pin header. The notch has to clear that tab: it is
+// SHALLOW radially and WIDE tangentially (these two were swapped before,
+// which would have fouled the tab).
+ribbon_slot_radial = 5;     // mm, how far the notch reaches outward
+ribbon_slot_wide   = 14;    // mm, tangential width — tab is ~12mm
 
 /* [Camera — optional] */
 // Physical mounting space for a small camera module (e.g. OV2640),
@@ -204,10 +215,15 @@ assert(back_medallion_depth + 0.5 < back_wall,
        "Back engraving breaks through into the electronics cavity. Increase back_wall or reduce back_medallion_depth.");
 assert(body_thickness - back_wall - 5.5 >= 8.8,
        "Not enough depth behind the display for the ESP32 + MPU6050 + battery stack (needs 8.8mm).");
-assert(inner_radius - 2.2 > 33.5/2,
-       "Display pocket is wider than the body at the valleys - the screen would overhang empty space. Raise inner_radius.");
-assert(bevel_scale * inner_radius > 33.5/2 + bezel_wall,
+// NOTE: the binding constraint is the display's PCB (38.6mm ledge), NOT the
+// 32.4mm glass. Sizing to the glass is exactly the mistake that made the
+// module not fit in the first place.
+assert(inner_radius - wall > screen_pcb_dia/2,
+       "Display PCB ledge is wider than the cavity at the valleys - the module would overhang empty space. Raise inner_radius.");
+assert(bevel_scale * inner_radius > screen_diameter/2 + bezel_wall,
        "Chamfer pulls the front face in past the display bezel. Raise bevel_scale.");
+assert(screen_lip_depth < screen_pocket_depth,
+       "Screen lip must be shallower than the full pocket.");
 
 // ------------------------------------------------------------
 // Rounded/puffy star profile (2D) — double-offset so BOTH the
@@ -329,11 +345,25 @@ module keyring_mockup() {
                     circle(r = 1.1, $fn=16);
 }
 
+// Stepped: narrow opening at the face (the glass shows through this and
+// the surrounding lip retains the module), widening to a deeper ledge
+// that the Φ37.5mm PCB actually drops into.
 module screen_pocket() {
-    translate([screen_offset_x, screen_offset_y, body_thickness/2 - screen_pocket_depth/2 + 0.01])
-        cylinder(d = screen_diameter, h = screen_pocket_depth + 1, center = true);
-    translate([screen_offset_x + screen_diameter/2 - 1, screen_offset_y, body_thickness/2 - screen_pocket_depth/2])
-        cube([ribbon_slot_w, ribbon_slot_h, screen_pocket_depth+1], center = true);
+    top = body_thickness/2;
+    translate([screen_offset_x, screen_offset_y, 0]) {
+        // visible opening — cut a little proud of the face so it opens cleanly
+        translate([0, 0, top - screen_lip_depth/2 + 0.5])
+            cylinder(d = screen_diameter, h = screen_lip_depth + 1, center = true);
+        // wider PCB ledge behind it
+        translate([0, 0, top - screen_pocket_depth - 0.5])
+            cylinder(d = screen_pcb_dia, h = (screen_pocket_depth - screen_lip_depth) + 1.0);
+    }
+    // notch clearing the module's header tab. Aimed at the 216 deg arm:
+    // that one carries no other feature, and it keeps the 0 deg bail arm
+    // solid since that is what takes the keyring load.
+    rotate([0, 0, 216])
+        translate([screen_pcb_dia/2, 0, body_thickness/2 - screen_pocket_depth/2])
+            cube([ribbon_slot_radial*2, ribbon_slot_wide, screen_pocket_depth+1], center = true);
 }
 
 // polar helper — put a feature at radius r along angle a

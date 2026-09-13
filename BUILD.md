@@ -13,7 +13,7 @@ variant of the same part is the most likely way this goes wrong.
 | Part | Spec to buy | ~Cost |
 |------|-------------|-------|
 | ESP32-C3 SuperMini | 22.5 × 18.0 × 3.2mm | $3 |
-| GC9A01 1.28" round TFT | 240×240, **32.4mm** dia module | $4 |
+| GC9A01 1.28" round TFT | 240×240, **Φ37.5mm round PCB** (32.4mm is the glass) | $13 |
 | MPU6050 | GY-521 breakout | $2 |
 | DS18B20 | **TO-92 through-hole**, not the probe | $1.50 |
 | MAX4466 mic | electret + amp breakout | $2 |
@@ -21,11 +21,18 @@ variant of the same part is the most likely way this goes wrong.
 | 4.7kΩ resistor | DS18B20 pull-up | ~$0 |
 | Keyring / carabiner | fits a 7.6mm hole | $5/pack |
 
-### ⚠️ Four things that will bite you
+Full sourcing detail, links and prices: **[BUYING.md](BUYING.md)**
 
-**1. The display's pin header.** GC9A01 modules ship with a 7-pin header
+### ⚠️ Five things that will bite you
+
+**0. The display's "32.4mm" is the GLASS, not the board.** The PCB is
+**Φ37.5mm**. Every listing quotes the glass size. The pocket is stepped to
+hold the real board — but it also means **Adafruit #6178 will not fit**
+(it's a 42.4 × 36.2mm rectangle). Buy a round-PCB module.
+
+**1. The display's pin header.** GC9A01 modules ship with an 8-pin header
 soldered to the back. That header sticks ~8mm into the cavity — straight
-into the space the ESP32 needs, and it is *not* in the 4.8mm figure above.
+into the space the ESP32 needs, and it is *not* in the 5.4mm figure above.
 **Desolder it and solder wires flat to the pads instead.** If you'd rather
 not, you'll need to cut a relief pocket and the stack won't fit as designed.
 
