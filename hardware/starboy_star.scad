@@ -31,16 +31,16 @@
 
 /* [Overall size] */
 star_points      = 5;      // number of lobes
-outer_radius     = 28;     // mm, tip-to-center of each lobe
-inner_radius     = 11;     // mm, valley depth between lobes (chubby/rounded like the reference photos)
-body_thickness   = 15;     // mm, total puffy thickness front+back combined
+outer_radius     = 31;     // mm, tip-to-center of each lobe — long, sleek arms
+inner_radius     = 8.5;    // mm, valley depth between lobes — slim, defined points
+body_thickness   = 12.5;   // mm, total puffy thickness front+back combined
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
-tip_round        = 7;      // mm, radius of the rounded tip cap at the very end of each arm
-valley_round     = 6;      // mm, how rounded each inner valley is (bigger = smoother, no crisp neck)
-mid_frac         = 0.55;   // where along each arm the "mid" thickness point sits (0-1)
-mid_r_ratio      = 0.8;    // mid-arm radius as a fraction of the center lobe — keeps the
-                            // arm thick along its length instead of tapering to a cone
-wall             = 2.4;    // mm, shell wall thickness where hollowed for electronics
+tip_round        = 3.6;    // mm, radius of the rounded tip cap — soft point, not blunt
+valley_round     = 4;      // mm, how rounded each inner valley is
+mid_frac         = 0.62;   // where along each arm the "mid" taper waypoint sits (0-1)
+mid_r_ratio      = 0.62;   // mid-arm radius vs center lobe — a gentle continuous taper
+                            // (organic curved point, not a straight-sided cone)
+wall             = 2.2;    // mm, shell wall thickness where hollowed for electronics
 
 /* [Eye / screen] */
 screen_offset_x     = -3;   // mm, shift eye left/right from body center
@@ -74,10 +74,11 @@ bail_maj_r   = 5.5;   // mm, loop radius (tube-center to loop-center)
 bail_min_r   = 2.0;   // mm, thickness of the loop's material
 
 /* [Back medallion] */
-back_medallion_dia   = 26;   // mm, shallow dish on the back
+back_medallion_dia   = 20;   // mm, shallow dish on the back — sized to sit within
+                              // the slim core, not slice into the tapered arms
 back_medallion_depth = 1.6;  // mm, keep shallow so a glued tag (or paint) sits flush
 back_text            = "SRIPADBUILDS";
-back_text_size       = 2.4;
+back_text_size       = 1.9;
 
 /* [Pants clip] */
 clip_tab_len   = 15;   // mm, short inner tab (mounts to the star / holds the ring)
