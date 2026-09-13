@@ -75,7 +75,11 @@ const uint16_t IRIS_PAL[20] = {
   0xF81F, // 14 magenta           (rare)
   0x3C1F, // 15 indigo            (rare)
   0xFFFF, // 16 white/albino      (rare)
-  0x0000, // 17 void black        (rare)
+  0xA000, // 17 deep crimson      (rare)
+          //    was 0x0000 "void black" — that only worked back when a white
+          //    sclera sat behind it. Drawn flat on a black field it renders
+          //    completely invisible: just a floating pupil dot. Do not put
+          //    0x0000 in this palette.
   0x07E8, // 18 neon green        (legendary)
   0xFD60, // 19 pure gold         (legendary)
 };
