@@ -31,7 +31,9 @@
 
 /* [Overall size] */
 star_points      = 5;      // number of lobes
-outer_radius     = 31;     // mm, tip-to-center of each lobe — long, sleek arms
+outer_radius     = 34;     // mm, tip-to-center of each lobe — long, sleek arms;
+                            // sized up so the fixed-size real display reads smaller
+                            // in proportion to the body, instead of dominating it
 inner_radius     = 8.5;    // mm, valley depth between lobes — slim, defined points
 body_thickness   = 12.5;   // mm, total puffy thickness front+back combined
 edge_round       = 3.5;    // mm, unused by current geometry, kept for reference
@@ -47,7 +49,8 @@ screen_offset_x     = -3;   // mm, shift eye left/right from body center
 screen_offset_y     = 2;    // mm, shift eye up/down from body center
 screen_diameter     = 33.5; // mm, fits a 1.28" GC9A01 round module (~32.4mm) with clearance
 screen_pocket_depth = 6;    // mm, how deep the screen sits into the front half
-bezel_wall          = 2.2;  // mm, thickness of the printable chrome bezel ring
+bezel_wall          = 1.6;  // mm, thickness of the printable chrome bezel ring — kept
+                              // slim so the display doesn't dominate the face
 bezel_height        = 3;    // mm
 ribbon_slot_w    = 10;      // mm, width of the notch for the display's ribbon cable
 ribbon_slot_h    = 4;       // mm
@@ -339,15 +342,13 @@ module bezel_ring() {
 // visual-only stand-in for the actual round display module, so the
 // preview render shows what the finished eye looks like. Not meant
 // to be printed — your real GC9A01 module goes here instead.
+// Just the empty mounting space for the real GC9A01 module — plain
+// black glass, no fake eye artwork. The eye animation lives entirely
+// in the firmware; this only shows where the physical display sits.
 module screen_face_mockup() {
     face_z = body_thickness/2 - screen_pocket_depth + 0.4;
-    translate([screen_offset_x, screen_offset_y, face_z]) {
+    translate([screen_offset_x, screen_offset_y, face_z])
         color([0.05,0.05,0.06]) cylinder(d = screen_diameter - 1, h = 1.2, $fn=96);
-        translate([-5,1.5,1.2]) color([0.85,0.95,0.85]) scale([1,0.8,1]) cylinder(d=11, h=1, $fn=48);
-        translate([-5,1.5,1.3])  color([0.25,0.75,0.4])  cylinder(d=5.5, h=1, $fn=48);
-        translate([6,-0.5,1.2]) color([0.85,0.95,0.85]) scale([1,0.8,1]) cylinder(d=11, h=1, $fn=48);
-        translate([6,-0.5,1.3])  color([0.25,0.75,0.4])  cylinder(d=5.5, h=1, $fn=48);
-    }
 }
 
 // ------------------------------------------------------------
