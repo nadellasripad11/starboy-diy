@@ -60,7 +60,7 @@
 //   straight through into the cavity. There is an assert() guarding this.
 //
 // WIDTH CHECK (the centre region, bounded by the valleys):
-//   usable central circle = 2 x (inner_radius - wall) = 39.6 dia
+//   usable central circle = 2 x (inner_radius - wall) = 41.6 dia
 //   battery diagonal sqrt(30^2+20^2) = 36.1  -> fits
 //   ESP32 diagonal sqrt(22.5^2+18^2) = 28.8  -> fits
 //
@@ -175,7 +175,7 @@ bail_min_r   = 2.0;   // mm, thickness of the loop's material
 /* [Back medallion] */
 // Reference proportion: the disc reads ~55% of the star's width, with two
 // small arcs of text around the rim and a single star mark in the middle.
-back_medallion_dia   = 36;   // mm (star is 70mm across). Max is ~41 before it
+back_medallion_dia   = 36;   // mm (body is ~65mm across). Max is ~41 before it
                               // runs past the back face's valley edge.
 back_medallion_depth = 1.2;  // mm, kept shallow — this plus the engraving depth
                               // has to stay inside back_wall or it breaks through

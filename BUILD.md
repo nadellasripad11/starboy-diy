@@ -66,7 +66,7 @@ ESP32 3.2  +  MPU6050 1.6  +  battery 4.0            =  8.8mm used
 Width, at the centre (bounded by the valleys):
 
 ```
-usable central circle          = 39.6mm
+usable central circle          = 41.6mm
 battery diagonal (30×20)       = 36.1mm   fits
 ESP32 diagonal (22.5×18)       = 28.8mm   fits
 display module                 = 32.4mm   fits (33.5mm pocket)

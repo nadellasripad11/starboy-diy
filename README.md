@@ -16,16 +16,16 @@ halves need a little support — see the Printing section of [BUILD.md](BUILD.md
 variants that won't fit (display pin headers, MPU6050 headers, battery
 thickness). The depth budget has only 0.7mm of slack.
 
-Shell is **70mm point-to-point, 18mm thick**.
+Body is **~65 × 64mm (78mm including the keyring loop), 18mm thick**.
 
 ---
 
-## Hardware (~$12 total)
+## Hardware (~$35–45 for good parts — details in [BUYING.md](BUYING.md))
 
 | Part | Price |
 |------|-------|
 | ESP32-C3 SuperMini | ~$3 |
-| GC9A01 1.28" Round TFT (240×240) | ~$4 |
+| GC9A01 1.28" Round TFT (240×240, **round Φ37.5mm PCB**) | ~$13 |
 | MPU6050 Accelerometer/Gyro | ~$2 |
 | DS18B20 Temperature Sensor | ~$1.50 |
 | MAX4466 Mic (optional, for sound) | ~$2 |

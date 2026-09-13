@@ -9,7 +9,7 @@
 | Display | GC9A01 1.28" round, centred in the front face |
 | Charging | USB-C cutout in the valley opposite the keyring |
 
-The 17mm thickness is not arbitrary — it's driven by the component stack.
+The 18mm thickness is not arbitrary — it's driven by the component stack.
 See the COMPONENT FIT table at the top of `hardware/starboy_star.scad`.
 
 ## Component placement
@@ -33,7 +33,7 @@ behaviour never triggers. It has to see outside air.
 
 ```
 front face
-  ├─ GC9A01 display        4.8mm   (sits in the 5.5mm pocket)
+  ├─ GC9A01 display        5.4mm   (inserted from inside, against the lip)
   ├─ ESP32-C3 SuperMini    3.2mm   (USB-C facing the 180° valley)
   ├─ MPU6050 (no headers)  1.6mm
   └─ LiPo 402030 300mAh    4.0mm
