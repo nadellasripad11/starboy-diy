@@ -1,6 +1,8 @@
 # ⭐ STARBOY DIY
 
-A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point metallic star keychain with an animated round OLED eye that reacts to motion, temperature, and sound. Built around an **ESP32-C3 SuperMini** and a **1.28" GC9A01 round TFT display** for under $15 in parts.
+A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point metallic star keychain with an animated round TFT eye that reacts to motion, temperature, and sound. Built around an **ESP32-C3 SuperMini** and a **1.28" GC9A01 round TFT display** for under $15 in parts.
+
+**v2.0 firmware:** 6,480 unique eye designs (seed-generated per unit, like the real Starboy's 5,000+ variants), 50 base expressions blended smoothly into 500+ animation states, plus 20 rare special effects. Renders at ~30fps via TFT_eSPI sprites (zero flicker).
 
 ---
 
@@ -26,14 +28,17 @@ Modeled after the real CREATURE Starboy's documented behaviors:
 
 | Trigger | What happens |
 |---------|-------------|
-| Shake device hard (1s+) | Eyes go **dizzy** — iris spins in circles |
-| Continue shaking | Eyes turn **angry** — red squint + furrow |
-| Temp drops below 10°C | **Shiver** — eyes tremble, blue tint |
-| Loud sound (needs mic) | **Anxious** — eyes dart and squint |
+| Shake device hard (1s+) | **Dizzy** spinning eyes → severe dizzy → recovering → **angry** rage |
+| Temp drops below 10°C | **Chill → shiver → freeze** — progressively icier, blue tint, crystalline overlay |
+| Loud sound (needs mic) | **Startled → anxious** darting eyes → overwhelmed |
 | Tilt device | Eyes **follow gravity** naturally |
-| 20 seconds idle | Eyes **start dozing** — half-closed |
-| 60 seconds idle | Eyes **sleep** — fully closed, slow breathing |
-| Shake or sound | **Wakes up** from doze/sleep |
+| 25 seconds idle | Eyes **start dozing** — half-closed, brows droop |
+| 75 seconds idle | Eyes **sleep** — slow breathing, occasional dreaming (REM eye movement) |
+| Shake or sound during sleep | **Wakes up** |
+| Just sitting there | 50 idle micro-expressions cycle every 2.5–7s: content, curious, playful, wondering, shifty, cheerful... |
+| Every ~90s (40% chance) | One of **20 rare specials**: rainbow eyes, hearts, stars, glitch, matrix rain, hypnotic spiral, "dead" eyes, fire pupils, galaxy swirl, and more |
+
+Every unit's eye is unique — 6,480 possible iris color/pattern/pupil/sclera combinations, generated from a random seed on first boot and stored permanently.
 
 ---
 
@@ -62,14 +67,13 @@ Arduino IDE setup:
 - USB CDC On Boot: **Enabled**
 
 Libraries (install via Library Manager):
-- Adafruit GFX Library
-- Adafruit GC9A01A
+- **TFT_eSPI** by Bodmer — ⚠️ also copy [`User_Setup.h`](firmware/starboy_firmware/User_Setup.h) into the TFT_eSPI library folder (one-time setup)
 - Adafruit MPU6050
 - Adafruit Unified Sensor
 - DallasTemperature
 - OneWire
 
-See [`firmware/starboy_firmware/WIRING.md`](firmware/starboy_firmware/WIRING.md) for full pin-by-pin wiring.
+See [`firmware/starboy_firmware/WIRING.md`](firmware/starboy_firmware/WIRING.md) for full pin-by-pin wiring and setup steps.
 
 ---
 
