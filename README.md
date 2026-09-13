@@ -10,7 +10,7 @@ A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point 
 
 Full bill of materials with exact buy links and prices: **[BOM.md](BOM.md)**
 
-Quick summary: **~$45.94 total** across 11 line items (electronics + build supplies), sourced mostly from AliExpress with the spray paint from Amazon (aerosols don't ship well internationally). Every part links straight to the listing used to price it.
+Quick summary: **~$41.37 total** across 11 line items (electronics + build supplies). All links open the exact product page — no search pages. Electronics from AliExpress; battery and chrome spray paint from Amazon.
 
 > **Pants clip:** [BOM.md](BOM.md) item #8 ships 20 carabiners — keep one on your pants and stash the rest.
 > **Resistor:** the DS18B20 (item #5) does **not** include its 4.7kΩ pull-up on AliExpress like Adafruit's does — that's item #6.
