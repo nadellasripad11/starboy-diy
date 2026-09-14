@@ -109,7 +109,7 @@ a full charge lasts around 4 hours, and the screen dims itself whenever the eye 
 
 this is an **unofficial fan build**. it's inspired by the starboy from [creature](https://lilguy.net), and it isn't affiliated with, endorsed by, or sold by them. "starboy" is their name. i'm not selling these, just building my own and sharing how.
 
-- the shell cad, firmware, website and docs are my own work, released under the [MIT license](LICENSE)
+- the shell cad, firmware, website and docs are my own work. **all rights reserved**, so please don't copy, reuse or redistribute any of it without asking first. see [LICENSE](LICENSE)
 - the eye style and the 100 colorway colors and odds are based on creature's public eye gallery. the colorway names are my own
 - libraries: [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI) (FreeBSD), Adafruit MPU6050 + Unified Sensor (BSD), DallasTemperature + OneWire (LGPL / MIT-style). each keeps its own license
 - site fonts are Figtree and Nunito from Google Fonts (SIL Open Font License)

@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>starboy diy</title>
-<meta name="description" content="a tiny wearable pet built by hand. it shivers in the cold, gets dizzy when you shake it, and rolls its own eyes. 400 looks, fully open source.">
+<meta name="description" content="a tiny wearable pet built by hand. it shivers in the cold, gets dizzy when you shake it, and rolls its own eyes. 400 looks.">
 <meta property="og:title" content="starboy diy">
 <meta property="og:description" content="a tiny wearable pet built by hand. shake it, chill it, yell at it, and it reacts.">
 <meta property="og:image" content="shell_back.png">
@@ -93,9 +93,6 @@
   .part { display: grid; grid-template-columns: 190px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
   .part b { font-weight: 800; }
   .part span { color: var(--muted); }
-  .cost { margin-top: 30px; display: flex; align-items: baseline; gap: 14px; }
-  .cost strong { font: 800 56px/1 var(--display); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
-  .cost span { color: var(--muted); }
   .renders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .renders figure { margin: 0; background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: 0 1px 0 var(--line); }
   .renders img { display: block; width: 100%; height: auto; }
@@ -153,7 +150,7 @@
     <p>he feels the world through an accelerometer, a temperature sensor and a microphone. make a loud noise and he gets anxious. take him somewhere cold and he shivers. shake him and he gets dizzy, then mad at you. ignore him long enough and he dozes off and dreams.</p>
     <p>every star rolls his own eyes the first time he turns on. there are 400 looks, 100 colorways across 4 eye shapes, each with its own rarity. once he rolls, those eyes are his forever.</p>
     <p>he runs completely on his own. no app, no wifi, no account. just a thumb-sized esp32 board, a round 1.28" screen and a little battery, packed into a 20.5mm chrome shell i designed and 3d printed myself.</p>
-    <p>and he's fully open source. the cad, firmware and parts list are all on <a href="https://github.com/nadellasripad11/starboy-diy">github</a>, so you can build your own for about $97. it's an unofficial fan build inspired by <a href="https://lilguy.net">creature's starboy</a>, not something i sell.</p>
+    <p>every part of him, from the shell to the firmware to the eyes, i designed and built myself. he's an unofficial fan build inspired by <a href="https://lilguy.net">creature's starboy</a>, not something i sell.</p>
   </section>
 
   <section class="looks" aria-labelledby="looks-title">
@@ -198,9 +195,7 @@
           <div class="part"><b>ds18b20</b><span>pokes out of a tiny vent to feel the air temperature</span></div>
           <div class="part"><b>max4466 mic</b><span>hears loud sounds</span></div>
           <div class="part"><b>320mah battery</b><span>about 4 hours a charge, and he dims himself when sleepy</span></div>
-        </div>
-        <div class="cost"><strong>$96.86</strong><span>in parts for one star</span></div>
-      </div>
+        </div>      </div>
       <div>
         <figure class="demo">
           <div class="demo-stage">

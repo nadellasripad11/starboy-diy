@@ -48,7 +48,7 @@ there's no custom pcb. everything is hand-wired to a seeed xiao esp32c3 with thi
 
 ## parts
 
-i first planned to order everything from aliexpress, but shipping takes 15–40 days, so i moved every part to amazon instead. one star comes to about **$97** in parts, and most parts come in multi-packs, so i'm building two.
+i first planned to order everything from aliexpress, but shipping takes 15–40 days, so i moved every part to amazon instead. most parts come in multi-packs, so i'm building two.
 
 ## a website you can play with
 
@@ -62,4 +62,4 @@ i built a site where the eyes follow your cursor and you can trigger every react
 - tune the sensor thresholds so he reacts at the right moments
 - post the first video of him actually alive 👀
 
-follow along if you want to see him wake up for the first time. code, cad and parts list are all on [github](https://github.com/nadellasripad11/starboy-diy).
+follow along if you want to see him wake up for the first time.
