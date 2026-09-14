@@ -203,9 +203,6 @@ uint16_t d_pupilC2;   // right pupil
 #define IRIS_RX   48
 #define IRIS_RY   56
 #define EYE_TILT  0.10f   // radians; the top of each eye leans outward
-#define PUPIL_R   12      // nominal pupil size for the special effects
-#define IRIS_R    IRIS_RX
-#define SCLERA_R  IRIS_RY
 
 // ─── Animation expression table (50 base targets) ───────
 // Each entry: gazeX, gazeY, blinkT, pupilR%, irisRx%, irisRy%,
@@ -276,12 +273,15 @@ struct EyeState {
   float irX, irY;        // iris x/y scale
   float bwL, bwR;        // brow inner end offset px
   float bwY;             // brow height offset
+  float smile;           // bottom lid pushed up in a curve (0-1)
   float colMix;          // 0=design 1=override
   uint16_t colOvr;       // color override
   uint8_t  fx;           // special effect 0=none
   float    fxP;          // effect phase/param
 };
 EyeState eye, eyeT;      // current + target
+float    baseGx = 0, baseGy = 0;            // gaze of the current expression; glances start here
+uint32_t lastSaccade = 0, nextSaccade = 2000;
 
 // Helper — load expression into target
 void setTarget(uint8_t idx) {
@@ -293,6 +293,14 @@ void setTarget(uint8_t idx) {
   eyeT.irX   = e.ix / 100.0f;   eyeT.irY   = e.iy / 100.0f;
   eyeT.bwL   = e.bwl; eyeT.bwR  = e.bwr; eyeT.bwY  = e.bwy;
   eyeT.colMix = 0; eyeT.fx = 0;
+  baseGx = eyeT.gx; baseGy = eyeT.gy;
+  switch (idx) {   // happy faces squint up from below
+    case 1: case 38: eyeT.smile = 0.8f; break;
+    case 20: case 46: eyeT.smile = 0.6f; break;
+    case 32:         eyeT.smile = 0.5f; break;
+    case 10:         eyeT.smile = 0.3f; break;
+    default:         eyeT.smile = 0.0f; break;
+  }
 }
 
 // ─── State machine ───────────────────────────────────────
@@ -366,7 +374,6 @@ void updateState();
 void updateInterp();
 void drawFrame();
 void drawEye(int cx, int cy, bool isLeft);
-void drawPupilShape(int cx, int cy, int pr);
 void drawSpecialFX(int cx, int cy);
 void drawFXMatrix();
 void drawFXStarfield();
@@ -734,6 +741,18 @@ void updateState() {
       else             { setTarget(random(47,49)); idleSubState=11;}// notice
     }
 
+    // Quick glances between expressions, like a real eye darting around
+    if (curState == S_IDLE && now - lastSaccade > nextSaccade) {
+      lastSaccade = now;
+      nextSaccade = random(900, 3200);
+      if (random(3) == 0) {
+        eyeT.gx = baseGx; eyeT.gy = baseGy;
+      } else {
+        eyeT.gx = constrain(baseGx + random(-14, 15), -22.0f, 22.0f);
+        eyeT.gy = constrain(baseGy + random(-6, 7), -12.0f, 12.0f);
+      }
+    }
+
     // Natural blink
     if (now - lastBlink > nextBlink && curState != S_SLEEP && curState != S_DOZE) {
       blinkPhase = 1;
@@ -867,6 +886,7 @@ void updateState() {
       eyeT.gx *= 0.95f;
       eyeT.bwY = 5.0f * dl;
       eyeT.pupR = 0.85f;
+      eyeT.smile = 0;
       break;
     }
 
@@ -879,6 +899,7 @@ void updateState() {
       eyeT.blinkT = 1.0f - 0.03f * (0.5f + 0.5f * sinf(now * 0.0015f));
       eyeT.blinkB = 0.45f;
       eyeT.pupR = 0.7f;
+      eyeT.smile = 0;
       // Occasional dream flicker
       if (random(500) == 0) setState(S_DREAMING);
       break;
@@ -930,12 +951,13 @@ void setupRareTarget(StarState s) {
     case S_RARE_DERP:      setTarget(9);  eyeT.fx=9; break;  // crossed
     case S_RARE_SMUG:      setTarget(17); eyeT.fx=0; break;
     case S_RARE_CRY:       setTarget(24); eyeT.fx=12; break;
-    case S_RARE_LAUGH:     setTarget(1);  eyeT.fx=13; break;
-    case S_RARE_SHOCKED:   setTarget(30); eyeT.fx=14; break;
-    case S_RARE_DEAD:      setTarget(16); eyeT.fx=15; break;  // X eyes
+    case S_RARE_LAUGH:     setTarget(1);  eyeT.fx=13; eyeT.smile=1.0f;
+                           eyeT.gy=sinf(rarePhase*6.0f)*3.0f; break;
+    case S_RARE_SHOCKED:   setTarget(30); eyeT.fx=14; eyeT.pupR=0.45f; break;
+    case S_RARE_DEAD:      setTarget(0);  eyeT.fx=15; break;  // X eyes, lids open so they show
     case S_RARE_GALAXY:    setTarget(34); eyeT.fx=16; break;
     case S_RARE_HEARTBEAT: setTarget(32); eyeT.fx=17; break;
-    case S_RARE_FIRE:      setTarget(8);  eyeT.fx=18; break;
+    case S_RARE_FIRE:      setTarget(33); eyeT.fx=18; break;
     case S_RARE_HYPNO:     setTarget(2);  eyeT.fx=6;  break;
     case S_RARE_STARFIELD: setTarget(44); eyeT.fx=19; break;
     case S_RARE_GLITCH2:   setTarget(5);  eyeT.fx=20; break;
@@ -958,6 +980,7 @@ void updateInterp() {
   // Ramp up gaze speed during rapid states
   if (curState == S_ANXIOUS || curState == S_STARTLED) gazeSpd = 0.22f;
   if (curState == S_TILT) gazeSpd = 0.12f;
+  if (curState == S_IDLE && millis() - lastSaccade < 140) gazeSpd = 0.4f;  // glances snap
 
   eye.gx   = lerpF(eye.gx,   eyeT.gx,   gazeSpd);
   eye.gy   = lerpF(eye.gy,   eyeT.gy,   gazeSpd);
@@ -969,6 +992,7 @@ void updateInterp() {
   eye.bwL  = lerpF(eye.bwL,  eyeT.bwL,  bwSpd);
   eye.bwR  = lerpF(eye.bwR,  eyeT.bwR,  bwSpd);
   eye.bwY  = lerpF(eye.bwY,  eyeT.bwY,  bwSpd);
+  eye.smile = lerpF(eye.smile, eyeT.smile, bwSpd);
   eye.colMix = lerpF(eye.colMix, eyeT.colMix, colSpd);
   eye.colOvr = eyeT.colOvr;
   eye.fx   = eyeT.fx;
@@ -1038,13 +1062,37 @@ const PupilDef PUPILS[4] = {
   { 0.19f, 0.24f, 0.50f, 0.92f, 0.06f, false },  // acorn, runs off the bottom edge
 };
 
+// Set by drawEye() so the per-eye effects know where to draw
+float    fxPx, fxPy, fxRx, fxRy, fxSide;
+uint16_t fxBodyC, fxPupC;
+
+static uint16_t hue565(float p) {
+  return tft.color565((int)(128 + 127 * sinf(p)),
+                      (int)(128 + 127 * sinf(p + 2.094f)),
+                      (int)(128 + 127 * sinf(p + 4.189f)));
+}
+
+// Effects that draw their own pupil instead of the design one
+static bool fxReplacesPupil(uint8_t fx) {
+  return fx == 2 || fx == 3 || fx == 6 || fx == 7 || fx == 8 ||
+         fx == 15 || fx == 16 || fx == 18;
+}
+
 void drawEye(int cx, int cy, bool isLeft) {
   float side = isLeft ? 1.0f : -1.0f;   // +1 = toward the nose
   float gx = constrain(eye.gx, -26.0f, 26.0f);
   float gy = constrain(eye.gy, -18.0f, 18.0f);
 
-  float rx = IRIS_RX * constrain(eye.irX, 0.5f, 1.2f);
+  // width is capped so the two eyes never merge; tall stretches are fine
+  float rx = IRIS_RX * constrain(eye.irX, 0.5f, 1.02f);
   float ry = IRIS_RY * constrain(eye.irY, 0.5f, 1.2f);
+  if (eye.fx == 17) {   // heartbeat: two quick thumps per cycle
+    float a = max(0.0f, sinf(eye.fxP * 3.0f));
+    float b = max(0.0f, sinf(eye.fxP * 3.0f - 0.7f));
+    float beat = powf(a, 12.0f) + 0.6f * powf(b, 12.0f);
+    rx *= 1.0f + 0.06f * beat;
+    ry *= 1.0f + 0.06f * beat;
+  }
   float ex = cx + gx * 0.35f;
   float ey = cy + gy * 0.35f;
   float bodyAng = -side * EYE_TILT;     // top of each eye leans outward
@@ -1057,17 +1105,21 @@ void drawEye(int cx, int cy, bool isLeft) {
   float pupScale = constrain(eye.pupR, 0.4f, 1.6f);
   float prx = pd.rxF * rx * pupScale;
   float pry = pd.round ? prx : pd.ryF * ry * pupScale;
-  float ppx = ex + side * pd.u * rx + gx * 0.65f;
-  float ppy = ey + pd.v * ry + gy * 0.55f;
+  float pu = pd.u, pv = pd.v;
+  if (eye.fx == 9) { pu = min(0.62f, pu + 0.30f); pv -= 0.10f; }   // derp: cross-eyed
+  float ppx = ex + side * pu * rx + gx * 0.65f;
+  float ppy = ey + pv * ry + gy * 0.55f;
   float pupAng = side * pd.tilt;
-  bool drawPupil = (eye.fx != 15 && eye.fx != 9);
+  bool drawPupil = !fxReplacesPupil(eye.fx);
 
   uint16_t bodyC = (eye.colMix > 0.5f) ? eye.colOvr
                                        : blend565(d_irisC, eye.colOvr, eye.colMix);
-  uint16_t pupC  = isLeft ? d_pupilC : d_pupilC2;
+  if (eye.fx == 1)  bodyC = hue565(eye.fxP * 1.5f + (isLeft ? 0.0f : 0.6f));
+  if (eye.fx == 16) bodyC = blend565(bodyC, 0x0009, 0.8f);
+  uint16_t pupC = isLeft ? d_pupilC : d_pupilC2;
 
   // Expression lids: a slanted black cut across the top (angry, drowsy)
-  // and a flat one along the bottom (squinting)
+  // and a flat one along the bottom
   float top = pivot + (ey - ry - pivot) * open;
   float bot = pivot + (ey + ry - pivot) * open;
   float bw  = isLeft ? eye.bwL : eye.bwR;
@@ -1076,8 +1128,14 @@ void drawEye(int cx, int cy, bool isLeft) {
   float cutA     = top + cutDepth - cutSlope * ex;
   float botCut   = bot - max(0.0f, eye.blinkB - 0.45f * eye.blinkT) * ry * 1.4f;
 
+  // Smile: the bottom lid pushes up in a curve, highest in the middle
+  float smile     = constrain(eye.smile, 0.0f, 1.0f);
+  float smileBase = bot - smile * ry * 0.45f * open;
+  float smileK    = smile * ry * 0.45f * open / (1.69f * rx * rx);   // arc spans the full eye width
+
   int y0 = max(0,     (int)floorf(pivot + (ey - ry - 2 - pivot) * open));
   int y1 = min(H - 1, (int)ceilf (pivot + (ey + ry + 2 - pivot) * open));
+  uint32_t glitchSeed = millis() / 90;
 
   for (int Y = y0; Y <= y1; Y++) {
     if (Y > botCut) break;
@@ -1096,226 +1154,192 @@ void drawEye(int cx, int cy, bool isLeft) {
     }
     if (bx1 - bx0 < 0.5f) continue;
 
-    int ix0 = (int)lroundf(bx0), ix1 = (int)lroundf(bx1);
-    spr.drawFastHLine(ix0, Y, ix1 - ix0, bodyC);
+    // glitch: random bands of rows jump sideways and swap colours
+    int  shift = 0;
+    bool swapC = false;
+    if (eye.fx == 4) {
+      uint32_t h = (uint32_t)(Y / 7) * 2654435761u ^ glitchSeed * 40503u;
+      h ^= h >> 13;
+      if ((h & 7) == 0) { shift = (int)((h >> 4) % 17) - 8; swapC = (h >> 9) & 1; }
+    }
+    uint16_t rowBody = swapC ? pupC : bodyC;
+    uint16_t rowPup  = swapC ? bodyC : pupC;
 
-    float px0, px1;
-    if (drawPupil && ellSpan(ppx, ppy, prx, pry, pupAng, sy, px0, px1)) {
-      px0 = max(px0, bx0);
-      px1 = min(px1, bx1);
-      if (px1 - px0 >= 0.5f) {
-        int jx0 = (int)lroundf(px0), jx1 = (int)lroundf(px1);
-        spr.drawFastHLine(jx0, Y, max(1, jx1 - jx0), pupC);
+    float px0 = 0, px1 = 0;
+    bool pupRow = drawPupil && ellSpan(ppx, ppy, prx, pry, pupAng, sy, px0, px1);
+
+    auto seg = [&](float a0, float a1) {
+      if (a1 - a0 < 0.5f) return;
+      int i0 = (int)lroundf(a0) + shift, i1 = (int)lroundf(a1) + shift;
+      if (eye.fx == 20) {   // rgb split fringes
+        spr.drawFastHLine(i0 - 3, Y, i1 - i0, 0xF800);
+        spr.drawFastHLine(i0 + 3, Y, i1 - i0, 0x07FF);
       }
+      spr.drawFastHLine(i0, Y, i1 - i0, rowBody);
+      if (!pupRow) return;
+      float q0 = max(px0, a0), q1 = min(px1, a1);
+      if (q1 - q0 < 0.5f) return;
+      int j0 = (int)lroundf(q0) + shift;
+      spr.drawFastHLine(j0, Y, max(1, (int)lroundf(q1) + shift - j0), rowPup);
+    };
+
+    if (smileK > 1e-6f && Y > smileBase) {
+      float h = sqrtf((Y - smileBase) / smileK);
+      seg(bx0, min(bx1, ex - h));
+      seg(max(bx0, ex + h), bx1);
+    } else {
+      seg(bx0, bx1);
     }
   }
 
-  if (eye.fx != 0 && eye.fx != 5 && eye.fx != 19) {
-    drawSpecialFX((int)ex, (int)ey);
+  fxPx = ppx;
+  fxPy = pivot + (ppy - pivot) * open;
+  fxRx = rx;
+  fxRy = ry * open;
+  fxSide = side;
+  fxBodyC = bodyC;
+  fxPupC = pupC;
+  if (eye.fx != 0 && eye.fx != 5 && eye.fx != 19 && (open > 0.3f || eye.fx == 11)) {
+    drawSpecialFX((int)ex, (int)(pivot + (ey - pivot) * open));
   }
 }
 
-// Plain round pupil in the design colour, used by the rainbow effect
-void drawPupilShape(int cx, int cy, int pr) {
-  spr.fillCircle(cx + ((cx < CX) ? 6 : -6), cy, constrain(pr, 3, 20),
-                 (cx < CX) ? d_pupilC : d_pupilC2);
+// ─── Flat shapes for the effects ─────────────────────────
+static void fillThickLine(float x0, float y0, float x1, float y1, float w, uint16_t c) {
+  float dx = x1 - x0, dy = y1 - y0, len = sqrtf(dx * dx + dy * dy);
+  if (len < 0.01f) return;
+  float nx = -dy / len * w * 0.5f, ny = dx / len * w * 0.5f;
+  spr.fillTriangle((int)(x0 + nx), (int)(y0 + ny), (int)(x1 + nx), (int)(y1 + ny),
+                   (int)(x1 - nx), (int)(y1 - ny), c);
+  spr.fillTriangle((int)(x0 + nx), (int)(y0 + ny), (int)(x1 - nx), (int)(y1 - ny),
+                   (int)(x0 - nx), (int)(y0 - ny), c);
+  spr.fillCircle((int)x0, (int)y0, (int)(w * 0.5f), c);
+  spr.fillCircle((int)x1, (int)y1, (int)(w * 0.5f), c);
+}
+
+static void fillHeart(int x, int y, int r, uint16_t c) {
+  spr.fillCircle(x - r / 2, y - r / 4, r / 2 + 1, c);
+  spr.fillCircle(x + r / 2, y - r / 4, r / 2 + 1, c);
+  spr.fillTriangle(x - r - 1, y - r / 8, x + r + 1, y - r / 8, x, y + r + 2, c);
+}
+
+static void fillStar(int x, int y, int r, float rot, uint16_t c) {
+  int ir = r * 45 / 100;
+  for (int i = 0; i < 5; i++) {
+    float a0 = rot - PI / 2 + i * 2 * PI / 5;
+    float a1 = a0 + PI / 5, a2 = a0 + 2 * PI / 5;
+    int tx = x + (int)(r * cosf(a0)),  ty = y + (int)(r * sinf(a0));
+    int ix = x + (int)(ir * cosf(a1)), iy = y + (int)(ir * sinf(a1));
+    int nx = x + (int)(r * cosf(a2)),  ny = y + (int)(r * sinf(a2));
+    spr.fillTriangle(x, y, tx, ty, ix, iy, c);
+    spr.fillTriangle(x, y, ix, iy, nx, ny, c);
+  }
+}
+
+// A drop: round at the bottom, pointed at the top
+static void fillDrop(int x, int y, int r, int tip, uint16_t c) {
+  spr.fillCircle(x, y, r, c);
+  spr.fillTriangle(x - r, y, x + r, y, x, y - tip, c);
+}
+
+static void fillDiamond(int x, int y, int r, uint16_t c) {
+  spr.fillTriangle(x - r, y, x + r, y, x, y - r, c);
+  spr.fillTriangle(x - r, y, x + r, y, x, y + r, c);
 }
 
 // ─── Per-eye special effects ─────────────────────────────
+// Same flat style as the eyes: solid shapes in the eye's own colours.
 void drawSpecialFX(int cx, int cy) {
-  float p = eye.fxP;
+  float p  = eye.fxP;
+  int   px = (int)fxPx, py = (int)fxPy;
+  int   r  = max(4, (int)(fxRx * 0.42f));
 
   switch (eye.fx) {
-
-    case 1: { // Rainbow iris color cycling
-      uint16_t rc = tft.color565(
-        (int)(128 + 127 * sinf(p)),
-        (int)(128 + 127 * sinf(p + 2.094f)),
-        (int)(128 + 127 * sinf(p + 4.189f)));
-      sprFillEllipse(cx, cy, (int)(IRIS_R*eye.irX), (int)(IRIS_R*eye.irY), rc);
-      drawPupilShape(cx, cy, (int)(PUPIL_R * eye.pupR));
+    case 2: {   // heart pupils that beat
+      float s = 1.0f + 0.15f * max(0.0f, sinf(p * 4.0f));
+      fillHeart(px, py, (int)(r * s), 0xF8A6);
       break;
     }
-
-    case 2: { // Heart pupils
-      int pr = (int)(PUPIL_R * 1.1f);
-      int hr = pr * 55 / 100;
-      uint16_t hc = 0xF800;
-      spr.fillCircle(cx - hr/2, cy - hr/4, hr/2 + 1, hc);
-      spr.fillCircle(cx + hr/2, cy - hr/4, hr/2 + 1, hc);
-      spr.fillTriangle(cx-hr, cy, cx+hr, cy, cx, cy+hr+2, hc);
+    case 3:     // spinning star pupils
+      fillStar(px, py, r * 115 / 100, p * 0.6f * fxSide, 0xFE60);
       break;
-    }
-
-    case 3: { // Star pupils (6-point, distinct from design pupil)
-      uint16_t sc = 0xFFE0; // gold
-      int pr = (int)(PUPIL_R * 1.1f);
-      for (int i = 0; i < 6; i++) {
-        float a = i * PI / 3 + p * 0.3f;
-        spr.fillTriangle(cx, cy,
-          cx + (int)(pr * cosf(a)), cy + (int)(pr * sinf(a)),
-          cx + (int)((pr/2) * cosf(a + PI/6)), cy + (int)((pr/2) * sinf(a + PI/6)),
-          sc);
+    case 6: {   // hypnotic rings sliding inward
+      int maxR = (int)(min(fxRx, fxRy) * 0.78f);
+      int off  = (int)fmodf(p * 10.0f, 12.0f);
+      for (int ring = maxR + 12; ring > 2; ring -= 6) {
+        int rr = ring - off;
+        if (rr < 2 || rr > maxR) continue;
+        spr.fillCircle(cx, cy, rr, ((ring / 6) % 2) ? fxPupC : fxBodyC);
       }
       break;
     }
-
-    case 4: { // Glitch — random colored blocks
-      for (int g = 0; g < 8; g++) {
-        int gx = cx - IRIS_R + random(IRIS_R * 2);
-        int gy_c = cy - IRIS_R + random(IRIS_R * 2);
-        uint16_t gc = random(0xFFFF);
-        spr.fillRect(gx, gy_c, random(4, 18), random(1, 6), gc);
-      }
-      break;
-    }
-
-    case 6: { // Spiral / hypnosis
-      int spiralR = (int)(IRIS_R * eye.irX);
-      for (float r = 3; r < spiralR - 2; r += 4) {
-        float a0 = p + r * 0.25f;
-        float a1 = a0 + 0.9f;
-        spr.drawLine(cx + (int)(r * cosf(a0)), cy + (int)(r * sinf(a0)),
-                     cx + (int)(r * cosf(a1)), cy + (int)(r * sinf(a1)),
-                     0x07FF);
-      }
-      break;
-    }
-
-    case 7: { // Loading spinner
-      float startA = p * 2;
+    case 7: {   // loading spinner
+      int head = (int)(p * 8.0f) % 8;
+      int dr   = max(3, (int)(fxRx * 0.09f));
       for (int i = 0; i < 8; i++) {
-        float a = startA + i * PI / 4;
-        float fade = 1.0f - i / 8.0f;
-        uint16_t lc = blend565(TFT_WHITE, TFT_BLACK, 1.0f - fade);
-        int lx = cx + (int)(20 * cosf(a));
-        int ly = cy + (int)(20 * sinf(a));
-        spr.fillCircle(lx, ly, 3, lc);
+        float a = i * PI / 4 * fxSide - PI / 2;
+        int age = (head - i + 8) % 8;
+        spr.fillCircle(cx + (int)(fxRx * 0.48f * cosf(a)), cy + (int)(fxRy * 0.48f * sinf(a)),
+                       dr, blend565(fxPupC, fxBodyC, age / 8.0f));
       }
       break;
     }
-
-    case 8: { // Error face — X in each eye
-      int xs = 12;
-      spr.drawLine(cx-xs, cy-xs, cx+xs, cy+xs, 0xF800);
-      spr.drawLine(cx-xs+1, cy-xs, cx+xs+1, cy+xs, 0xF800);
-      spr.drawLine(cx+xs, cy-xs, cx-xs, cy+xs, 0xF800);
-      spr.drawLine(cx+xs+1, cy-xs, cx-xs+1, cy+xs, 0xF800);
+    case 8:     // error: square pupils blinking on and off
+      if ((int)(p * 6.0f) % 2 == 0)
+        spr.fillRect(px - r * 6 / 10, py - r * 6 / 10, r * 12 / 10, r * 12 / 10, fxPupC);
       break;
-    }
-
-    case 9: { // Derp — crossed eyes (pupil shifts toward nose)
-      int pr = (int)(PUPIL_R * eye.pupR);
-      spr.fillCircle(cx + (cx < CX ? 8 : -8), cy, pr, (cx < CX) ? d_pupilC : d_pupilC2);
-      break;
-    }
-
-    case 10: { // Cold/icy crystalline overlay on iris
-      for (int ray = 0; ray < 6; ray++) {
-        float a = ray * PI / 3 + p * 0.1f;
-        int irxS = (int)(IRIS_R * eye.irX);
-        spr.drawLine(cx, cy,
-          cx + (int)(irxS * cosf(a)), cy + (int)((IRIS_R * eye.irY) * sinf(a)),
-          0x9FFF);
+    case 10: {  // frost sparkles
+      const float SP[3][2] = { { -0.35f, -0.40f }, { 0.30f, -0.10f }, { -0.10f, 0.45f } };
+      for (int i = 0; i < 3; i++) {
+        int s = 2 + (int)(3.0f * fabsf(sinf(p * 0.8f + i * 2.1f)));
+        fillDiamond(cx + (int)(SP[i][0] * fxRx * fxSide), cy + (int)(SP[i][1] * fxRy), s, 0xDFFF);
       }
       break;
     }
-
-    case 11: { // Dreamy shimmer — soft concentric pulses
-      int r = (int)(IRIS_R * eye.irX);
-      float pulse = 0.5f + 0.5f * sinf(p * 2);
-      int rr = (int)(r * pulse);
-      spr.drawCircle(cx, cy, rr, 0x9BFF);
-      spr.drawCircle(cx, cy, rr/2, 0x9BFF);
-      break;
-    }
-
-    case 12: { // Crying — tear drops
-      uint16_t tearC = 0x5D1F;
-      int tStart = cy + SCLERA_R - 10;
-      int tearLen = ((int)(p * 8)) % 30;
-      for (int d = 0; d < tearLen; d++) {
-        spr.fillCircle(cx - 4, tStart + d, 3, tearC);
+    case 11: {  // dream bubbles drifting up
+      for (int i = 0; i < 3; i++) {
+        float t = fmodf(p * 0.25f + i * 0.33f, 1.0f);
+        int by = cy - (int)fxRy - 6 - (int)(t * 34.0f);
+        if (by < 2) continue;
+        spr.fillCircle(cx - (int)(fxSide * (8 - i * 8)), by, 2 + i, fxBodyC);
       }
       break;
     }
-
-    case 13: { // Laughing squint lines
-      for (int l = 0; l < 3; l++) {
-        float la = (l - 1) * 15.0f * PI / 180.0f;
-        int lx1 = cx + (int)(SCLERA_R * cosf(PI/6 + la));
-        int ly1 = cy + (int)(SCLERA_R * sinf(PI/6 + la));
-        int lx2 = cx + (int)((SCLERA_R+8) * cosf(PI/6 + la));
-        int ly2 = cy + (int)((SCLERA_R+8) * sinf(PI/6 + la));
-        spr.drawLine(lx1, ly1, lx2, ly2, TFT_BLACK);
+    case 12: {  // a tear running down from the inner corner
+      float t = fmodf(p * 0.8f, 1.0f);
+      int tx = cx + (int)(fxSide * fxRx * 0.45f);
+      int ty = cy + (int)(fxRy * 0.55f) + (int)(t * 46.0f);
+      if (ty < H - 6) fillDrop(tx, ty, 5, 12, 0x5D1F);
+      break;
+    }
+    case 15: {  // dead: big X eyes
+      int xr = (int)(min(fxRx, fxRy) * 0.5f);
+      float w = max(5.0f, xr * 0.45f);
+      fillThickLine(cx - xr, cy - xr, cx + xr, cy + xr, w, fxPupC);
+      fillThickLine(cx + xr, cy - xr, cx - xr, cy + xr, w, fxPupC);
+      break;
+    }
+    case 16: {  // galaxy: stars orbiting inside a darkened eye
+      float lim = min(fxRx, fxRy) * 0.78f;
+      for (int i = 0; i < 14; i++) {
+        float ang = p * (0.6f + 0.08f * i) * fxSide + i * 2.4f;
+        float rad = min(lim, fxRx * (0.10f + 0.05f * i));
+        int sx = cx + (int)(rad * cosf(ang));
+        int sy = cy + (int)(rad * sinf(ang) * fxRy / fxRx);
+        spr.fillCircle(sx, sy, (i % 4 == 0) ? 2 : 1, (i % 3 == 0) ? 0xFFFF : fxPupC);
       }
       break;
     }
-
-    case 14: { // Shocked — pulsing ring
-      float pulse = 0.5f + 0.5f * sinf(p * 3);
-      int rr = (int)(IRIS_R * eye.irX + 8 + pulse * 8);
-      spr.drawCircle(cx, cy, rr, 0xFFE0);
-      spr.drawCircle(cx, cy, rr+1, 0xFD20);
+    case 18: {  // fire pupils
+      float f1 = sinf(p * 9.0f + fxSide), f2 = sinf(p * 11.0f - fxSide);
+      int base = py + r / 3;
+      fillDrop(px, base,         r * 80 / 100, (int)(r * (2.2f + 0.4f * f1)), 0xF800);
+      fillDrop(px, base + r / 8, r * 55 / 100, (int)(r * (1.6f + 0.3f * f2)), 0xFC00);
+      fillDrop(px, base + r / 4, r * 30 / 100, r,                             0xFFE0);
       break;
     }
-
-    case 15: { // Dead X eyes
-      int xs = 16;
-      uint16_t xc = 0xFFFF;
-      spr.drawLine(cx-xs, cy-xs, cx+xs, cy+xs, xc);
-      spr.drawLine(cx-xs+1, cy-xs, cx+xs+1, cy+xs, xc);
-      spr.drawLine(cx+xs, cy-xs, cx-xs, cy+xs, xc);
-      spr.drawLine(cx+xs+1, cy-xs, cx-xs+1, cy+xs, xc);
-      break;
-    }
-
-    case 16: { // Galaxy swirl in iris
-      for (int i = 0; i < 80; i++) {
-        float ang = i * 0.4f + p;
-        float r   = i * 0.5f;
-        if (r >= IRIS_R * eye.irX - 2) break;
-        uint16_t gc = tft.color565(
-          (int)(100 + 100 * sinf(ang * 0.5f)),
-          (int)(50 + 50 * cosf(ang * 0.3f)),
-          (int)(180 + 60 * sinf(ang * 0.7f)));
-        spr.drawPixel(cx + (int)(r * cosf(ang)), cy + (int)(r * sinf(ang)), gc);
-      }
-      break;
-    }
-
-    case 17: { // Heartbeat pulse — expanding ring
-      float phase = fmodf(p, PI * 2);
-      float rr = (IRIS_R * eye.irX) * phase / (PI * 2);
-      uint16_t hbc = blend565(0xF800, TFT_BLACK, phase / (PI * 2));
-      spr.drawCircle(cx, cy, (int)rr, hbc);
-      break;
-    }
-
-    case 18: { // Fire pupil — flickering upward streaks
-      for (int f = 0; f < 12; f++) {
-        float fa = -PI/2 + (f - 6) * 0.15f + sinf(p + f) * 0.1f;
-        float fr = PUPIL_R * (0.5f + 0.5f * sinf(p * 1.5f + f));
-        int fx1 = cx + (int)(fr * cosf(fa));
-        int fy1 = cy + (int)(fr * sinf(fa));
-        int fx2 = cx + (int)((fr + 8) * cosf(fa));
-        int fy2 = cy + (int)((fr + 8) * sinf(fa));
-        uint16_t fc = (f < 4) ? 0xFFE0 : (f < 8) ? 0xFD20 : 0xF800;
-        spr.drawLine(fx1, fy1, fx2, fy2, fc);
-      }
-      break;
-    }
-
-    case 20: { // Glitch2 — scanlines + color separation
-      for (int row = cy - IRIS_R; row < cy + IRIS_R; row += 3) {
-        float dy = row - cy;
-        float xw = sqrtf(max(0.0f, (float)(IRIS_R*IRIS_R) - dy*dy));
-        uint16_t gc = (row % 6 == 0) ? 0xF800 : (row % 6 == 2) ? 0x07E0 : 0x001F;
-        spr.drawFastHLine((int)(cx - xw) + random(-3, 3), row,
-                          (int)(xw * 2), gc);
-      }
-      break;
-    }
+    default:
+      break;   // 1, 4, 9, 13, 14, 17 and 20 happen inside drawEye()
   }
 }
 
