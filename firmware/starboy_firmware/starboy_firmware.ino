@@ -347,19 +347,22 @@ int    soundPeak=0;
 uint32_t shakeStart=0;
 float  tiltAngleX=0, tiltAngleY=0;
 
-// Thresholds (tune for your unit)
-#define SHAKE_ON_G    16.0f    // m/s² above gravity to count as shake
-#define SHAKE_MS      1000     // must shake this long to trigger
-#define COLD_C        10.0f    // °C below this → cold state
-#define HOT_C         32.0f    // °C above → warm/cozy (future)
-#define LOUD_P2P      600      // mic peak-to-peak swing (0-4095) → anxious.
-                               // The MAX4466 idles at mid-rail (~2048), so a raw
-                               // reading means nothing on its own — only the swing
-                               // matters. Depends on the board's gain trimmer:
-                               // tune with DEBUG_SENSORS 1.
-#define IDLE_DOZE_MS  25000UL
-#define IDLE_SLEEP_MS 75000UL
-#define RARE_PERIOD_MS 90000UL // check every 90s for a rare animation
+// Thresholds. These are factory defaults; each unit can retune them live over
+// Serial (`set shake 12`, `save`) and they load from flash at boot.
+// LOUD is the mic's peak-to-peak swing (0-4095): the MAX4466 idles at
+// mid-rail, so only the swing matters, and it depends on the gain trimmer.
+struct Tuning { float shakeOnG, coldC; int loudP2P; uint32_t dozeMs, sleepMs, rareMs; };
+const Tuning TUNING_DEFAULTS = { 16.0f, 10.0f, 600, 25000UL, 75000UL, 90000UL };
+Tuning tune = TUNING_DEFAULTS;
+bool   debugSensors = DEBUG_SENSORS;
+
+#define SHAKE_MS       1000        // must shake this long to trigger
+#define SHAKE_ON_G     tune.shakeOnG
+#define COLD_C         tune.coldC
+#define LOUD_P2P       tune.loudP2P
+#define IDLE_DOZE_MS   tune.dozeMs
+#define IDLE_SLEEP_MS  tune.sleepMs
+#define RARE_PERIOD_MS tune.rareMs
 
 // ─── Procedural animation variables ──────────────────────
 float dizzyAngle = 0;
@@ -381,6 +384,9 @@ void drawFXMatrix();
 void drawFXStarfield();
 void checkRare();
 void setupRareTarget(StarState s);
+void handleSerial();
+void loadTuning();
+void applySensorOverrides();
 void setState(StarState s);
 void sprFillEllipse(int cx, int cy, int rx, int ry, uint16_t c);
 void sprDrawEllipse(int cx, int cy, int rx, int ry, uint16_t c);
@@ -432,8 +438,11 @@ void setup() {
 #endif
   setBacklight(BL_AWAKE);
 
+  loadTuning();
+
   // Eye design (load or generate)
   initEyeDesign();
+  Serial.println("type `help` for the tuning console");
 
   // Initial eye state
   memset(&eye, 0, sizeof(eye));
@@ -455,6 +464,7 @@ void setup() {
 void loop() {
   uint32_t now = millis();
 
+  handleSerial();
   readSensors();
   updateState();
   updateInterp();
@@ -573,13 +583,13 @@ void readSensors() {
     else soundPeak = (int)(soundPeak * 0.93f);            // slow decay
   }
 
-#if DEBUG_SENSORS
+  applySensorOverrides();
+
   static uint32_t lastDbg = 0;
-  if (now - lastDbg > 1000) {
+  if (debugSensors && now - lastDbg > 1000) {
     lastDbg = now;
     Serial.printf("shake %.1f  temp %.1fC  sound %d\n", shakeE, ambientTemp, soundPeak);
   }
-#endif
 }
 
 // ════════════════════════════════════════════════════════

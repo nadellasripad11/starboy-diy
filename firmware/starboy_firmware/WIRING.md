@@ -177,15 +177,26 @@ moves, clap and the SOUND bar moves. Every FAIL line says which wire to check.
 
 ## Tuning
 
-All thresholds are `#define`s near the top of the .ino — adjust if your
-unit is more/less sensitive:
+No reflashing needed. Open the Serial Monitor at 115200 with newline line
+endings and type commands:
 
-```cpp
-#define SHAKE_ON_G    16.0f   // how hard a shake must be
-#define COLD_C        10.0f   // °C that triggers shiver
-#define LOUD_P2P      600     // mic peak-to-peak swing that triggers anxious
-                              // (depends on the mic board's gain trimmer —
-                              // set DEBUG_SENSORS 1 and watch Serial to tune)
-#define IDLE_DOZE_MS  25000UL // ms of stillness before dozing
-#define IDLE_SLEEP_MS 75000UL // ms before full sleep
 ```
+status                 sensors, current mood, eyes and every threshold
+debug on               print shake / temp / sound once a second
+set shake 12           shake needed to get dizzy (m/s² above gravity, default 16)
+set cold 8             °C that starts the shiver (default 10)
+set loud 900           mic swing that makes him anxious (default 600, depends on the gain trimmer)
+set doze 25            seconds alone before dozing (default 25)
+set sleep 75           seconds alone before full sleep (default 75)
+set rare 90            seconds between rare effect chances (default 90)
+save                   keep the values after a restart
+defaults               back to factory values
+
+mood shiver            jump to any mood (help lists them all)
+fx fire                play any rare effect
+fake temp 2            pretend it's cold, fake sound 2000 pretends it's loud, fake off
+reroll                 roll new eyes, seed 1a2b3c4d sets exact ones
+```
+
+A good tuning loop: `debug on`, leave the star still for a minute to see
+the quiet mic level, then set `loud` a few hundred above it.
