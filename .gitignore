@@ -5,6 +5,7 @@
 # ...but the exported print files in stl/ ARE the deliverable, keep them
 !stl/
 !stl/*.stl
+!images/*.png
 *.amf
 *.dxf
 
