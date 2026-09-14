@@ -1,4 +1,4 @@
-# devlog #1 · starboy diy
+# devlog #2 · starboy diy
 
 **tl;dr** i'm building a tiny wearable pet from scratch. he clips onto your belt loop, has a round screen for a face, and reacts to shaking, cold and loud noises. the shell, eyes and firmware are done, parts are next.
 
