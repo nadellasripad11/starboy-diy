@@ -3,7 +3,7 @@
 Shell: **body ~65 × 64mm (78mm including the keyring loop), 20.5mm thick.**
 Print `stl/starboy_front.stl`, `stl/starboy_back.stl`, and `stl/starboy_bezel.stl`.
 
-Parts, prices and links: **[README → Buying list](README.md#buying-list)**
+Parts, prices and links: **[BOM.csv](BOM.csv)** · **[BOM.md](BOM.md)**
 
 ---
 
@@ -97,13 +97,14 @@ the hole; that plugs it.
   around the opening.
 - **Layer height:** 0.16mm or finer — the back engraving is only 0.5mm deep.
 - **Walls:** 3+ perimeters. The shell is load-bearing at the bail.
-- **Material:** PLA is fine for the shell. The bail takes the keyring load,
-  so PETG is the safer call if you'll carry it daily.
+- **Material:** PETG. The bail takes the keyring load every day, and PETG
+  handles that (and a hot car) far better than PLA. White under the chrome,
+  black for the bezel ring.
 - **Do not scale.** Every clearance here is absolute.
 
 ### Finishing
-Sand 400 → 800 → 1500, prime, then Rust-Oleum Mirror Effect on the
-**outside only**. Keep paint off the flat faces where the two halves meet —
+Sand 400 → 800 → 1500, Rust-Oleum plastic primer, then Rust-Oleum Bright
+Coat chrome on the **outside only**. Keep paint off the flat faces where the two halves meet —
 paint thickness there will stop them seating. Polish with 0000 steel wool.
 
 ---

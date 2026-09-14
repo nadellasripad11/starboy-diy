@@ -1,142 +1,99 @@
-# ⭐ STARBOY DIY
+# starboy diy
 
-A handbuilt replica of the [CREATURE STARBOY](https://lilguy.net) — a 5-point metallic star keychain with an animated round TFT eye that reacts to motion, temperature, and sound. Built around a **Seeed XIAO ESP32C3** (built-in LiPo charger) and a **1.28" GC9A01 round TFT display**.
+my handbuilt version of the [creature starboy](https://lilguy.net): a chrome 5-point star keychain with a round animated eye that reacts to how you move it, how cold it is, and how loud it gets around you. the eye looks different on every unit. built by sripadbuilds.
 
-**v2.0 firmware:** seed-generated eyes (every unit picks its own), 50 base expressions blended smoothly into 500+ animation states, plus 20 rare special effects. Renders at ~30fps via TFT_eSPI sprites (zero flicker).
+i made it because i wanted a starboy and wanted to know how one actually works inside. so i designed the shell from scratch in openscad, picked the smallest parts that could fit, and wrote the eye animation firmware myself.
 
----
+<p align="center">
+  <img src="images/render_front.png" width="48%" alt="front of the star shell with the round display opening and keyring bail">
+  <img src="images/render_back.png" width="48%" alt="back of the star shell with the engraved sripadbuilds medallion">
+</p>
 
-## Buying list
-
-Full bill of materials with exact buy links and prices: **[BOM.md](BOM.md)**
-
-Quick summary: **~$41.37 total** across 11 line items (electronics + build supplies). All links open the exact product page — no search pages. Electronics from AliExpress; battery and chrome spray paint from Amazon.
-
-> **Pants clip:** [BOM.md](BOM.md) item #8 ships 20 carabiners — keep one on your pants and stash the rest.
-> **Resistor:** the DS18B20 (item #5) does **not** include its 4.7kΩ pull-up on AliExpress like Adafruit's does — that's item #6.
-
-### Don't swap these without re-checking the fit
-
-- **Display** must be a round-PCB module. **Adafruit #6178 won't fit** — same chip, but it's a 42.4 × 36.2mm rectangle.
-- **ESP32 board:** the ESP32-C3 SuperMini is cheaper but has **no battery charger**.
-- **Battery:** 4.0mm thick maximum, and it must have a protection circuit. The shell only has 0.5mm of depth to spare.
-- **Headers:** leave the pins off the display and the GY-521 and wire them flat, or the stack won't fit.
-
-### Battery notes
-
-- The battery comes with a JST 1.25 plug, but the XIAO has **solder pads** (BAT+ / BAT− on its underside). Cut the plug off and solder the wires. **Check polarity with a multimeter first** — cheap JST leads don't all use the same wire colours.
-- The XIAO fast-charges at 380mA, about 1.3× this battery's capacity. Most LiPos tolerate that, but it's above the usual 1C limit, so charge it where you can see it and unplug it if it gets warm.
-- Expect roughly 4 hours of active use per charge. The backlight dims when it falls asleep to stretch that.
-- The XIAO ships with a Wi-Fi antenna. The firmware doesn't use the radio, so you can leave it off.
+**what's inside:** seeed XIAO ESP32C3, 1.28" round TFT (GC9A01), mpu6050, ds18b20, max4466 mic, 320mAh lipo. charges over usb-c and clips to your pants.
 
 ---
 
-## Printing it
+## what the eye does
 
-Ready-to-slice STLs are in [`stl/`](stl/): `starboy_front.stl`,
-`starboy_back.stl` and `starboy_bezel.stl`. Orientation matters and both
-halves need a little support — see the Printing section of [BUILD.md](BUILD.md).
+| if you... | the eye... |
+|-----------|-----------|
+| shake it hard for 1s+ | goes dizzy → rage → calms down |
+| drop below 10°c | chills → shivers → freezes, blue tint |
+| make a loud sound | startles → gets anxious, darting eyes |
+| tilt it | follows gravity |
+| leave it alone for 25s | starts dozing, backlight dims |
+| leave it alone for 75s | falls asleep, slow breathing, almost off |
+| shake it or make noise while it's asleep | wakes up |
+| just let it sit there | 50 different micro-expressions, cycling every few seconds |
+| wait around (~every 90s, 40% chance) | one of 20 rare effects: rainbow, hearts, glitch, matrix rain, hypnotic spiral, fire pupils, galaxy swirl... |
 
-Body is **~65 × 64mm (78mm including the keyring loop), 20.5mm thick**.
-
----
-
-## Eye Behaviors
-
-Modeled after the real CREATURE Starboy's documented behaviors:
-
-| Trigger | What happens |
-|---------|-------------|
-| Shake device hard (1s+) | **Dizzy** spinning eyes → severe dizzy → recovering → **angry** rage |
-| Temp drops below 10°C | **Chill → shiver → freeze** — progressively icier, blue tint, crystalline overlay |
-| Loud sound | **Startled → anxious** darting eyes → overwhelmed |
-| Tilt device | Eyes **follow gravity** naturally |
-| 25 seconds idle | Eyes **start dozing** — half-closed, brows droop, backlight dims |
-| 75 seconds idle | Eyes **sleep** — slow breathing, occasional dreaming, backlight nearly off |
-| Shake or sound during sleep | **Wakes up** |
-| Just sitting there | 50 idle micro-expressions cycle every 2.5–7s: content, curious, playful, wondering, shifty, cheerful... |
-| Every ~90s (40% chance) | One of **20 rare specials**: rainbow eyes, hearts, stars, glitch, matrix rain, hypnotic spiral, "dead" eyes, fire pupils, galaxy swirl, and more |
-
-Every unit's eye is unique — its colours and style are generated from a random seed on first boot and stored permanently.
+on first boot every unit generates its own eye color, pupil color and highlight style, then keeps them forever. no two are the same.
 
 ---
 
-## 3D Shell
+## what's in this repo
 
-`CAD/starboy_star.scad` — parametric OpenSCAD model of the star shell.
+| folder / file | what it is |
+|---------------|-----------|
+| [`CAD/starboy_assembly.step`](CAD/starboy_assembly.step) | full 3d assembly: front, back, bezel |
+| [`CAD/starboy_star.scad`](CAD/starboy_star.scad) | parametric openscad source the step and stls come from |
+| [`stl/`](stl/) | print-ready front, back and bezel |
+| [`firmware/starboy_firmware/`](firmware/starboy_firmware/) | arduino firmware, TFT_eSPI config, pin-by-pin wiring |
+| [`BOM.csv`](BOM.csv) | parts list with prices and buy links |
+| [`BOM.md`](BOM.md) | same list, readable, plus the second-build list |
+| [`BUILD.md`](BUILD.md) | printing, finishing and assembly order |
 
-- Flat-faced star with chamfered edges, sized from the measured parts
-- Stepped display pocket (narrow opening at the face, wider ledge that holds the board)
-- Keyring loop, camera pocket (optional), temperature vent, mic port, USB-C charge cutout
-- Back medallion with rim text and a centre star
-- `assert()` checks that fail the build if a change would break the fit
-- Parts: `front`, `back`, `bezel`, `preview`
-
-**Finish:** Sand smooth → prime → Rust-Oleum Mirror Effect spray. Polish with 0000 steel wool for a metallic sheen.
+there's no custom PCB. everything is hand-wired to the XIAO with 30AWG wire so it all packs into a 20.5mm-thick shell.
 
 ---
 
-## Firmware
+## parts & cost
 
-`firmware/starboy_firmware/starboy_firmware.ino`
+**$96.86 for one build**, all from amazon. full list → [BOM.csv](BOM.csv)
 
-Arduino IDE setup:
-- Board: **XIAO_ESP32C3** (Espressif ESP32 boards package)
-- USB CDC On Boot: **Enabled**
+the display, mpu6050, mic, temp sensor, wire, carabiners and paint come in multi-packs, so a second star only costs **$53.62** more (another XIAO, another battery, and white + black PETG). that list is in [BOM.md](BOM.md#build-2).
 
-Libraries (install via Library Manager):
-- **TFT_eSPI** by Bodmer — ⚠️ also copy [`User_Setup.h`](firmware/starboy_firmware/User_Setup.h) into the TFT_eSPI library folder (one-time setup)
-- Adafruit MPU6050
-- Adafruit Unified Sensor
+---
+
+## wiring
+
+![wiring diagram](images/wiring.svg)
+
+full pin-by-pin breakdown → [`firmware/starboy_firmware/WIRING.md`](firmware/starboy_firmware/WIRING.md)
+
+---
+
+## 3d printing
+
+print the three stls in [`stl/`](stl/) in PETG: white for the shell, black for the bezel ring. the body is about **65×64mm and 20.5mm thick** (78mm with the keyring loop). print orientation and supports are in [BUILD.md](BUILD.md).
+
+**finish:** sand 400 → 800 → 1500, plastic primer, bright coat chrome, then buff with 0000 steel wool.
+
+---
+
+## firmware setup
+
+open `firmware/starboy_firmware/starboy_firmware.ino` in the arduino IDE.
+
+board settings:
+- board: **XIAO_ESP32C3** (espressif ESP32 package)
+- usb cdc on boot: **enabled**
+
+libraries (library manager):
+- **TFT_eSPI** by bodmer. copy [`User_Setup.h`](firmware/starboy_firmware/User_Setup.h) into the TFT_eSPI library folder after installing, replacing the default one
+- adafruit MPU6050
+- adafruit unified sensor
 - DallasTemperature
 - OneWire
 
-See [`firmware/starboy_firmware/WIRING.md`](firmware/starboy_firmware/WIRING.md) for full pin-by-pin wiring and setup steps.
+---
+
+## battery
+
+the XIAO has BAT+ / BAT− solder pads on its underside instead of a plug, so the battery's connector gets cut off and the wires solder straight to the pads. polarity gets checked with a multimeter first, since cheap lipo wire colors don't always follow the convention.
+
+a charge lasts about 4 hours, and the backlight dims on its own when the eye goes idle.
 
 ---
 
-## Wiring (quick reference)
-
-```
-GC9A01 TFT          XIAO ESP32C3
-──────────          ────────────
-VCC  ─────────────► 3V3
-GND  ─────────────► GND
-SCL  ─────────────► D8  (GPIO8)
-SDA  ─────────────► D10 (GPIO10)
-DC   ─────────────► D6  (GPIO21)
-CS   ─────────────► D3  (GPIO5)
-RST  ─────────────► 3V3
-BL   ─────────────► D2  (GPIO4)   PWM — not 3.3V
-
-MPU6050 (GY-521)    XIAO ESP32C3
-────────────────    ────────────
-VCC  ─────────────► 3V3
-GND  ─────────────► GND
-SDA  ─────────────► D4  (GPIO6)
-SCL  ─────────────► D5  (GPIO7)
-
-DS18B20             XIAO ESP32C3
-───────             ────────────
-VDD  ─────────────► 3V3
-GND  ─────────────► GND
-DATA ─────────────► D7  (GPIO20)   + 4.7kΩ from DATA to VDD
-
-MAX4466             XIAO ESP32C3
-───────             ────────────
-VCC  ─────────────► 3V3
-GND  ─────────────► GND
-OUT  ─────────────► D1  (GPIO3)
-
-LiPo 402530         XIAO ESP32C3
-───────────         ────────────
-+    ─────────────► BAT+ pad (underside)
-−    ─────────────► BAT− pad (underside)
-```
-
----
-
-## Credits
-
-Inspired by [CREATURE STARBOY](https://lilguy.net) by Daniel Kuntz.
-DIY build by [@nadellasripad11](https://github.com/nadellasripad11) / SRIPADBUILDS.
+made by [@nadellasripad11](https://github.com/nadellasripad11) · sripadbuilds · inspired by [creature](https://lilguy.net) by daniel kuntz

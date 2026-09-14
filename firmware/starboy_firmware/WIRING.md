@@ -108,7 +108,7 @@ purpose — they're boot-mode strapping pins.
 | VDD     | 3V3          |
 | GND     | GND          |
 | DATA    | D7 (GPIO20)  |
-| (4.7kΩ resistor between DATA and VDD — included with Adafruit #374) |
+| (4.7kΩ resistor between DATA and VDD — comes in the DS18B20 pack) |
 
 ### MAX4466 Mic (analog)
 | MAX4466 | XIAO ESP32C3 |

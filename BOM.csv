@@ -1,14 +1,13 @@
 Item Name,Quantity,Unit Price (USD),Total Price (USD),Supplier,Link,Notes
-Seeed Studio XIAO ESP32C3,1,6.45,6.45,AliExpress,https://www.aliexpress.us/item/3256804536753775.html,Select 1pc variant — must be genuine Seeed XIAO; built-in LiPo charger
-GC9A01 1.28-inch Round TFT LCD 240x240 SPI,1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/3256804173733212.html,Round PCB (diameter 37.5mm) — required for the shell display pocket
-GY-521 MPU6050 Accelerometer/Gyroscope Module,1,2.68,2.68,AliExpress,https://www.aliexpress.us/item/2251832154634265.html,Remove pre-soldered header pins before assembly
-GY-MAX4466 Electret Microphone Amplifier Module,1,1.33,1.33,AliExpress,https://www.aliexpress.us/item/3256803608057399.html,Adjustable gain via on-board trim pot
-DS18B20 Waterproof Temperature Sensor + Adapter 100cm,1,0.77,0.77,AliExpress,https://www.aliexpress.us/item/3256801415671848.html,Select waterproof variant; 4.7k pull-up resistor needed separately (next item)
-1/4W Metal Film Resistor Kit 30 Values 10-1M Ohm (300pcs),1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/2251832449705392.html,Select 300pcs Kit no Box; includes 4.7k ohm for DS18B20 pull-up
-LiPo Rechargeable Battery 402530 3.7V 300mAh (2-pack),1,8.99,8.99,Amazon,https://www.amazon.com/ZhanMazwj-Lithium-Polymer-Battery-Rechargeable/dp/B09QHTSPZC,4x25x30mm — fits shell cavity; cut JST plug and solder to XIAO BAT+/BAT- pads
-Mini Carabiner Clips Aluminum D-Ring (20-pack),1,1.09,1.09,AliExpress,https://www.aliexpress.us/item/3256805821292670.html,Clip to belt loop or pants; 19 spares included
-Stainless Steel Split Key Rings 25mm (20-pack),1,1.54,1.54,AliExpress,https://www.aliexpress.us/item/3256808292111279.html,For the keychain loop on the shell top
-30AWG Silicone Hook-Up Wire Kit 6 Colors x 20m,1,3.33,3.33,AliExpress,https://www.aliexpress.us/item/3256811467401195.html,Select 30AWG 6x20M option; tinned copper heat-resistant wire
-Rust-Oleum Bright Coat Metallic Chrome Spray Paint 11oz,1,13.01,13.01,Amazon,https://www.amazon.com/Rust-Oleum-7718830-7718-830-Automotive-Accessories/dp/B000Z8DGXK,Chrome finish for the 3D-printed shell; apply over primer
+Seeed Studio XIAO ESP32C3,1,9.90,9.90,Amazon,https://www.amazon.com/dp/B0B94JZ2YF,Main board; built-in LiPo charger and USB-C
+Teyleten Robot GC9A01 1.28in Round TFT 240x240 SPI (3-pack),1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0B7TFRNN1,The eye; round 38mm PCB; spares cover the second build
+EC Buying GY-521 MPU6050 Accelerometer/Gyro (3-pack),1,9.59,9.59,Amazon,https://www.amazon.com/dp/B0B3D6D1KD,Shake and tilt detection over I2C; spares cover the second build
+Weewooday MAX4466 Electret Mic Amplifier (6-pack),1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08N4FNFTR,Sound detection; adjustable gain; spares cover the second build
+DAOKAI DS18B20 TO-92 Temperature Sensor + 4.7k Resistors (10-pack),1,6.99,6.99,Amazon,https://www.amazon.com/dp/B0BTH1DRVJ,Cold detection; includes the 4.7k pull-up resistors
+EEMB 402535 3.7V 320mAh LiPo Battery,1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08215N9R8,25.5x36x4.3mm; UL certified with protection circuit; solders to XIAO BAT pads
+CBAZY 30AWG Silicone Hook-Up Wire Kit 6 Colors x 10m,1,13.99,13.99,Amazon,https://www.amazon.com/dp/B073RDGTPB,Internal wiring; enough for both builds
+Aluminum D Mini Carabiners + Key Rings (10 + 10),1,4.98,4.98,Amazon,https://www.amazon.com/dp/B095NBHTTH,Keyring through the bail and a clip for pants or bag
+Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Base coat so the chrome bonds to the printed shell
+Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Chrome finish for the shell
 ,,,,,,
-TOTAL,,,41.37,,,
+TOTAL,,,96.86,,,
