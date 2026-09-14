@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>eye looks · starboy diy</title>
+<meta name="description" content="all 400 eye looks a starboy can roll: 100 colorways across 4 shapes, each with its own rarity.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root {
+    --ground: #f8f8f8;
+    --ink: #2b2c2f;
+    --muted: #8e8f95;
+    --soft: #ebebeb;
+    --line: #e1e1e4;
+    --display: "Figtree", "Helvetica Neue", Arial, sans-serif;
+    --body: "Nunito", "Varela Round", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 600 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .wrap { width: min(1180px, 100% - 40px); margin-inline: auto; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -.03em; text-decoration: none; }
+  .brand svg { width: 24px; height: 24px; }
+  nav .back { color: var(--muted); text-decoration: none; }
+  nav .back:hover { color: var(--ink); }
+  header { padding: 50px 0 36px; display: grid; gap: 22px; }
+  h1 { font: 800 clamp(76px, 12vw, 136px)/.9 var(--display); letter-spacing: -.045em; margin: 0; }
+  .lead { font-size: clamp(19px, 2vw, 24px); line-height: 1.4; color: #55565c; max-width: 50ch; }
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; padding: 18px 0 30px; border-bottom: 1px solid var(--line); margin-bottom: 36px; }
+  .group { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .group > span { color: var(--muted); font-size: 15px; margin-right: 4px; }
+  .chip { font: 700 15px/1 var(--body); padding: 10px 14px; border-radius: 999px; border: 0; background: var(--soft); color: var(--ink); cursor: pointer; }
+  .chip:hover { background: #dfdfe2; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .count { margin-left: auto; color: var(--muted); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px 16px; padding-bottom: 80px; }
+  @media (min-width: 640px) { .grid { grid-template-columns: repeat(5, 1fr); } }
+  @media (min-width: 1000px) { .grid { grid-template-columns: repeat(10, 1fr); } }
+  .look { margin: 0; display: grid; gap: 8px; justify-items: center; text-align: center; }
+  .look canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #000; display: block; }
+  .look figcaption { font-size: 13px; line-height: 1.25; color: var(--muted); }
+  .look figcaption b { display: block; color: var(--ink); font-size: 14px; font-weight: 800; }
+  .tier { display: inline-block; margin-top: 4px; font: 700 11px/1 var(--display); padding: 4px 7px; border-radius: 999px; background: var(--soft); color: var(--ink); }
+  .tier.rare { background: #dfe6ff; }
+  .tier.legendary { background: #2b2c2f; color: #f6bd49; }
+  footer { border-top: 1px solid var(--line); padding: 36px 0 60px; color: var(--muted); font-size: 15px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2b2c2f" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      starboy diy
+    </a>
+    <a class="back" href="index.html">back home</a>
+  </nav>
+  <header>
+    <h1>eye looks</h1>
+    <p class="lead">every starboy rolls one of these the first time he turns on, and keeps it forever. 100 colorways across 4 eye shapes, and the percentage is how often each exact look comes up.</p>
+  </header>
+  <div class="controls">
+    <div class="group" id="shape-group"><span>shape</span></div>
+    <div class="group" id="sort-group"><span>sort</span></div>
+    <span class="count" id="count" aria-live="polite"></span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <footer>made by <a href="https://github.com/nadellasripad11">@nadellasripad11</a> · code and cad on <a href="https://github.com/nadellasripad11/starboy-diy">github</a></footer>
+</div>
+<script src="eyes.js"></script>
+<script src="gallery.js"></script>
+</body>
+</html>

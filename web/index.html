@@ -3,175 +3,167 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>starboy</title>
-<meta name="description" content="a chrome star keychain with a tiny round screen for an eye. shake it, chill it, yell at it, and it reacts. every star rolls its own eyes.">
-<meta property="og:title" content="starboy">
-<meta property="og:description" content="a chrome star keychain with a living eye. shake it, chill it, yell at it, and it reacts.">
+<title>starboy diy</title>
+<meta name="description" content="a tiny wearable pet built by hand. it shivers in the cold, gets dizzy when you shake it, and rolls its own eyes. 400 looks, fully open source.">
+<meta property="og:title" content="starboy diy">
+<meta property="og:description" content="a tiny wearable pet built by hand. shake it, chill it, yell at it, and it reacts.">
 <meta property="og:image" content="render_front.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
 <style>
   :root {
-    --ground: #07070a;
-    --panel: #101015;
-    --line: #23232b;
-    --text: #ececf1;
-    --muted: #8d8d99;
-    --violet: #7b43f5;
-    --gold: #f6bd49;
-    --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
-    --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
-    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
-    color-scheme: dark;
+    --ground: #f8f8f8;
+    --ink: #2b2c2f;
+    --muted: #8e8f95;
+    --soft: #ebebeb;
+    --line: #e1e1e4;
+    --card: #ffffff;
+    --display: "Figtree", "Helvetica Neue", Arial, sans-serif;
+    --body: "Nunito", "Varela Round", system-ui, sans-serif;
+    color-scheme: light;
   }
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
-  body { margin: 0; background: var(--ground); color: var(--text); font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
-  a { color: inherit; text-decoration-color: color-mix(in srgb, var(--gold) 60%, transparent); text-underline-offset: 3px; }
-  a:hover { color: var(--gold); }
-  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
-  .wrap { width: min(1120px, 100% - 40px); margin-inline: auto; }
-  .label { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
-  h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
-  h2 { font-size: clamp(32px, 5vw, 52px); line-height: 1; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 600 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .wrap { width: min(1080px, 100% - 40px); margin-inline: auto; }
+  h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -.045em; line-height: .9; margin: 0; }
   p { margin: 0; }
-  .lede { color: #c9c9d3; max-width: 52ch; }
-  section { padding: 96px 0; border-top: 1px solid var(--line); }
-  .section-head { display: grid; gap: 14px; margin-bottom: 44px; max-width: 64ch; }
 
-  /* nav */
-  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
-  .brand { font: 800 20px/1 var(--display); letter-spacing: -.02em; text-decoration: none; display: flex; align-items: center; gap: 10px; }
-  .brand svg { width: 22px; height: 22px; }
-  .navlinks { display: flex; gap: 22px; font-size: 15px; color: var(--muted); }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -.03em; text-decoration: none; }
+  .brand svg { width: 24px; height: 24px; }
+  .navlinks { display: flex; gap: 26px; color: var(--muted); font-size: 16px; }
   .navlinks a { text-decoration: none; }
+  .navlinks a:hover { color: var(--ink); }
 
-  /* hero */
-  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 48px 0 104px; }
-  .hero h1 { font-size: clamp(76px, 13vw, 168px); line-height: .82; margin: 18px 0 26px;
-    background: linear-gradient(180deg, #ffffff 0%, #d6d7de 38%, #7d7f8a 52%, #e9eaf0 64%, #9a9ca8 100%);
-    -webkit-background-clip: text; background-clip: text; color: transparent; }
-  .hero .lede { font-size: 20px; }
-  .facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; font: 400 14px/1.4 var(--mono); color: var(--muted); }
-  .facts b { color: var(--text); font-weight: 500; }
-  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
-  .btn { font: 600 15px/1 var(--body); padding: 13px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
-  .btn:hover { border-color: #3a3a46; color: var(--text); }
-  .btn.primary { background: var(--text); color: var(--ground); border-color: var(--text); }
-  .btn.primary:hover { background: var(--gold); border-color: var(--gold); color: var(--ground); }
+  /* hero cluster */
+  .hero { display: grid; justify-items: center; gap: 22px; padding: 8px 0 40px; }
+  .cluster { position: relative; width: min(94vw, 880px); aspect-ratio: 1; border-radius: 50%; background: var(--soft); }
+  .bubble { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; background: #000; padding: 0; border: 0; overflow: hidden; cursor: pointer; transition: transform .25s cubic-bezier(.3, 1.6, .5, 1); }
+  .bubble:hover { transform: translate(-50%, -50%) scale(1.05); }
+  .bubble canvas { display: block; width: 100%; height: 100%; }
+  .hint { color: var(--muted); font-size: 15px; text-align: center; }
 
-  /* the display */
-  .device { display: grid; justify-items: center; gap: 18px; }
-  .bezel { width: min(100%, 440px); aspect-ratio: 1; border-radius: 50%; padding: 4.5%;
-    background: conic-gradient(from 210deg, #f4f5f8, #7c7e89, #dfe0e6, #5f616b, #f0f1f5, #8d8f9a, #f4f5f8);
-    box-shadow: 0 30px 80px -30px rgba(123, 67, 245, .35), inset 0 0 0 1px rgba(255,255,255,.2); }
-  .bezel canvas { width: 100%; height: 100%; border-radius: 50%; display: block; background: #000; image-rendering: pixelated; box-shadow: inset 0 0 0 3px #000; }
-  .readout { font: 400 13px/1.5 var(--mono); color: var(--muted); text-align: center; min-height: 3em; }
-  .readout b { color: var(--text); font-weight: 500; }
+  /* story */
+  .story { padding: 90px 0 40px; display: grid; gap: 1.2em; font-size: clamp(22px, 2.7vw, 34px); line-height: 1.3; letter-spacing: -.012em; max-width: 1000px; }
+  .story p:first-child { font-weight: 800; }
+
+  /* eye looks */
+  .looks { padding: 110px 0; display: grid; gap: 34px; }
+  .looks h2 { font-size: clamp(76px, 12vw, 136px); }
+  .bar { display: flex; align-items: center; justify-content: space-between; width: min(100%, 620px); background: var(--ink); color: #fff; text-decoration: none; padding: 26px 32px; font: 700 clamp(26px, 3.2vw, 36px)/1 var(--display); letter-spacing: -.03em; transition: background .2s; }
+  .bar:hover { background: #000; }
+  .bar .go { display: inline-flex; align-items: center; gap: 12px; }
+  .bar svg { width: .8em; height: .8em; }
+  .bar .count { color: #9a9ba1; font-variant-numeric: tabular-nums; }
 
   /* try it */
-  .try { display: grid; grid-template-columns: 1fr 380px; gap: 48px; align-items: start; }
+  .section { padding: 110px 0; border-top: 1px solid var(--line); }
+  .section h2 { font-size: clamp(54px, 8vw, 96px); margin-bottom: 22px; }
+  .section .lead { font-size: clamp(19px, 2vw, 24px); line-height: 1.4; color: #55565c; max-width: 44ch; margin-bottom: 48px; }
+  .try { display: grid; grid-template-columns: 1fr 400px; gap: 56px; align-items: start; }
   .reactions { display: grid; gap: 10px; }
-  .reaction { display: grid; grid-template-columns: 1fr auto; gap: 4px 18px; align-items: center; text-align: left; width: 100%;
-    padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; font: inherit; }
-  .reaction:hover { border-color: #3a3a46; }
-  .reaction[aria-pressed="true"] { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 8%, var(--panel)); }
-  .reaction .if { font-weight: 600; }
-  .reaction .then { color: var(--muted); font-size: 15px; grid-column: 1; }
-  .reaction .sensor { grid-row: 1 / span 2; grid-column: 2; font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); padding: 6px 8px; border-radius: 6px; white-space: nowrap; }
-  .sticky { position: sticky; top: 24px; display: grid; gap: 18px; }
-  .sticky .bezel { width: 100%; }
-  .rare { margin-top: 34px; display: grid; gap: 14px; }
+  .reaction { display: grid; grid-template-columns: 1fr auto; gap: 2px 16px; align-items: center; width: 100%; text-align: left; font: inherit; color: var(--ink);
+    background: var(--card); border: 2px solid transparent; border-radius: 18px; padding: 18px 22px; cursor: pointer; box-shadow: 0 1px 0 var(--line); }
+  .reaction:hover { border-color: var(--line); }
+  .reaction[aria-pressed="true"] { border-color: var(--ink); }
+  .reaction .if { font: 800 20px/1.2 var(--body); }
+  .reaction .then { color: var(--muted); grid-column: 1; }
+  .reaction .sensor { grid-row: 1 / span 2; grid-column: 2; font: 700 13px/1 var(--display); color: var(--muted); background: var(--soft); padding: 7px 10px; border-radius: 999px; }
+  .rare { margin-top: 34px; display: grid; gap: 12px; }
+  .rare .label { color: var(--muted); font-size: 15px; }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip { font: 500 13px/1 var(--mono); padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; }
-  .chip:hover, .chip[aria-pressed="true"] { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 18%, transparent); }
-
-  /* gallery */
-  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
-  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 14px; }
-  @media (min-width: 640px) { .gallery { grid-template-columns: repeat(5, 1fr); } }
-  @media (min-width: 1000px) { .gallery { grid-template-columns: repeat(10, 1fr); } }
-  .swatch { margin: 0; display: grid; gap: 8px; justify-items: center; }
-  .swatch canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #000; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line); }
-  .swatch figcaption { font: 400 12px/1.3 var(--mono); color: var(--muted); text-align: center; }
-  .swatch figcaption b { color: var(--text); font-weight: 500; display: block; }
+  .chip { font: 700 15px/1 var(--body); padding: 10px 14px; border-radius: 999px; border: 0; background: var(--soft); color: var(--ink); cursor: pointer; }
+  .chip:hover { background: #dfdfe2; }
+  .chip[aria-pressed="true"] { background: var(--ink); color: #fff; }
+  .sticky { position: sticky; top: 28px; display: grid; justify-items: center; gap: 16px; }
+  .bezel { width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 4.5%;
+    background: conic-gradient(from 210deg, #fbfbfd, #8d8f99, #e7e8ed, #6d6f79, #f6f6f9, #9c9ea8, #fbfbfd);
+    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .35); }
+  .bezel canvas { display: block; width: 100%; height: 100%; border-radius: 50%; background: #000; }
+  .readout { color: var(--muted); font-size: 15px; min-height: 1.5em; }
 
   /* inside */
-  .inside { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
-  .parts { width: 100%; border-collapse: collapse; font-size: 15px; }
-  .parts td { padding: 13px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
-  .parts td:first-child { font-weight: 600; padding-right: 18px; white-space: nowrap; }
-  .parts td:last-child { color: var(--muted); }
-  .cost { display: flex; align-items: baseline; gap: 14px; margin-top: 28px; }
-  .cost strong { font: 800 48px/1 var(--display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-  .renders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-  .renders figure { margin: 0; border-radius: 14px; overflow: hidden; background: #f7f7f7; border: 1px solid var(--line); }
+  .inside { display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: start; }
+  .parts { display: grid; }
+  .part { display: grid; grid-template-columns: 190px 1fr; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+  .part b { font-weight: 800; }
+  .part span { color: var(--muted); }
+  .cost { margin-top: 30px; display: flex; align-items: baseline; gap: 14px; }
+  .cost strong { font: 800 56px/1 var(--display); letter-spacing: -.04em; font-variant-numeric: tabular-nums; }
+  .cost span { color: var(--muted); }
+  .renders { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .renders figure { margin: 0; background: var(--card); border-radius: 18px; overflow: hidden; box-shadow: 0 1px 0 var(--line); }
   .renders img { display: block; width: 100%; height: auto; }
-  .renders figcaption { background: var(--panel); color: var(--muted); font: 400 12px/1.4 var(--mono); padding: 10px 12px; }
-  .dims { margin-top: 18px; font: 400 14px/1.7 var(--mono); color: var(--muted); }
-  .dims b { color: var(--text); font-weight: 500; }
+  .renders figcaption { padding: 10px 14px 12px; color: var(--muted); font-size: 14px; }
+  .dims { margin-top: 18px; color: var(--muted); }
+  .dims b { color: var(--ink); }
 
-  footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+  footer { border-top: 1px solid var(--line); padding: 36px 0 60px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; color: var(--muted); font-size: 15px; }
+
+  #cursor-ball { position: fixed; left: 0; top: 0; width: 64px; height: 64px; margin: -32px 0 0 -32px; border-radius: 50%; pointer-events: none; z-index: 50;
+    background: radial-gradient(circle at 70% 70%, #f3f3f5 0%, #b9bac0 45%, #6c6d73 100%); opacity: .85; mix-blend-mode: multiply; will-change: transform; }
 
   @media (max-width: 880px) {
-    .hero, .try, .inside { grid-template-columns: 1fr; }
-    .hero { padding-top: 16px; gap: 40px; }
-    .device { order: -1; }
-    .bezel { width: min(100%, 360px); }
+    .try, .inside { grid-template-columns: 1fr; }
     .sticky { position: static; order: -1; }
-    .sticky .bezel { width: min(100%, 340px); justify-self: center; }
-    .navlinks { display: none; }
-    section { padding: 72px 0; }
+    .bezel { width: min(100%, 340px); }
+    .navlinks a:not(.keep) { display: none; }
+    .part { grid-template-columns: 1fr; gap: 2px; }
+    .story { padding-top: 60px; }
+    .looks, .section { padding: 80px 0; }
   }
-  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .bubble { transition: none; } }
 </style>
 </head>
 <body>
+<div id="cursor-ball" aria-hidden="true"></div>
+
 <div class="wrap">
   <nav>
-    <a class="brand" href="#top" aria-label="starboy home">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#d9dae1" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
-      starboy
+    <a class="brand" href="#top">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2b2c2f" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      starboy diy
     </a>
     <div class="navlinks">
-      <a href="#try">try it</a>
-      <a href="#eyes">the eyes</a>
+      <a href="#try">what he does</a>
+      <a href="eyes.html" target="_blank" rel="noopener">eye looks</a>
       <a href="#inside">what's inside</a>
-      <a href="https://github.com/nadellasripad11/starboy-diy">github</a>
+      <a class="keep" href="https://github.com/nadellasripad11/starboy-diy">github</a>
     </div>
   </nav>
 
   <header class="hero" id="top">
-    <div>
-      <span class="label">diy keychain · hack club · by sripadbuilds</span>
-      <h1>starboy</h1>
-      <p class="lede">a chrome star you clip to your pants, with a tiny round screen for an eye. shake it and it gets dizzy, take it somewhere cold and it shivers, yell near it and it gets nervous. leave it alone and it falls asleep.</p>
-      <div class="facts">
-        <span><b>1.28"</b> round screen</span>
-        <span><b>3</b> sensors</span>
-        <span><b>400</b> eye combos</span>
-        <span><b>~4h</b> per charge</span>
-      </div>
-      <div class="cta">
-        <a class="btn primary" href="#try">make it react</a>
-        <button class="btn" id="hero-roll" type="button">roll new eyes</button>
-      </div>
-    </div>
-    <div class="device">
-      <div class="bezel"><canvas id="hero-eye" width="240" height="240" aria-label="animated starboy eyes that follow your cursor"></canvas></div>
-      <p class="readout" id="hero-readout" aria-live="polite"></p>
-    </div>
+    <h1 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)">starboy diy</h1>
+    <div class="cluster" id="cluster" role="group" aria-label="a crowd of starboy eyes watching your cursor"></div>
+    <p class="hint" id="hint">every little guy rolled his own eyes · tap one to reroll it · hover a sleepy one to wake him up</p>
   </header>
+
+  <section class="story" aria-label="about starboy diy">
+    <p>starboy diy is a tiny wearable pet i built by hand. he clips onto your belt loop and acts like he's actually alive.</p>
+    <p>he feels the world through an accelerometer, a temperature sensor and a microphone. make a loud noise and he gets anxious. take him somewhere cold and he shivers. shake him and he gets dizzy, then mad at you. ignore him long enough and he dozes off and dreams.</p>
+    <p>every star rolls his own eyes the first time he turns on. there are 400 looks, 100 colorways across 4 eye shapes, each with its own rarity. once he rolls, those eyes are his forever.</p>
+    <p>he runs completely on his own. no app, no wifi, no account. just a thumb-sized esp32 board, a round 1.28" screen and a little battery, packed into a 20.5mm chrome shell i designed and 3d printed myself.</p>
+    <p>and he's fully open source. the cad, firmware and parts list are all on <a href="https://github.com/nadellasripad11/starboy-diy">github</a>, so you can build your own for about $97.</p>
+  </section>
+
+  <section class="looks" aria-labelledby="looks-title">
+    <h2 id="looks-title">eye looks</h2>
+    <a class="bar" href="eyes.html" target="_blank" rel="noopener">
+      <span class="go">view all <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9" fill="none" stroke="#9a9ba1" stroke-width="3" stroke-linecap="square"/></svg></span>
+      <span class="count">400</span>
+    </a>
+  </section>
 </div>
 
-<section id="try">
+<section class="section" id="try">
   <div class="wrap">
-    <div class="section-head">
-      <span class="label">what it does</span>
-      <h2>it reacts to you</h2>
-      <p class="lede">the star has a motion sensor, a temperature sensor and a microphone inside. tap a reaction to see exactly what the screen does. these animations run the same code as the real firmware.</p>
-    </div>
+    <h2>what he does</h2>
+    <p class="lead">tap a reaction and watch the screen. it's the same animation code that runs on the real star.</p>
     <div class="try">
       <div>
         <div class="reactions" id="reactions"></div>
@@ -181,52 +173,35 @@
         </div>
       </div>
       <div class="sticky">
-        <div class="bezel"><canvas id="try-eye" width="240" height="240" aria-label="starboy eyes showing the selected reaction"></canvas></div>
+        <div class="bezel"><canvas id="try-eye" width="240" height="240" aria-label="starboy's screen showing the selected reaction"></canvas></div>
         <p class="readout" id="try-readout" aria-live="polite">idle · looking around</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="eyes">
+<section class="section" id="inside">
   <div class="wrap">
-    <div class="section-head">
-      <span class="label">the eyes</span>
-      <h2>100 colorways × 4 shapes</h2>
-      <p class="lede">the first time a star turns on, it rolls one colorway and one eye shape and keeps them forever. some colorways are common, some show up 0.4% of the time. the rarest ones give each eye a different pupil.</p>
-    </div>
-    <div class="filters" id="shape-filters"></div>
-    <div class="gallery" id="gallery"></div>
-  </div>
-</section>
-
-<section id="inside">
-  <div class="wrap">
-    <div class="section-head">
-      <span class="label">what's inside</span>
-      <h2>a whole computer in a keychain</h2>
-      <p class="lede">everything is hand-wired, no custom circuit board, so it all folds into a shell just 20.5mm thick. the shell is 3d printed in petg, sanded, primed and sprayed chrome.</p>
-    </div>
+    <h2>what's inside</h2>
+    <p class="lead">everything is hand-wired with no custom circuit board, so it all folds into a shell thinner than your thumb.</p>
     <div class="inside">
       <div>
-        <table class="parts">
-          <tbody>
-            <tr><td>seeed xiao esp32c3</td><td>the brain. thumbnail-sized, charges the battery over usb-c</td></tr>
-            <tr><td>gc9a01 round screen</td><td>1.28", 240×240 pixels. this is the eye</td></tr>
-            <tr><td>mpu6050</td><td>feels shaking and tilting</td></tr>
-            <tr><td>ds18b20</td><td>pokes out of a tiny vent to read the air temperature</td></tr>
-            <tr><td>max4466 mic</td><td>hears loud sounds</td></tr>
-            <tr><td>320mah lipo</td><td>about 4 hours per charge, dims itself when sleepy</td></tr>
-          </tbody>
-        </table>
-        <div class="cost"><strong>$96.86</strong><span class="label">in parts for one star</span></div>
+        <div class="parts">
+          <div class="part"><b>seeed xiao esp32c3</b><span>the brain. thumbnail-sized and charges the battery over usb-c</span></div>
+          <div class="part"><b>1.28" round screen</b><span>240×240 pixels. this is his face</span></div>
+          <div class="part"><b>mpu6050</b><span>feels shaking and tilting</span></div>
+          <div class="part"><b>ds18b20</b><span>pokes out of a tiny vent to feel the air temperature</span></div>
+          <div class="part"><b>max4466 mic</b><span>hears loud sounds</span></div>
+          <div class="part"><b>320mah battery</b><span>about 4 hours a charge, and he dims himself when sleepy</span></div>
+        </div>
+        <div class="cost"><strong>$96.86</strong><span>in parts for one star</span></div>
       </div>
       <div>
         <div class="renders">
-          <figure><img src="render_front.png" alt="3d render of the star shell front with the round screen opening and keyring loop" loading="lazy"><figcaption>front · screen + keyring loop</figcaption></figure>
+          <figure><img src="render_front.png" alt="3d render of the star shell front with the round screen opening and keyring loop" loading="lazy"><figcaption>front · screen and keyring loop</figcaption></figure>
           <figure><img src="render_back.png" alt="3d render of the star shell back with the engraved sripadbuilds medallion" loading="lazy"><figcaption>back · engraved medallion</figcaption></figure>
         </div>
-        <p class="dims"><b>65 × 64 × 20.5 mm</b> body · <b>78 mm</b> with the loop<br>designed from scratch in openscad</p>
+        <p class="dims"><b>65 × 64 × 20.5 mm</b> · <b>78 mm</b> with the loop · printed in petg, sanded, primed and sprayed chrome</p>
       </div>
     </div>
   </div>
@@ -235,7 +210,7 @@
 <div class="wrap">
   <footer>
     <span>made by <a href="https://github.com/nadellasripad11">@nadellasripad11</a> · sripadbuilds</span>
-    <span>code, cad and parts list on <a href="https://github.com/nadellasripad11/starboy-diy">github</a> · inspired by <a href="https://lilguy.net">creature's starboy</a></span>
+    <span>inspired by <a href="https://lilguy.net">creature's starboy</a></span>
   </footer>
 </div>
 
