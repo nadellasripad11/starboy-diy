@@ -160,6 +160,15 @@ about 0.4% of the time.
 
 ---
 
+## Test the parts first
+
+Before soldering everything into the shell, flash
+[`firmware/hardware_test/hardware_test.ino`](../hardware_test/hardware_test.ino).
+It flashes the screen red/green/blue/white, fades the backlight, then checks
+the MPU6050, DS18B20 and mic one by one and prints PASS/FAIL on the screen
+and over Serial (115200). After that it goes live: shake it and the SHAKE bar
+moves, clap and the SOUND bar moves. Every FAIL line says which wire to check.
+
 ## Upload Settings (Arduino IDE)
 
 - Board: XIAO_ESP32C3
