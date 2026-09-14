@@ -1,13 +1,15 @@
 Item Name,Quantity,Unit Price (USD),Total Price (USD),Supplier,Link,Notes
-Seeed Studio XIAO ESP32C3,1,9.90,9.90,Amazon,https://www.amazon.com/dp/B0B94JZ2YF,Main board; built-in LiPo charger and USB-C
-Teyleten Robot GC9A01 1.28in Round TFT 240x240 SPI (3-pack),1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0B7TFRNN1,The eye; round 38mm PCB; spares cover the second build
-EC Buying GY-521 MPU6050 Accelerometer/Gyro (3-pack),1,9.59,9.59,Amazon,https://www.amazon.com/dp/B0B3D6D1KD,Shake and tilt detection over I2C; spares cover the second build
-Weewooday MAX4466 Electret Mic Amplifier (6-pack),1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08N4FNFTR,Sound detection; adjustable gain; spares cover the second build
-DAOKAI DS18B20 TO-92 Temperature Sensor + 4.7k Resistors (10-pack),1,6.99,6.99,Amazon,https://www.amazon.com/dp/B0BTH1DRVJ,Cold detection; includes the 4.7k pull-up resistors
-EEMB 402535 3.7V 320mAh LiPo Battery,1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08215N9R8,25.5x36x4.3mm; UL certified with protection circuit; solders to XIAO BAT pads
-CBAZY 30AWG Silicone Hook-Up Wire Kit 6 Colors x 10m,1,13.99,13.99,Amazon,https://www.amazon.com/dp/B073RDGTPB,Internal wiring; enough for both builds
-Aluminum D Mini Carabiners + Key Rings (10 + 10),1,4.98,4.98,Amazon,https://www.amazon.com/dp/B095NBHTTH,Keyring through the bail and a clip for pants or bag
-Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Base coat so the chrome bonds to the printed shell
-Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Chrome finish for the shell
+Seeed Studio XIAO ESP32C3,2,9.90,19.80,Amazon,https://www.amazon.com/dp/B0B94JZ2YF,Main board with built-in LiPo charger and USB-C; one per star
+Teyleten Robot GC9A01 1.28in Round TFT 240x240 SPI (3-pack),1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0B7TFRNN1,The eye; round 38mm PCB; one pack covers both stars
+EC Buying GY-521 MPU6050 Accelerometer/Gyro (3-pack),1,9.59,9.59,Amazon,https://www.amazon.com/dp/B0B3D6D1KD,Shake and tilt detection over I2C; one pack covers both stars
+Weewooday MAX4466 Electret Mic Amplifier (6-pack),1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08N4FNFTR,Sound detection with adjustable gain; one pack covers both stars
+DAOKAI DS18B20 TO-92 Temperature Sensor + 4.7k Resistors (10-pack),1,6.99,6.99,Amazon,https://www.amazon.com/dp/B0BTH1DRVJ,Cold detection; includes the 4.7k pull-up resistors; one pack covers both stars
+EEMB 402535 3.7V 320mAh LiPo Battery,2,9.99,19.98,Amazon,https://www.amazon.com/dp/B08215N9R8,25.5x36x4.3mm; UL certified with protection circuit; one per star
+CBAZY 30AWG Silicone Hook-Up Wire Kit 6 Colors x 10m,1,13.99,13.99,Amazon,https://www.amazon.com/dp/B073RDGTPB,Internal wiring for both stars
+Aluminum D Mini Carabiners + Key Rings (10 + 10),1,4.98,4.98,Amazon,https://www.amazon.com/dp/B095NBHTTH,Keyring and pants clip for both stars
+Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Base coat so the chrome bonds to the printed shells
+Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Chrome finish for both shells
+Polymaker PETG Filament 1.75mm 1kg White,1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0FG3FHG29,Printed star shells
+Polymaker PETG Filament 1.75mm 1kg Black,1,15.74,15.74,Amazon,https://www.amazon.com/dp/B0FG3HMCVY,Printed bezel rings
 ,,,,,,
-TOTAL,,,96.86,,,
+TOTAL,,,150.48,,,

@@ -48,7 +48,7 @@ the first time a star turns on, it rolls its own eye color, pupil color and high
 - [`stl/`](stl/): print-ready front, back and bezel
 - [`firmware/`](firmware/starboy_firmware/): the arduino code, the screen config and the pin-by-pin wiring
 - [`bom.csv`](BOM.csv): parts, prices and buy links
-- [`bom.md`](BOM.md): the same list in plain words, plus what a second star costs
+- [`bom.md`](BOM.md): the same list in plain words, plus how the parts work together
 - [`build.md`](BUILD.md): printing, painting and putting it together
 
 there's no custom pcb. everything is hand-wired to the xiao with thin 30awg wire, because that's the only way it all fits in the shell.
@@ -57,9 +57,9 @@ there's no custom pcb. everything is hand-wired to the xiao with thin 30awg wire
 
 ## what it costs
 
-one star is **$96.86**, all from amazon, so it shows up in a few days instead of a month. the full list is in [bom.csv](BOM.csv).
+i'm building two stars, and everything for both comes to **$150.48**, filament included. it's all from amazon, so it shows up in a few days instead of a month. the full list is in [bom.csv](BOM.csv).
 
-most of the parts come in multi-packs, so a second star only needs another xiao, another battery and filament. that comes to **$53.62**, and the list is in [bom.md](BOM.md#build-2).
+most parts come in multi-packs, so only the xiao and the battery get bought twice.
 
 ---
 
