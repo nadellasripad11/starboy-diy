@@ -133,7 +133,7 @@
   function makeStar(canvas, readout) {
     const g = canvas.getContext('2d');
     const star = {
-      design: { colorway: E.COLORWAYS.findIndex((c) => c.name === 'starboy'), shape: 2 },
+      design: { colorway: E.COLORWAYS.findIndex((c) => c.name === 'starlight'), shape: 2 },
       cur: { ...NEUTRAL }, mode: 'idle', modeT0: 0, rareFx: null,
       glance: { at: 0, next: 1200, gx: 0, gy: 0 }, blink: { at: -1e4, next: 2500 },
       idleMood: { until: 0, mood: null }, dart: { at: 0, gx: 0, gy: 0 }, label: '',

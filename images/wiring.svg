@@ -50,7 +50,7 @@
     <rect x="40" y="570" width="170" height="100" rx="8" fill="#ffffff" stroke="#1d1d1f" stroke-width="2"/>
     <rect x="40" y="570" width="170" height="36" rx="8" fill="#1d1d1f"/>
     <rect x="40" y="594" width="170" height="12" fill="#1d1d1f"/>
-    <text x="125" y="594" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">LiPo 402530</text>
+    <text x="125" y="594" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">LiPo 402535</text>
     <g font-size="14" fill="#1d1d1f" text-anchor="end"><text x="198" y="625">+</text><text x="198" y="653">−</text></g>
     <g stroke-width="3"><line x1="210" y1="620" x2="340" y2="620" stroke="#d62828"/><line x1="210" y1="648" x2="340" y2="648" stroke="#222222"/></g>
     <rect x="340" y="609" width="190" height="22" rx="11" fill="#d62828"/><rect x="340" y="637" width="190" height="22" rx="11" fill="#222222"/>

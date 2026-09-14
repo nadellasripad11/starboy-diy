@@ -105,4 +105,13 @@ a full charge lasts around 4 hours, and the screen dims itself whenever the eye 
 
 ---
 
-made by [@nadellasripad11](https://github.com/nadellasripad11) · sripadbuilds · inspired by [creature](https://lilguy.net) by daniel kuntz
+## credits & legal
+
+this is an **unofficial fan build**. it's inspired by the starboy from [creature](https://lilguy.net), and it isn't affiliated with, endorsed by, or sold by them. "starboy" is their name. i'm not selling these, just building my own and sharing how.
+
+- the shell cad, firmware, website and docs are my own work, released under the [MIT license](LICENSE)
+- the eye style and the 100 colorway colors and odds are based on creature's public eye gallery. the colorway names are my own
+- libraries: [TFT_eSPI](https://github.com/Bodmer/TFT_eSPI) (FreeBSD), Adafruit MPU6050 + Unified Sensor (BSD), DallasTemperature + OneWire (LGPL / MIT-style). each keeps its own license
+- site fonts are Figtree and Nunito from Google Fonts (SIL Open Font License)
+
+made by [@nadellasripad11](https://github.com/nadellasripad11) · sripadbuilds

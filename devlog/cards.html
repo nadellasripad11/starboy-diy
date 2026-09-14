@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>starboy devlog cards</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@700;800&family=Nunito:wght@600;700;800&display=swap">
+<style>
+  :root { --ground: #f8f8f8; --ink: #2b2c2f; --muted: #8e8f95; --soft: #ebebeb; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 600 24px/1.35 "Nunito", system-ui, sans-serif; }
+  .card { width: 1600px; height: 1000px; padding: 80px 90px; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+  h1, h2 { font-family: "Figtree", Arial, sans-serif; font-weight: 800; letter-spacing: -.045em; line-height: .92; margin: 0; }
+  h1 { font-size: 150px; }
+  h2 { font-size: 84px; }
+  .sub { font-size: 34px; color: #55565c; margin-top: 22px; max-width: 34ch; line-height: 1.3; }
+  .tag { position: absolute; right: 90px; bottom: 60px; font: 700 26px "Figtree", sans-serif; color: var(--muted); letter-spacing: -.01em; display: flex; align-items: center; gap: 12px; }
+  .tag svg { width: 28px; height: 28px; }
+  .eye { display: block; border-radius: 50%; background: #000; }
+  .row { display: flex; gap: 40px; align-items: flex-start; margin-top: auto; margin-bottom: 70px; }
+  .cell { display: grid; justify-items: center; gap: 16px; text-align: center; }
+  .cell b { font-size: 34px; font-weight: 800; line-height: 1; }
+  .cell span { color: var(--muted); font-size: 26px; line-height: 1.1; }
+
+  /* 1 · title */
+  .c1 { flex-direction: row; align-items: center; gap: 70px; }
+  .cluster { position: relative; width: 820px; height: 820px; border-radius: 50%; background: var(--soft); flex: none; margin-left: -20px; }
+  .bubble { position: absolute; transform: translate(-50%, -50%); border-radius: 50%; overflow: hidden; background: #000; }
+  .bubble canvas { width: 100%; height: 100%; display: block; }
+  .c1 .facts { margin-top: 44px; display: grid; gap: 14px; font-size: 32px; }
+  .c1 .facts div::before { content: "✦ "; color: var(--muted); }
+
+  /* 5 · shell */
+  .shell { display: grid; grid-template-columns: 1.15fr 1fr 1fr; gap: 26px; margin-top: 44px; align-items: end; }
+  .shell figure { margin: 0; display: grid; gap: 12px; }
+  .stage { position: relative; }
+  .shell img { display: block; width: 100%; height: auto; border-radius: 24px; background: #fff; }
+  .stage canvas { position: absolute; left: 50%; top: 50%; width: 31.8%; height: 31.8%; transform: translate(-50%, -50%); border-radius: 50%; }
+  .shell figcaption { color: var(--muted); font-size: 24px; }
+
+  /* 6 · colorways */
+  .swatches { display: grid; grid-template-columns: repeat(10, 1fr); gap: 14px 18px; margin-top: 34px; width: 1320px; }
+  .swatches .cell b { font-size: 20px; }
+  .swatches .cell span { font-size: 17px; }
+
+  /* 7 · wiring */
+  .wiring { margin-top: 30px; background: #fff; border-radius: 24px; padding: 16px; width: 880px; }
+  .wiring img { display: block; width: 100%; height: auto; }
+</style>
+</head>
+<body>
+
+<section class="card c1" data-c="1">
+  <div class="cluster" id="cluster"></div>
+  <div>
+    <h1>starboy<br>diy</h1>
+    <p class="sub">a tiny wearable pet i'm building from scratch. he lives on your belt loop and reacts to you.</p>
+    <div class="facts">
+      <div>round 1.28" screen for a face</div>
+      <div>motion, temperature + sound sensors</div>
+      <div>400 eye looks, each with a rarity</div>
+      <div>fully open source</div>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-c="2">
+  <h2>4 eye shapes</h2>
+  <p class="sub">every star rolls one the first time he boots up, and keeps it forever.</p>
+  <div class="row" id="shapes"></div>
+</section>
+
+<section class="card" data-c="3">
+  <h2>he reacts to you</h2>
+  <p class="sub">an accelerometer, a temperature sensor and a mic decide his mood.</p>
+  <div class="row" id="moods"></div>
+</section>
+
+<section class="card" data-c="4">
+  <h2>20 rare effects</h2>
+  <p class="sub">every ~90 seconds there's a chance one of these plays.</p>
+  <div class="row" id="rare" style="flex-wrap: wrap; gap: 34px 46px; margin-bottom: 40px;"></div>
+</section>
+
+<section class="card" data-c="5">
+  <h2>the shell</h2>
+  <p class="sub" style="max-width: none">designed in openscad · 65 × 64 × 20.5 mm · printed in petg, then chromed</p>
+  <div class="shell">
+    <figure>
+      <div class="stage"><img src="../web/shell_flat.png" alt=""><canvas id="shell-eye" width="240" height="240"></canvas></div>
+      <figcaption>the eye sits in a stepped screen pocket</figcaption>
+    </figure>
+    <figure><img src="../web/shell_front.png" alt=""><figcaption>front + keyring loop</figcaption></figure>
+    <figure><img src="../web/shell_back.png" alt=""><figcaption>engraved back medallion</figcaption></figure>
+  </div>
+</section>
+
+<section class="card" data-c="6">
+  <h2>100 colorways × 4 shapes</h2>
+  <p class="sub" style="max-width: none">400 looks total. the rarest ones show up 0.04% of the time.</p>
+  <div class="swatches" id="swatches"></div>
+</section>
+
+<section class="card" data-c="7">
+  <h2>all hand-wired</h2>
+  <p class="sub" style="max-width: none">no custom pcb. everything runs off a thumb-sized seeed xiao esp32c3.</p>
+  <div class="wiring"><img src="../images/wiring.svg" alt=""></div>
+</section>
+
+<div class="tag" id="tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#8e8f95" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>starboy-diy.nadellasripad11.workers.dev</div>
+
+<script src="../web/eyes.js"></script>
+<script>
+(function () {
+  const E = window.StarboyEyes;
+  const c = new URLSearchParams(location.search).get('c') || '1';
+  document.querySelectorAll('.card').forEach((el) => { el.hidden = el.dataset.c !== c; });
+  const card = document.querySelector(`.card[data-c="${c}"]`);
+  card.appendChild(document.getElementById('tag'));
+
+  const BASE = { gx: 0, gy: 0, blinkT: 0, blinkB: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
+  const byName = (n) => E.COLORWAYS.findIndex((x) => x.name === n);
+  function eyeCanvas(size, name, shape, over) {
+    const cv = document.createElement('canvas');
+    cv.width = cv.height = 240;
+    cv.className = 'eye';
+    cv.style.width = cv.style.height = size + 'px';
+    paint(cv, name, shape, over);
+    return cv;
+  }
+  function paint(cv, name, shape, over) {
+    const eye = { ...BASE, ...(over || {}) };
+    eye.blinkB = eye.blinkT * 0.45;
+    E.render(cv.getContext('2d'), eye, shape, E.COLORWAYS[byName(name)], 1000);
+  }
+  function cell(size, name, shape, over, label, sub) {
+    const d = document.createElement('div');
+    d.className = 'cell';
+    d.appendChild(eyeCanvas(size, name, shape, over));
+    d.insertAdjacentHTML('beforeend', `<b>${label}</b>${sub ? `<span>${sub}</span>` : ''}`);
+    return d;
+  }
+
+  if (c === '1') {
+    let s = 20260913 >>> 0;
+    const rnd = () => (s = (Math.imul(s, 1664525) + 1013904223) >>> 0) / 4294967296;
+    const radii = [0.19, 0.165, 0.145, 0.125, 0.112, 0.1, 0.092, 0.084, 0.078, 0.072, 0.066, 0.062, 0.058, 0.055, 0.052, 0.048, 0.046, 0.043, 0.04, 0.038, 0.036, 0.034, 0.032, 0.03, 0.028];
+    const placed = [];
+    for (const r of radii) {
+      let best = null;
+      for (let i = 0; i < 1600; i++) {
+        const a = rnd() * Math.PI * 2, d = Math.sqrt(rnd()) * (0.5 - r - 0.018);
+        const x = 0.5 + Math.cos(a) * d, y = 0.5 + Math.sin(a) * d;
+        if (!placed.every((p) => Math.hypot(p.x - x, p.y - y) >= p.r + r + 0.011)) continue;
+        const score = d + rnd() * 0.08;
+        if (!best || score < best.score) best = { x, y, r, score };
+      }
+      if (best) placed.push(best);
+    }
+    const names = ['starlight', 'redeye', 'deepsea', 'orchid', 'pistachio', 'wasp', 'arcade', 'classic', 'radioactive', 'ruby', 'iceberg', 'midnight', 'coral', 'tv', 'disco', 'butter', 'cricket', 'magenta', 'carp', 'skyline', 'tricolor', 'mermaid', 'chambray', 'heatwave', 'papaya'];
+    const gazes = [[10, 4], [-8, 2], [14, -3], [-12, -4], [0, 6], [6, 0]];
+    const cl = document.getElementById('cluster');
+    placed.forEach((p, i) => {
+      const b = document.createElement('div');
+      b.className = 'bubble';
+      Object.assign(b.style, { left: p.x * 100 + '%', top: p.y * 100 + '%', width: p.r * 200 + '%', height: p.r * 200 + '%' });
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 240;
+      b.appendChild(cv);
+      cl.appendChild(b);
+      const [gx, gy] = gazes[i % gazes.length];
+      const over = i === 9 ? { blinkT: 0.96 } : i === 4 ? { smile: 0.8, blinkT: 0.08 } : { gx, gy };
+      paint(cv, names[i % names.length], [2, 1, 3, 1, 0, 2, 1, 3][i % 8], over);
+    });
+  }
+
+  if (c === '2') {
+    const row = document.getElementById('shapes');
+    [['dot', 'redeye', 0, '10%'], ['circle', 'orchid', 1, '40%'], ['cat', 'starlight', 2, '30%'], ['acorn', 'deepsea', 3, '20%']]
+      .forEach(([label, name, shape, pct]) => row.appendChild(cell(320, name, shape, { gx: 6, gy: 2 }, label, pct)));
+  }
+
+  if (c === '3') {
+    const row = document.getElementById('moods');
+    row.style.gap = '34px';
+    [
+      ['idle', 'looks around', {}],
+      ['happy', 'squints up', { smile: 0.8, pupR: 1.1, irY: 0.9, blinkT: 0.08 }],
+      ['shaken', 'gets mad', { pupR: 0.75, irY: 0.8, bwL: 14, bwR: 14, bwY: 4, colMix: 0.5, colOvr: '#ff0000' }],
+      ['cold', 'shivers', { blinkT: 0.25, pupR: 0.6, irY: 1.2, bwL: 12, bwR: 12, bwY: 5, colMix: 0.5, colOvr: '#0000ff', fx: 10, fxP: 1.3 }],
+      ['alone', 'dozes off', { blinkT: 0.62, pupR: 0.85, bwY: 5, gy: 6 }],
+    ].forEach(([label, sub, over]) => row.appendChild(cell(262, 'pistachio', 2, over, label, sub)));
+  }
+
+  if (c === '4') {
+    const row = document.getElementById('rare');
+    [
+      ['hearts', 'confetti', 1, { fx: 2, fxP: 0.4 }],
+      ['stars', 'chambray', 1, { fx: 3, fxP: 1 }],
+      ['hypno', 'radioactive', 1, { fx: 6, fxP: 0.55 }],
+      ['galaxy', 'midnight', 1, { fx: 16, fxP: 2.2 }],
+      ['fire', 'classic', 2, { fx: 18, fxP: 0.7, blinkT: 0.4, pupR: 0.85, irY: 0.88, bwL: 7, bwR: 7, bwY: 2 }],
+      ['dead', 'apricot', 1, { fx: 15 }],
+      ['rainbow', 'classic', 2, { fx: 1, fxP: 2.1 }],
+      ['laugh', 'coral', 3, { smile: 1, blinkT: 0.08 }],
+      ['loading', 'disco', 1, { fx: 7, fxP: 0.9 }],
+      ['derp', 'tangerine', 1, { fx: 9 }],
+    ].forEach(([label, name, shape, over]) => row.appendChild(cell(210, name, shape, over, label)));
+  }
+
+  if (c === '5') {
+    paint(document.getElementById('shell-eye'), 'starlight', 2, { gx: 8, gy: 2 });
+  }
+
+  if (c === '6') {
+    const grid = document.getElementById('swatches');
+    ['tangerine', 'deepsea', 'orchid', 'ruby', 'firetruck', 'midnight', 'redeye', 'porcelain', 'beetle', 'classic',
+     'coral', 'radioactive', 'disco', 'starlight', 'uv', 'magenta', 'alarm', 'heatwave', 'iceberg', 'pixel',
+     'mermaid', 'sakura', 'tv', 'pinwheel', 'carp', 'pearl', 'traffic', 'wasp', 'gelato', 'triple']
+      .forEach((name, i) => {
+        const idx = byName(name);
+        grid.appendChild(cell(108, name, [1, 2, 3, 0, 1, 2, 1, 3][i % 8], { gx: 5, gy: 1 }, name, E.rarity(idx).toFixed(1) + '%'));
+      });
+  }
+})();
+</script>
+</body>
+</html>
