@@ -189,6 +189,8 @@ set loud 900           mic swing that makes him anxious (default 600, depends on
 set doze 25            seconds alone before dozing (default 25)
 set sleep 75           seconds alone before full sleep (default 75)
 set rare 90            seconds between rare effect chances (default 90)
+set tempoffset -3      correct the temperature reading (default 0). the sensor sits next to
+                       the board and battery, so compare `status` with a real thermometer once
 save                   keep the values after a restart
 defaults               back to factory values
 

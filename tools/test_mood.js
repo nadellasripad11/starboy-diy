@@ -64,6 +64,20 @@ test('full cold path: chill, shiver, freeze, thaw', () => {
   eq(r.step(100), 'idle', 'thawed at 12°c');
 });
 
+test('no chill/idle flicker when the air sits right at 10°c', () => {
+  const r = rig();
+  for (let i = 0; i < 100; i++) {
+    r.env.temp = i % 2 ? 9.75 : 10.25;   // ±0.25°c sensor jitter around the threshold
+    r.step(100);
+  }
+  eq(r.log.filter((s) => s === 'chill').length, 1, 'entered chill once');
+  eq(r.log.includes('idle'), false, 'never flipped back to idle');
+  r.env.temp = 10.75;
+  eq(r.step(200), 'chill', 'still chilly just under 11°c');
+  r.env.temp = 11;
+  eq(r.step(100), 'idle', 'warm again at 11°c');
+});
+
 test('warming up from a shiver goes straight to idle', () => {
   const r = rig();
   r.env.temp = 0;

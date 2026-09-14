@@ -142,6 +142,12 @@ expect(tiltCase.includes('TILT_OFF_DEG') && !/lastInteract\s*=/.test(tiltCase.re
   'firmware: S_TILT refreshes lastInteract again, so a star left at an angle would never sleep');
 expect(!/atan2f\(accelY, accelZ\)/.test(ino), 'firmware: tilt is measured against lying flat again, so a hanging keychain reads as tilted');
 
+// ─── cold hysteresis ─────────────────────────────────────
+expect(fwDef('COLD_HYST_C') === OFFSETS.warm, `web/mood.js: OFFSETS.warm ${OFFSETS.warm} != firmware COLD_HYST_C ${fwDef('COLD_HYST_C')}`);
+expect((ino.match(/ambientTemp >= COLD_C \+ COLD_HYST_C\) setState\(S_IDLE\)/g) || []).length === 2,
+  'firmware: chill and shiver must both exit with COLD_HYST_C, or the mood flickers at 10°C');
+expect(/ambientTemp = t \+ tune\.tempOffsetC;/.test(ino), 'firmware: temperature readings no longer apply tune.tempOffsetC');
+
 // ─── frame-rate independence (sleep runs at 8fps, awake at 30) ─
 expect(/powf\(0\.85f, frameScale\)/.test(ino), 'firmware: shake smoothing is per-frame again, so shakes register slower while asleep');
 expect(/powf\(0\.93f, frameScale\)/.test(ino), 'firmware: sound decay is per-frame again, so noise lingers 4x longer while asleep');

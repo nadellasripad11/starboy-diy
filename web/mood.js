@@ -16,7 +16,7 @@
     dreamLength: 6000,
     wokeLength: 1600,
   };
-  const OFFSETS = { shiver: 5, freeze: 8, thaw: 2 };
+  const OFFSETS = { shiver: 5, freeze: 8, thaw: 2, warm: 1 };   // warm = COLD_HYST_C
   const TILT = { onDeg: 25, offDeg: 12, restTauMs: 6000 };
 
   // Tilt against a slowly learned resting position (see readSensors() in the
@@ -86,11 +86,11 @@
         case 'recovering': if (age > TIMING.recoverToAngry) set('angry'); break;
         case 'angry': if (age > TIMING.angryCalm) set(isCold ? 'chill' : 'idle', 'calmed down'); break;
         case 'chill':
-          if (!isCold) set('idle', 'warmed up');
+          if (temp >= cfg.coldC + OFFSETS.warm) set('idle', 'warmed up');
           else if (age > TIMING.chillToShiver && temp < cfg.coldC - OFFSETS.shiver) set('shiver', `below ${cfg.coldC - OFFSETS.shiver}°c`);
           break;
         case 'shiver':
-          if (!isCold) set('idle', 'warmed up');
+          if (temp >= cfg.coldC + OFFSETS.warm) set('idle', 'warmed up');
           else if (age > TIMING.shiverToFreeze && temp < cfg.coldC - OFFSETS.freeze) set('freeze', `below ${cfg.coldC - OFFSETS.freeze}°c`);
           break;
         case 'freeze': if (temp >= cfg.coldC + OFFSETS.thaw) set('idle', 'thawed out'); break;

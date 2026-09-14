@@ -363,8 +363,11 @@ bool   restInit=false;
 // Serial (`set shake 12`, `save`) and they load from flash at boot.
 // LOUD is the mic's peak-to-peak swing (0-4095): the MAX4466 idles at
 // mid-rail, so only the swing matters, and it depends on the gain trimmer.
-struct Tuning { float shakeOnG, coldC; int loudP2P; uint32_t dozeMs, sleepMs, rareMs; };
-const Tuning TUNING_DEFAULTS = { 16.0f, 10.0f, 600, 25000UL, 75000UL, 90000UL };
+// tempOffsetC is added to every temperature reading, to cancel out heat from
+// the board and battery sitting next to the sensor (measure it per unit).
+struct Tuning { float shakeOnG, coldC; int loudP2P; uint32_t dozeMs, sleepMs, rareMs; float tempOffsetC; };
+const Tuning TUNING_DEFAULTS = { 16.0f, 10.0f, 600, 25000UL, 75000UL, 90000UL, 0.0f };
+#define COLD_HYST_C 1.0f   // must warm this far past COLD_C to stop feeling cold
 Tuning tune = TUNING_DEFAULTS;
 bool   debugSensors = DEBUG_SENSORS;
 
@@ -615,7 +618,7 @@ void readSensors() {
     float t = ds18b20.getTempCByIndex(0);
     // 85.0 is the sensor's power-on value — it means no conversion happened
     if (t != DEVICE_DISCONNECTED_C && t != 85.0f && t > -50 && t < 100)
-      ambientTemp = t;
+      ambientTemp = t + tune.tempOffsetC;
   }
 
   // Mic — peak-to-peak over a short burst. The MAX4466 output sits at
@@ -707,13 +710,15 @@ void updateState() {
 
     case S_CHILL:
       shiverPhase += 0.08f;
-      if (!isCold) setState(S_IDLE);
+      // hysteresis: the DS18B20 jitters ~0.25°C, so exiting at exactly COLD_C
+      // flipped chill/idle on every reading when the air sat right at 10°C
+      if (ambientTemp >= COLD_C + COLD_HYST_C) setState(S_IDLE);
       if (age > 4000 && ambientTemp < COLD_C - 5) setState(S_SHIVER);
       break;
 
     case S_SHIVER:
       shiverPhase += 0.18f;
-      if (!isCold) setState(S_IDLE);
+      if (ambientTemp >= COLD_C + COLD_HYST_C) setState(S_IDLE);
       if (age > 8000 && ambientTemp < COLD_C - 8) setState(S_FREEZE);
       break;
 

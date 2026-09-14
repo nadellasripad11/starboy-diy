@@ -56,6 +56,7 @@ void loadTuning() {
   tune.dozeMs   = prefs.getUInt ("doze",  tune.dozeMs);
   tune.sleepMs  = prefs.getUInt ("sleep", tune.sleepMs);
   tune.rareMs   = prefs.getUInt ("rare",  tune.rareMs);
+  tune.tempOffsetC = prefs.getFloat("toff", tune.tempOffsetC);
   prefs.end();
 }
 
@@ -67,6 +68,7 @@ static void saveTuning() {
   prefs.putUInt ("doze",  tune.dozeMs);
   prefs.putUInt ("sleep", tune.sleepMs);
   prefs.putUInt ("rare",  tune.rareMs);
+  prefs.putFloat("toff",  tune.tempOffsetC);
   prefs.end();
 }
 
@@ -83,7 +85,7 @@ void applySensorOverrides() {
 // ─── commands ────────────────────────────────────────────
 static void printHelp() {
   Serial.println(F("commands: status | mood <name> | fx <name> | reroll | seed <hex>"));
-  Serial.println(F("          set <shake|cold|loud|doze|sleep|rare> <value> | save | defaults"));
+  Serial.println(F("          set <shake|cold|loud|doze|sleep|rare|tempoffset> <value> | save | defaults"));
   Serial.println(F("          fake temp <c> | fake sound <p2p> | fake off | debug on|off"));
   Serial.print(F("moods: "));
   for (const auto &m : MOODS) { Serial.print(m.name); Serial.print(' '); }
@@ -100,9 +102,10 @@ static void printStatus() {
   Serial.printf("sense shake %.1f | temp %.1fC%s | sound %d%s | tilt %.0f deg from rest | mpu %s\n",
                 shakeE, ambientTemp, fakeTempOn ? " (fake)" : "", soundPeak, fakeSoundOn ? " (fake)" : "",
                 tiltLean, mpuOK ? "ok" : "missing");
-  Serial.printf("tune  shake %.1f | cold %.1f | loud %d | doze %lus | sleep %lus | rare %lus\n",
+  Serial.printf("tune  shake %.1f | cold %.1f | loud %d | doze %lus | sleep %lus | rare %lus | tempoffset %+.1f\n",
                 tune.shakeOnG, tune.coldC, tune.loudP2P,
-                (unsigned long)(tune.dozeMs / 1000), (unsigned long)(tune.sleepMs / 1000), (unsigned long)(tune.rareMs / 1000));
+                (unsigned long)(tune.dozeMs / 1000), (unsigned long)(tune.sleepMs / 1000), (unsigned long)(tune.rareMs / 1000),
+                tune.tempOffsetC);
 }
 
 static bool jumpTo(bool rare, const String &name) {
@@ -174,7 +177,8 @@ static void runCommand(String line) {
     else if (key == "doze")  tune.dozeMs   = (uint32_t)constrain(v, 5.0f, 3600.0f) * 1000UL;
     else if (key == "sleep") tune.sleepMs  = (uint32_t)constrain(v, 10.0f, 7200.0f) * 1000UL;
     else if (key == "rare")  tune.rareMs   = (uint32_t)constrain(v, 5.0f, 3600.0f) * 1000UL;
-    else { Serial.println(F("keys: shake cold loud doze sleep rare (times in seconds)")); return; }
+    else if (key == "tempoffset") tune.tempOffsetC = constrain(v, -15.0f, 15.0f);
+    else { Serial.println(F("keys: shake cold loud doze sleep rare tempoffset (times in seconds)")); return; }
     if (tune.sleepMs <= tune.dozeMs) tune.sleepMs = tune.dozeMs + 10000UL;
     printStatus();
     Serial.println(F("live now. type `save` to keep it after a restart"));
