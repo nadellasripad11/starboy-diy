@@ -46,6 +46,51 @@
   /* 7 · wiring */
   .wiring { margin-top: 30px; background: #fff; border-radius: 24px; padding: 16px; width: 880px; }
   .wiring img { display: block; width: 100%; height: auto; }
+
+  /* devlog 3 */
+  .split { display: grid; grid-template-columns: 520px 1fr; gap: 70px; align-items: center; margin-top: 40px; }
+  .bezel { width: 460px; height: 460px; border-radius: 50%; padding: 22px;
+    background: conic-gradient(from 210deg, #fbfbfd, #8d8f99, #e7e8ed, #6d6f79, #f6f6f9, #9c9ea8, #fbfbfd);
+    box-shadow: 0 40px 70px -40px rgba(0,0,0,.45); }
+  .bezel canvas { width: 100%; height: 100%; border-radius: 50%; display: block; background: #000; }
+  .mood-big { text-align: center; font: 800 44px "Figtree", sans-serif; letter-spacing: -.03em; margin-top: 18px; width: 460px; }
+  .ctl { background: #fff; border-radius: 22px; padding: 18px 24px; margin-bottom: 14px; box-shadow: 0 1px 0 #e1e1e4; }
+  .ctl-head { display: flex; justify-content: space-between; font-size: 26px; }
+  .ctl-head b { font-weight: 800; }
+  .ctl-head span { color: var(--muted); }
+  .track { position: relative; height: 10px; border-radius: 99px; background: #ebebeb; margin: 16px 0 6px; }
+  .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 99px; background: var(--ink); }
+  .track i.cold { background: #3b6cf6; }
+  .track em { position: absolute; top: 50%; width: 26px; height: 26px; border-radius: 50%; background: #fff; border: 3px solid var(--ink); transform: translate(-50%, -50%); }
+  .shake-btn { background: var(--ink); color: #fff; border-radius: 16px; padding: 18px; text-align: center; font-weight: 800; font-size: 26px; }
+  .logline { font-size: 22px; color: #55565c; } .logline b { color: var(--ink); }
+
+  .bugs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 26px; margin-top: 34px; }
+  .bug { background: #fff; border-radius: 24px; padding: 26px; box-shadow: 0 1px 0 #e1e1e4; display: grid; gap: 14px; }
+  .bug .eyes { display: flex; align-items: center; gap: 14px; }
+  .bug .arrow { font-size: 34px; color: var(--muted); }
+  .bug b { font-size: 30px; line-height: 1.1; letter-spacing: -.01em; }
+  .bug p { margin: 0; color: #55565c; font-size: 22px; line-height: 1.3; }
+  .bug .fixed { color: #1b8a4b; font-weight: 800; font-size: 20px; }
+  .stats { display: flex; gap: 46px; margin-top: 30px; font-size: 26px; color: #55565c; }
+  .stats b { font: 800 44px "Figtree", sans-serif; color: var(--ink); margin-right: 8px; letter-spacing: -.03em; }
+
+  .looks-row { display: flex; gap: 22px; margin-top: 44px; }
+  .looks-row .sel { outline: 5px solid var(--ink); outline-offset: 6px; border-radius: 50%; }
+  .pickpanel { margin-top: 50px; width: 1060px; background: var(--ink); color: #fff; border-radius: 30px; padding: 28px 34px; display: grid; grid-template-columns: 150px 1fr; gap: 30px; align-items: center; }
+  .pickpanel .n { font: 800 40px "Figtree", sans-serif; letter-spacing: -.02em; }
+  .pickpanel .o { color: #a9aab0; font-size: 24px; }
+  .pickpanel .h { color: #cfd0d4; font-size: 24px; margin: 10px 0 14px; }
+  .pickpanel code { font: 700 32px ui-monospace, Consolas, monospace; background: #1a1b1d; padding: 14px 18px; border-radius: 14px; }
+  .pickpanel .copy { display: inline-block; margin-left: 12px; background: #3a3b40; padding: 12px 20px; border-radius: 99px; font-size: 22px; font-weight: 700; }
+
+  .term { background: #141517; color: #e6e6e9; border-radius: 26px; padding: 26px 30px; font: 500 21px/1.55 ui-monospace, Consolas, monospace; white-space: pre; }
+  .term .p { color: #7ee2a8; } .term .d { color: #8e8f95; }
+  .checks { display: grid; gap: 12px; font-size: 25px; }
+  .checks div { background: #fff; border-radius: 18px; padding: 14px 20px; box-shadow: 0 1px 0 #e1e1e4; }
+  .checks b { font-weight: 800; }
+  .checks span { color: var(--muted); }
+  .note { color: var(--muted); font-size: 20px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -105,6 +150,94 @@
   <h2>all hand-wired</h2>
   <p class="sub" style="max-width: none">no custom pcb. everything runs off a thumb-sized seeed xiao esp32c3.</p>
   <div class="wiring"><img src="../images/wiring.svg" alt=""></div>
+</section>
+
+<section class="card" data-c="8">
+  <h2>sensor sandbox</h2>
+  <p class="sub" style="max-width:none">be his sensors on the website. same mood logic as the real firmware.</p>
+  <div class="split">
+    <div>
+      <div class="bezel"><canvas id="sb-eye" width="240" height="240"></canvas></div>
+      <div class="mood-big">shivering</div>
+    </div>
+    <div>
+      <div class="ctl"><div class="ctl-head"><b>temperature</b><span>2°c</span></div><div class="track"><i class="cold" style="width:26.7%"></i><em style="left:26.7%"></em></div></div>
+      <div class="ctl"><div class="ctl-head"><b>noise</b><span>quiet</span></div><div class="track"><i style="width:3%"></i><em style="left:3%"></em></div></div>
+      <div class="ctl"><div class="ctl-head"><b>tilt</b><span>flat</span></div><div class="track"><i style="width:50%"></i><em style="left:50%"></em></div></div>
+      <div class="ctl"><div class="shake-btn">hold to shake</div></div>
+      <div class="ctl"><div class="logline"><b>chilly</b> · below 10°c &nbsp;→&nbsp; <b>shivering</b> · below 5°c</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-c="9">
+  <h2>3 bugs caught before the parts arrived</h2>
+  <p class="sub" style="max-width:none">i wrote tests for his mood logic with a fake clock. they found these.</p>
+  <div class="bugs">
+    <div class="bug">
+      <div class="eyes"><canvas id="bug1a"></canvas><span class="arrow">→</span><canvas id="bug1b"></canvas></div>
+      <b>shaking froze his eyes</b>
+      <p>the dizzy spin never played while you were still shaking him.</p>
+      <span class="fixed">fixed: he spins now</span>
+    </div>
+    <div class="bug">
+      <div class="eyes"><canvas id="bug2a"></canvas><span class="arrow">→</span><canvas id="bug2b"></canvas></div>
+      <b>a belt loop = tilted forever</b>
+      <p>hanging upright read as 90° tilt, so he'd never sleep and drain the battery.</p>
+      <span class="fixed">fixed: he gets used to it</span>
+    </div>
+    <div class="bug">
+      <div class="eyes"><canvas id="bug3a"></canvas><span class="arrow">→</span><canvas id="bug3b"></canvas></div>
+      <b>asleep and deaf</b>
+      <p>my battery saver meant he only listened 3% of the time while sleeping.</p>
+      <span class="fixed">fixed: a clap wakes him</span>
+    </div>
+  </div>
+  <div class="stats"><span><b>22</b>mood tests</span><span><b>5</b>eye seed tests</span><span><b>310</b>firmware ↔ website checks</span></div>
+</section>
+
+<section class="card" data-c="10">
+  <h2>pick his eyes</h2>
+  <p class="sub" style="max-width:none">tap any of the 400 looks on the site and get the exact seed that gives a real star those eyes.</p>
+  <div class="looks-row" id="seed-row"></div>
+  <div class="pickpanel">
+    <canvas id="seed-eye" width="240" height="240" style="width:150px;height:150px;border-radius:50%;background:#000"></canvas>
+    <div>
+      <div class="n">cat starlight</div>
+      <div class="o">0.17% · rare</div>
+      <div class="h">type this in the star's serial console:</div>
+      <code>seed 1da79c35</code><span class="copy">copy</span>
+    </div>
+  </div>
+</section>
+
+<section class="card" data-c="11">
+  <h2>tuning console + hardware test</h2>
+  <p class="sub" style="max-width:none">tune him over usb without reflashing, and test every part before closing the shell.</p>
+  <div class="split" style="grid-template-columns: 820px 1fr; gap: 50px; margin-top: 34px;">
+    <div>
+      <div class="term"><span class="p">&gt; fake temp 2</span>
+fake temp 2.0C
+<span class="p">&gt; mood shiver</span>
+-&gt; shiver
+<span class="p">&gt; set loud 900</span>
+tune  shake 16.0 | cold 10.0 | loud 900 | doze 25s ...
+live now. type `save` to keep it after a restart
+<span class="p">&gt; fx fire</span>
+-&gt; fire
+<span class="p">&gt; reroll</span>
+Eye seed: 0x1DA79C35 | cat starlight</div>
+      <div class="note">example session · the firmware compiles, parts are on the way</div>
+    </div>
+    <div class="checks">
+      <div><b>screen</b> <span>red, green, blue, white fills</span></div>
+      <div><b>backlight</b> <span>fades out and back in</span></div>
+      <div><b>i2c</b> <span>finds the motion sensor</span></div>
+      <div><b>mpu6050</b> <span>reads ~9.8 m/s² of gravity</span></div>
+      <div><b>ds18b20</b> <span>reads the air temperature</span></div>
+      <div><b>mic</b> <span>idles near the middle, bars move on a clap</span></div>
+    </div>
+  </div>
 </section>
 
 <div class="tag" id="tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#8e8f95" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>starboy-diy.nadellasripad11.workers.dev</div>
@@ -221,6 +354,32 @@
         const idx = byName(name);
         grid.appendChild(cell(108, name, [1, 2, 3, 0, 1, 2, 1, 3][i % 8], { gx: 5, gy: 1 }, name, E.rarity(idx).toFixed(1) + '%'));
       });
+  }
+
+  const size = (id, px) => { const cv = document.getElementById(id); cv.width = cv.height = 240; cv.style.width = cv.style.height = px + 'px'; cv.style.borderRadius = '50%'; cv.style.background = '#000'; return cv; };
+
+  if (c === '8') {
+    paint(document.getElementById('sb-eye'), 'starlight', 2,
+      { blinkT: 0.25, pupR: 0.6, irY: 1.2, bwL: 12, bwR: 12, bwY: 5, colMix: 0.5, colOvr: '#0000ff', fx: 10, fxP: 1.3, gx: 5 });
+  }
+
+  if (c === '9') {
+    paint(size('bug1a', 150), 'coral', 1, { gx: 0, gy: 0 });
+    paint(size('bug1b', 150), 'coral', 1, { gx: 20, gy: -14, blinkT: 0.25, pupR: 0.8 });
+    paint(size('bug2a', 150), 'deepsea', 3, { gx: 18, gy: 10 });
+    paint(size('bug2b', 150), 'deepsea', 3, { blinkT: 0.97, pupR: 0.7 });
+    paint(size('bug3a', 150), 'pistachio', 2, { blinkT: 0.97, pupR: 0.7 });
+    paint(size('bug3b', 150), 'pistachio', 2, { pupR: 1.25, irX: 1.05, irY: 1.05, bwY: -3 });
+  }
+
+  if (c === '10') {
+    const row = document.getElementById('seed-row');
+    [['tangerine', 0], ['orchid', 1], ['starlight', 2], ['deepsea', 3], ['redeye', 1], ['wasp', 0], ['mermaid', 1]].forEach(([name, shape]) => {
+      const cv = eyeCanvas(150, name, shape, { gx: 4, gy: 1 });
+      if (name === 'starlight') cv.classList.add('sel');
+      row.appendChild(cv);
+    });
+    paint(document.getElementById('seed-eye'), 'starlight', 2, { gx: 6, gy: 1 });
   }
 })();
 </script>
