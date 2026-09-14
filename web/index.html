@@ -7,7 +7,7 @@
 <meta name="description" content="a tiny wearable pet built by hand. it shivers in the cold, gets dizzy when you shake it, and rolls its own eyes. 400 looks, fully open source.">
 <meta property="og:title" content="starboy diy">
 <meta property="og:description" content="a tiny wearable pet built by hand. shake it, chill it, yell at it, and it reacts.">
-<meta property="og:image" content="render_front.png">
+<meta property="og:image" content="shell_back.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
@@ -102,6 +102,11 @@
   .renders figcaption { padding: 10px 14px 12px; color: var(--muted); font-size: 14px; }
   .dims { margin-top: 18px; color: var(--muted); }
   .dims b { color: var(--ink); }
+  .demo { margin: 0 0 14px; }
+  .demo-stage { position: relative; aspect-ratio: 1; border-radius: 18px; overflow: hidden; background: #f8f8f8; }
+  .demo-stage img { display: block; width: 100%; height: auto; }
+  .demo-stage canvas { position: absolute; left: 50%; top: 50%; width: 31.8%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: #000; }
+  .demo figcaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 2px 0; color: var(--muted); font-size: 15px; }
 
   footer { border-top: 1px solid var(--line); padding: 36px 0 60px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; color: var(--muted); font-size: 15px; }
 
@@ -197,9 +202,16 @@
         <div class="cost"><strong>$96.86</strong><span>in parts for one star</span></div>
       </div>
       <div>
+        <figure class="demo">
+          <div class="demo-stage">
+            <img src="shell_flat.png" width="900" height="900" alt="the star shell seen straight on, with live eyes playing inside the round screen" loading="lazy">
+            <canvas id="demo-eye" width="240" height="240" aria-hidden="true"></canvas>
+          </div>
+          <figcaption><span id="demo-name"></span><button class="chip" type="button" id="demo-next">next colorway</button></figcaption>
+        </figure>
         <div class="renders">
-          <figure><img src="render_front.png" alt="3d render of the star shell front with the round screen opening and keyring loop" loading="lazy"><figcaption>front · screen and keyring loop</figcaption></figure>
-          <figure><img src="render_back.png" alt="3d render of the star shell back with the engraved sripadbuilds medallion" loading="lazy"><figcaption>back · engraved medallion</figcaption></figure>
+          <figure><img src="shell_front.png" width="900" height="900" alt="3d render of the star shell front with the round screen opening and keyring loop" loading="lazy"><figcaption>front · screen and keyring loop</figcaption></figure>
+          <figure><img src="shell_back.png" width="900" height="900" alt="3d render of the star shell back with the engraved sripadbuilds medallion" loading="lazy"><figcaption>back · engraved medallion</figcaption></figure>
         </div>
         <p class="dims"><b>65 × 64 × 20.5 mm</b> · <b>78 mm</b> with the loop · printed in petg, sanded, primed and sprayed chrome</p>
       </div>

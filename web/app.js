@@ -278,6 +278,36 @@
   let tryVisible = false;
   new IntersectionObserver(([en]) => { tryVisible = en.isIntersecting; }).observe(tryCanvas);
 
+  // ─── colorway demo: live eyes inside the real shell ───
+  const demoCanvas = document.getElementById('demo-eye');
+  const demoG = demoCanvas.getContext('2d');
+  const demoName = document.getElementById('demo-name');
+  const demo = { design: E.roll(), since: 0, gx: 0, gy: 0, glance: { at: 0, gx: 0, gy: 0 }, blinkAt: -1e4, blinkNext: 1800 };
+  function showDemo(design) {
+    demo.design = design;
+    demo.since = performance.now();
+    const cw = E.COLORWAYS[design.colorway];
+    demoName.textContent = `${E.SHAPES[design.shape]} ${cw.name} · ${E.rarity(design.colorway).toFixed(1)}% colorway`;
+  }
+  showDemo(demo.design);
+  document.getElementById('demo-next').addEventListener('click', () => showDemo(E.roll()));
+  let demoVisible = false;
+  new IntersectionObserver(([en]) => { demoVisible = en.isIntersecting; }).observe(demoCanvas);
+  demo.frame = (now, dt) => {
+    if (!reduceMotion && now - demo.since > 3200) showDemo(E.roll());
+    if (!reduceMotion && now - demo.glance.at > 1500) {
+      demo.glance = { at: now, gx: Math.random() < 0.3 ? 0 : Math.random() * 28 - 14, gy: Math.random() < 0.3 ? 0 : Math.random() * 12 - 6 };
+    }
+    const k = 1 - Math.pow(1 - 0.18, dt * 60 / 1000);
+    demo.gx += (demo.glance.gx - demo.gx) * k;
+    demo.gy += (demo.glance.gy - demo.gy) * k;
+    if (!reduceMotion && now - demo.blinkAt > demo.blinkNext) { demo.blinkAt = now; demo.blinkNext = 2000 + Math.random() * 3000; }
+    const blink = reduceMotion ? 0 : blinkCurve(now - demo.blinkAt);
+    E.render(demoG, { ...NEUTRAL, gx: demo.gx, gy: demo.gy, blinkT: blink, blinkB: blink * 0.45, colOvr: '#000000', fx: 0, fxP: 0 },
+             demo.design.shape, E.COLORWAYS[demo.design.colorway], now);
+  };
+  demo.frame(performance.now(), 16);
+
   // ─── soft grey cursor ball ───
   const ball = document.getElementById('cursor-ball');
   const ballOn = finePointer && !reduceMotion;
@@ -302,6 +332,7 @@
       for (const b of bubbles) drawBubble(b, now, dt);
     }
     if (tryVisible) tryStar.frame(now, dt);
+    if (demoVisible) demo.frame(now, dt);
     if (ballOn) {
       const k = 1 - Math.pow(1 - 0.25, dt * 60 / 1000);
       bx += (pointer.x - bx) * k; by += (pointer.y - by) * k;
