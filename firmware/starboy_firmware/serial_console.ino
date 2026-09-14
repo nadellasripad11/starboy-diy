@@ -84,7 +84,7 @@ void applySensorOverrides() {
 
 // ─── commands ────────────────────────────────────────────
 static void printHelp() {
-  Serial.println(F("commands: status | mood <name> | fx <name> | reroll | seed <hex>"));
+  Serial.println(F("commands: status | hw | mood <name> | fx <name> | reroll | seed <hex>"));
   Serial.println(F("          set <shake|cold|loud|doze|sleep|rare|tempoffset> <value> | save | defaults"));
   Serial.println(F("          fake temp <c> | fake sound <p2p> | fake off | debug on|off"));
   Serial.print(F("moods: "));
@@ -106,6 +106,40 @@ static void printStatus() {
                 tune.shakeOnG, tune.coldC, tune.loudP2P,
                 (unsigned long)(tune.dozeMs / 1000), (unsigned long)(tune.sleepMs / 1000), (unsigned long)(tune.rareMs / 1000),
                 tune.tempOffsetC);
+}
+
+// Day-one wiring check without reflashing the hardware test sketch.
+static void printHardware() {
+  Serial.println(F("hardware:"));
+  Serial.printf("  screen    %s\n", sprOK ? "sprite buffer ok (if you can see the eyes, spi is wired right)"
+                                          : "no sprite buffer, drawing directly (will flicker)");
+  uint8_t found = 0;
+  String addrs;
+  for (uint8_t a = 1; a < 127; a++) {
+    Wire.beginTransmission(a);
+    if (Wire.endTransmission() == 0) { found++; addrs += " 0x" + String(a, HEX); }
+  }
+  Serial.printf("  i2c       %u device(s):%s\n", found, found ? addrs.c_str() : " none, check SDA on D4 and SCL on D5");
+  Serial.printf("  mpu6050   %s\n", mpuOK ? "ok" : "missing, check its wires and AD0 to GND");
+  uint8_t probes = ds18b20.getDeviceCount();
+  Serial.printf("  ds18b20   %s | reading %.1fC (offset %+.1f)\n",
+                probes ? "ok" : "missing, check DATA on D7 and the 4.7k pull-up", ambientTemp, tune.tempOffsetC);
+  if (HAS_MIC) {
+    long sum = 0;
+    int lo = 4095, hi = 0;
+    for (int i = 0; i < 128; i++) {
+      int v = analogRead(MIC_PIN);
+      sum += v;
+      lo = min(lo, v);
+      hi = max(hi, v);
+    }
+    int mid = sum / 128;
+    Serial.printf("  mic       idle level %d (expect ~2048) | swing %d | loud at %d\n", mid, hi - lo, tune.loudP2P);
+    if (mid < 200 || mid > 3900) Serial.println(F("            level looks stuck: check OUT on D1 and VCC on 3V3"));
+  } else {
+    Serial.println(F("  mic       disabled (HAS_MIC is false)"));
+  }
+  Serial.println(F("  battery   not measured (no sense pin wired)"));
 }
 
 static bool jumpTo(bool rare, const String &name) {
@@ -140,6 +174,7 @@ static void runCommand(String line) {
 
   if (cmd == "help" || cmd == "?") { printHelp(); return; }
   if (cmd == "status")             { printStatus(); return; }
+  if (cmd == "hw")                 { printHardware(); return; }
 
   if (cmd == "mood") {
     if (!jumpTo(false, arg)) Serial.println(F("unknown mood, try `help`"));

@@ -66,16 +66,11 @@ const E = loadEyes('web/eyes.js');
 compareSource('web/eyes.js', read('web/eyes.js'), E.COLORWAYS);
 expect(E.SHAPE_WEIGHT.join() === fwShapeWeight.join(), `web/eyes.js: shape weights ${E.SHAPE_WEIGHT} != firmware ${fwShapeWeight}`);
 
-// the preview page keeps its own copy of the table and renderer
+// the preview page uses the website's renderer instead of keeping its own copy
 const preview = read('firmware/eye_preview.html');
-const previewTable = preview.match(/const COLORWAYS = `([^`]+)`/)[1].split('|').map((r, i) => {
-  const [name, body, pl, pr] = r.split(' ');
-  const w = i < 14 ? 10 : i < 19 ? 8 : i < 31 ? 9 : i < 36 ? 7 : i < 73 ? 3 : i < 86 ? 5 : 2;
-  return { name, body, pl, pr, w };
-});
-expect(/i < 14 \? 10 : i < 19 \? 8 : i < 31 \? 9 : i < 36 \? 7 : i < 73 \? 3 : i < 86 \? 5 : 2/.test(preview),
-  'firmware/eye_preview.html: colorway weight formula changed, update this check');
-compareSource('firmware/eye_preview.html', preview, previewTable);
+expect(/<script src="\.\.\/web\/eyes\.js"><\/script>/.test(preview), 'firmware/eye_preview.html: no longer loads ../web/eyes.js');
+expect(!/const COLORWAYS|function drawEye|function ellSpan/.test(preview),
+  'firmware/eye_preview.html: has its own copy of the renderer again; use web/eyes.js');
 
 // ─── sandbox mood logic uses the firmware thresholds ─────
 const sandbox = read('web/sandbox.js');
@@ -141,6 +136,10 @@ const tiltCase = (ino.match(/case S_TILT:[\s\S]*?break;/) || [''])[0];
 expect(tiltCase.includes('TILT_OFF_DEG') && !/lastInteract\s*=/.test(tiltCase.replace(/\/\/.*$/gm, '')),
   'firmware: S_TILT refreshes lastInteract again, so a star left at an angle would never sleep');
 expect(!/atan2f\(accelY, accelZ\)/.test(ino), 'firmware: tilt is measured against lying flat again, so a hanging keychain reads as tilted');
+
+// ─── rare effects don't repeat back to back ──────────────
+expect(/uint8_t pick = random\(lastPick < 20 \? 19 : 20\);\s*if \(lastPick < 20 && pick >= lastPick\) pick\+\+;/.test(ino),
+  'firmware: checkRare() can pick the same rare effect twice in a row again');
 
 // ─── cold hysteresis ─────────────────────────────────────
 expect(fwDef('COLD_HYST_C') === OFFSETS.warm, `web/mood.js: OFFSETS.warm ${OFFSETS.warm} != firmware COLD_HYST_C ${fwDef('COLD_HYST_C')}`);

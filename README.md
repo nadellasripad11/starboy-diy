@@ -99,6 +99,14 @@ before closing the shell, flash [`firmware/hardware_test`](firmware/hardware_tes
 
 both sketches compile clean for the xiao esp32c3 (esp32 core 3.3.11).
 
+### checking everything at once
+
+```
+node tools/test_all.js --compile
+```
+
+runs the parity check, the mood tests and the seed tests, then builds both sketches (point `ARDUINO_CLI` at arduino-cli if it isn't on your PATH). drop `--compile` for the 3-second version. the sections below explain each check.
+
 ### keeping the eyes in sync
 
 the eye design lives in the firmware and in the website's copy of the renderer. after changing colorways, shapes or thresholds, run:

@@ -1000,7 +1000,12 @@ void checkRare() {
   if (r >= 40) return;
 
   // Pick a rare animation (20 types)
-  uint8_t pick = random(20);
+  // never the same effect twice in a row: roll among the other 19, then skip
+  // over the last one
+  static uint8_t lastPick = 255;
+  uint8_t pick = random(lastPick < 20 ? 19 : 20);
+  if (lastPick < 20 && pick >= lastPick) pick++;
+  lastPick = pick;
   StarState s = (StarState)(S_RARE_RAINBOW + pick);
   setState(s);
 }
