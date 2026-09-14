@@ -22,15 +22,19 @@ pads instead.**
 **2. The GY-521's headers.** With headers soldered it's ~11mm tall. The
 depth budget assumes the board without them (~3.0mm). Leave them off.
 
-**3. Battery thickness is a hard ceiling.** 4.0mm max, with a protection
-circuit. There is only 0.5mm of slack in the whole stack.
+**3. Battery thickness is a hard ceiling.** The depth budget is 12.0mm. The
+EEMB 402535 in the BOM is 4.3mm thick, which brings the stack to 11.8mm and
+leaves just 0.2mm of slack (the CAD was first sized for a 4.0mm cell). Its
+36 × 25.5mm footprint fits the cavity rotated 90°. Measure the battery and
+the GY-521 before closing up; if they're thicker than listed, the shell's
+depth will need adjusting.
 
 **4. Battery wiring.** The XIAO has BAT+ / BAT− **solder pads** on its
 underside, not a plug. Cut the battery's JST plug off and solder the wires.
 **Check polarity with a multimeter** — cheap leads don't follow one colour
 standard, and reversing it can destroy the board.
 
-**5. Charge rate.** The XIAO fast-charges at 380mA — about 1.3× a 300mAh
+**5. Charge rate.** The XIAO fast-charges at 380mA — about 1.2× the 320mAh
 battery's capacity, above the usual 1C limit. Charge it where you can see
 it and unplug it if it gets warm.
 

@@ -37,11 +37,14 @@ front face
   ├─ GC9A01 display        5.4mm   (inserted from inside, against the lip)
   ├─ XIAO ESP32C3          4.5mm   (USB-C flush against the 180° wall)
   ├─ GY-521 (no headers)  ~3.0mm
-  └─ LiPo 402530 300mAh    4.0mm
+  └─ EEMB 402535 320mAh    4.3mm   (36 × 25.5mm, lies rotated 90° in the cavity)
 back face
 ```
-Total 11.5mm into 12.0mm available — 0.5mm slack. The GY-521 figure is an
-estimate; measure yours. Snug, so dry-fit before gluing anything.
+Total 11.8mm into 12.0mm available — only 0.2mm slack. The CAD was first
+sized for a 4.0mm 402530 cell; the 402535 in the BOM is 0.3mm thicker. Its
+footprint was checked against the real star outline (1.0mm to spare), but
+the depth is now very tight and the GY-521's ~3.0mm is an estimate. Measure
+the battery and the GY-521 when they arrive and dry-fit before gluing.
 
 ## Charging
 
