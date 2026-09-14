@@ -345,7 +345,16 @@ float  shakeE=0;               // smoothed shake energy
 float  ambientTemp=20.0f;
 int    soundPeak=0;
 uint32_t shakeStart=0;
-float  tiltAngleX=0, tiltAngleY=0;
+// Tilt is measured against where he's been resting lately, not against lying
+// flat. A keychain hangs upright, 90° from flat, which used to keep him in
+// S_TILT forever, and awake, since tilt counted as attention.
+float  tiltLean=0;                     // degrees away from the resting position
+float  tiltDX=0, tiltDY=0;             // sideways part of that change, for the gaze
+float  restX=0, restY=0, restZ=9.81f;  // slowly learned resting gravity
+bool   restInit=false;
+#define TILT_REST_TAU_MS 6000.0f       // how long he takes to get used to a new position
+#define TILT_ON_DEG      25.0f
+#define TILT_OFF_DEG     12.0f
 
 // Thresholds. These are factory defaults; each unit can retune them live over
 // Serial (`set shake 12`, `save`) and they load from flash at boot.
@@ -542,8 +551,24 @@ void readSensors() {
     float instant = fabsf(mag - 9.81f);
     shakeE = shakeE * 0.85f + instant * 0.15f;  // smooth
 
-    tiltAngleX = atan2f(accelY, accelZ) * 180.0f / PI;
-    tiltAngleY = atan2f(-accelX, accelZ) * 180.0f / PI;
+    static uint32_t lastTiltMs = 0;
+    float dt = lastTiltMs ? (float)(now - lastTiltMs) : 0.0f;
+    lastTiltMs = now;
+    if (!restInit) {
+      restX = accelX; restY = accelY; restZ = accelZ;
+      restInit = true;
+    } else if (shakeE < 3.0f) {          // a shake shouldn't teach a new resting pose
+      float k = min(1.0f, dt / TILT_REST_TAU_MS);
+      restX += (accelX - restX) * k;
+      restY += (accelY - restY) * k;
+      restZ += (accelZ - restZ) * k;
+    }
+    float restMag = sqrtf(restX*restX + restY*restY + restZ*restZ);
+    float cosLean = (accelX*restX + accelY*restY + accelZ*restZ) / max(0.001f, mag * restMag);
+    tiltLean = acosf(constrain(cosLean, -1.0f, 1.0f)) * 180.0f / PI;
+    float scale = mag / max(0.001f, restMag);
+    tiltDX = accelX - restX * scale;
+    tiltDY = accelY - restY * scale;
 
     if (shakeE > SHAKE_ON_G) {
       if (shakeStart == 0) shakeStart = now;
@@ -708,12 +733,11 @@ void updateState() {
       if (age > 6000) setState(S_SLEEP);
       break;
 
-    case S_TILT: {
-      float lean = sqrtf(tiltAngleX*tiltAngleX + tiltAngleY*tiltAngleY);
-      if (lean < 15.0f) setState(S_IDLE);
-      else lastInteract = now;
+    case S_TILT:
+      // no lastInteract refresh here: being left at an angle isn't attention,
+      // and the resting pose catches up within a few seconds anyway
+      if (tiltLean < TILT_OFF_DEG) setState(S_IDLE);
       break;
-    }
 
     default: break; // handled below
   }
@@ -729,8 +753,7 @@ void updateState() {
     // Shake already handled above
 
     // Tilt
-    float lean = sqrtf(tiltAngleX*tiltAngleX + tiltAngleY*tiltAngleY);
-    if (lean > 20.0f) { setState(S_TILT); lastInteract=now; return; }
+    if (tiltLean > TILT_ON_DEG) { setState(S_TILT); lastInteract=now; return; }
 
     // Idle timeouts
     if (idle > IDLE_SLEEP_MS && curState != S_SLEEP) setState(S_DOZE);
@@ -888,9 +911,9 @@ void updateState() {
       break;
 
     case S_TILT: {
-      // Gaze follows gravity
-      float tx = constrain(-accelY * 3.5f, -22.0f, 22.0f);
-      float ty = constrain( accelX * 2.5f, -16.0f, 16.0f);
+      // Gaze follows the change in gravity since he last settled
+      float tx = constrain(-tiltDY * 3.5f, -22.0f, 22.0f);
+      float ty = constrain( tiltDX * 2.5f, -16.0f, 16.0f);
       eyeT.gx = tx; eyeT.gy = ty;
       eyeT.blinkT = 0; eyeT.irX = 1; eyeT.irY = 1;
       break;

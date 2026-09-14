@@ -17,6 +17,33 @@
     wokeLength: 1600,
   };
   const OFFSETS = { shiver: 5, freeze: 8, thaw: 2 };
+  const TILT = { onDeg: 25, offDeg: 12, restTauMs: 6000 };
+
+  // Tilt against a slowly learned resting position (see readSensors() in the
+  // firmware). Feed it raw accelerometer readings in m/s².
+  function createTiltTracker({ tauMs = TILT.restTauMs } = {}) {
+    const t = { rest: null, last: 0, lean: 0, dx: 0, dy: 0 };
+    t.update = (now, a, shakeE = 0) => {
+      const dt = t.last ? now - t.last : 0;
+      t.last = now;
+      if (!t.rest) t.rest = { ...a };
+      else if (shakeE < 3) {
+        const k = Math.min(1, dt / tauMs);
+        t.rest.x += (a.x - t.rest.x) * k;
+        t.rest.y += (a.y - t.rest.y) * k;
+        t.rest.z += (a.z - t.rest.z) * k;
+      }
+      const mag = Math.hypot(a.x, a.y, a.z);
+      const restMag = Math.hypot(t.rest.x, t.rest.y, t.rest.z);
+      const cos = (a.x * t.rest.x + a.y * t.rest.y + a.z * t.rest.z) / Math.max(0.001, mag * restMag);
+      t.lean = Math.acos(Math.min(1, Math.max(-1, cos))) * 180 / Math.PI;
+      const scale = mag / Math.max(0.001, restMag);
+      t.dx = a.x - t.rest.x * scale;
+      t.dy = a.y - t.rest.y * scale;
+      return t.lean;
+    };
+    return t;
+  }
 
   function createMood(opts = {}) {
     const cfg = {
@@ -34,7 +61,8 @@
     }
 
     // inputs: { temp: °C, noise: mic peak-to-peak, shaking: bool (held right now) }
-    m.update = (now, { temp, noise, shaking: held }) => {
+    // lean: degrees away from the resting position (from createTiltTracker)
+    m.update = (now, { temp, noise, shaking: held, lean = 0 }) => {
       m.now = now;
       if (held && !m.shakeStart) m.shakeStart = now;
       if (!held) m.shakeStart = 0;
@@ -81,12 +109,14 @@
           else if (age > TIMING.dreamLength && cfg.random() < 0.004) set('dream');
           break;
         case 'dream': if (age > TIMING.dreamLength) set('sleep'); break;
+        case 'tilt': if (lean < TILT.offDeg) set('idle', 'got used to it'); break;
         case 'woke': if (age > TIMING.wokeLength) set('idle'); break;
       }
 
       if (m.state === 'idle') {
         if (isCold) set('chill', `below ${cfg.coldC}°c`);
         else if (isLoud) { m.lastInteract = now; set('startled', 'loud noise'); }
+        else if (lean > TILT.onDeg) { m.lastInteract = now; set('tilt', 'tipped over'); }
         else if (now - m.lastInteract > cfg.dozeMs) set('doze', 'left alone');
       }
       return m.state;
@@ -99,7 +129,7 @@
     return m;
   }
 
-  const api = { createMood, TIMING, OFFSETS };
+  const api = { createMood, createTiltTracker, TIMING, OFFSETS, TILT };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.StarboyMood = api;
 })(typeof window !== 'undefined' ? window : this);

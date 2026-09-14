@@ -1,5 +1,5 @@
 // Tests for web/mood.js with a fake clock.  Run:  node tools/test_mood.js
-const { createMood } = require('../web/mood.js');
+const { createMood, createTiltTracker } = require('../web/mood.js');
 
 let passed = 0;
 const failed = [];
@@ -14,11 +14,21 @@ function rig(opts = {}) {
   const log = [];
   const mood = createMood({ random: () => 1, dozeMs: 25000, sleepMs: 75000, ...opts,
     onChange: (next) => log.push(next) });
-  const env = { temp: 20, noise: 100, shaking: false };
+  // angle: how far the star is tipped from lying flat, in degrees (90 = hanging upright)
+  const env = { temp: 20, noise: 100, shaking: false, angle: 0 };
+  const tilt = createTiltTracker();
   let now = 0;
   return {
-    mood, log, env,
-    step(ms) { for (let t = 0; t < ms; t += 50) { now += 50; mood.update(now, env); } return mood.state; },
+    mood, log, env, tilt,
+    step(ms) {
+      for (let t = 0; t < ms; t += 50) {
+        now += 50;
+        const rad = env.angle * Math.PI / 180;
+        const lean = tilt.update(now, { x: 0, y: 9.81 * Math.sin(rad), z: 9.81 * Math.cos(rad) });
+        mood.update(now, { ...env, lean });
+      }
+      return mood.state;
+    },
     get state() { return mood.state; },
   };
 }
@@ -169,6 +179,50 @@ test('dreams only start when random allows it, and end after 6s', () => {
   eq(r.step(100), 'dream', 'dream with random = 0');
   roll = 1;
   eq(r.step(6100), 'sleep', 'back to sleep');
+});
+
+test('hanging upright on a belt loop from boot never counts as tilted', () => {
+  const r = rig();
+  r.env.angle = 90;
+  eq(r.step(20000), 'idle', 'after 20s hanging');
+  eq(r.step(60000), 'sleep', 'falls asleep like normal');
+  eq(r.log.includes('tilt'), false, 'never tilted');
+});
+
+test('tipping him reacts, then he gets used to the new angle', () => {
+  const r = rig();
+  r.step(5000);
+  r.env.angle = 90;
+  eq(r.step(200), 'tilt', 'tipped from flat to upright');
+  eq(r.step(20000), 'idle', 'settled within 20s');
+  eq(r.tilt.lean < 12, true, `lean dropped below 12°, is ${r.tilt.lean.toFixed(1)}`);
+});
+
+test('being left at an angle is not attention, so he still dozes', () => {
+  const r = rig();
+  r.step(1000);
+  r.env.angle = 60;
+  r.step(200);
+  eq(r.state, 'tilt', 'tipped');
+  eq(r.step(24500), 'idle', 'settled but not dozing yet');
+  eq(r.step(1000), 'doze', 'dozes 25s after the tip, not 25s after settling');
+});
+
+test('small wobbles under 25° do not trigger tilt', () => {
+  const r = rig();
+  r.step(2000);
+  for (let i = 0; i < 20; i++) {
+    r.env.angle = i % 2 ? 20 : -20;
+    r.step(300);
+  }
+  eq(r.log.includes('tilt'), false, 'no tilt from ±20° wobbles');
+});
+
+test('a shake does not teach him a new resting position', () => {
+  const tilt = createTiltTracker();
+  tilt.update(0, { x: 0, y: 0, z: 9.81 });
+  for (let t = 50; t <= 10000; t += 50) tilt.update(t, { x: 0, y: 9.81, z: 0 }, 20);
+  eq(tilt.lean > 80, true, `still ~90° from rest after 10s of shaking-level readings, got ${tilt.lean.toFixed(1)}`);
 });
 
 test('onChange reports every transition once, in order', () => {

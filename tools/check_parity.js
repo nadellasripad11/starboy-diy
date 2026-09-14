@@ -131,6 +131,17 @@ expect(/shaking && curState != S_DIZZY_MILD && curState != S_DIZZY_SEVERE/.test(
 expect(/\['dizzy', 'spin', 'recovering', 'angry'\]\.includes\(m\.state\)/.test(read('web/mood.js')),
   "web/mood.js: shake interrupt no longer skips 'dizzy' and 'spin'");
 
+// ─── tilt: same thresholds, and it must not count as attention ─
+const { TILT } = require(path.join(root, 'web/mood.js'));
+const fwDef = (name) => { const m = ino.match(new RegExp(`#define\\s+${name}\\s+([\\d.]+)`)); return m && +m[1]; };
+expect(fwDef('TILT_ON_DEG') === TILT.onDeg, `web/mood.js: TILT.onDeg ${TILT.onDeg} != firmware ${fwDef('TILT_ON_DEG')}`);
+expect(fwDef('TILT_OFF_DEG') === TILT.offDeg, `web/mood.js: TILT.offDeg ${TILT.offDeg} != firmware ${fwDef('TILT_OFF_DEG')}`);
+expect(fwDef('TILT_REST_TAU_MS') === TILT.restTauMs, `web/mood.js: TILT.restTauMs ${TILT.restTauMs} != firmware ${fwDef('TILT_REST_TAU_MS')}`);
+const tiltCase = (ino.match(/case S_TILT:[\s\S]*?break;/) || [''])[0];
+expect(tiltCase.includes('TILT_OFF_DEG') && !/lastInteract\s*=/.test(tiltCase.replace(/\/\/.*$/gm, '')),
+  'firmware: S_TILT refreshes lastInteract again, so a star left at an angle would never sleep');
+expect(!/atan2f\(accelY, accelZ\)/.test(ino), 'firmware: tilt is measured against lying flat again, so a hanging keychain reads as tilted');
+
 // ─── colorway names used by name in page scripts exist ───
 const names = new Set(fwColorways.map((c) => c.name));
 for (const rel of ['web/app.js', 'devlog/cards.html']) {

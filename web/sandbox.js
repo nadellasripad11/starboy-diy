@@ -16,6 +16,7 @@
     idle: 'idle', dizzy: 'dizzy', spin: 'spinning', recovering: 'recovering', angry: 'angry',
     chill: 'chilly', shiver: 'shivering', freeze: 'frozen', startled: 'startled', anxious: 'anxious',
     overwhelmed: 'overwhelmed', doze: 'dozing', sleep: 'asleep', dream: 'dreaming', woke: 'just woke up',
+    tilt: 'tilted',
   };
 
   const canvas = document.getElementById('sandbox-eye');
@@ -24,6 +25,9 @@
   const noiseIn = document.getElementById('noise');
   const tempOut = document.getElementById('temp-out');
   const noiseOut = document.getElementById('noise-out');
+  const tiltIn = document.getElementById('tilt');
+  const tiltOut = document.getElementById('tilt-out');
+  const tilt = window.StarboyMood.createTiltTracker();
   const shakeBtn = document.getElementById('shake');
   const moodEl = document.getElementById('mood');
   const idleEl = document.getElementById('idle-bar');
@@ -73,14 +77,18 @@
     tempOut.textContent = `${tempIn.value}°c`;
     const n = +noiseIn.value;
     noiseOut.textContent = n < 200 ? 'quiet' : n < LOUD_P2P ? 'talking' : n < 1800 ? 'loud' : 'very loud';
+    tiltOut.textContent = +tiltIn.value === 0 ? 'flat' : `${tiltIn.value}°`;
   };
+  tiltIn.addEventListener('input', renderInputs);
   tempIn.addEventListener('input', renderInputs);
   noiseIn.addEventListener('input', renderInputs);
   renderInputs();
 
   function tick() {
     const now = performance.now();
-    mood.update(now, { temp: +tempIn.value, noise: +noiseIn.value, shaking: shakeHeld });
+    const rad = +tiltIn.value * Math.PI / 180;
+    const lean = tilt.update(now, { x: 0, y: 9.81 * Math.sin(rad), z: 9.81 * Math.cos(rad) }, shakeHeld ? 20 : 0);
+    mood.update(now, { temp: +tempIn.value, noise: +noiseIn.value, shaking: shakeHeld, lean });
     idleEl.style.width = `${mood.idleFraction(now) * 100}%`;
   }
 
@@ -150,6 +158,12 @@
       }
       case 'woke':
         Object.assign(tg, { gy: -1, irX: 1.05, irY: 1.05, bwY: -2 });
+        break;
+      case 'tilt':
+        // same mapping as the firmware's S_TILT gaze
+        tg.gx = clamp(-tilt.dy * 3.5, -22, 22);
+        tg.gy = clamp(tilt.dx * 2.5, -16, 16);
+        gazeSpd = 0.12;
         break;
       default:
         if (!reduceMotion && now - anim.glance.at > anim.glance.next) {

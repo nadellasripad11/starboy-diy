@@ -97,9 +97,9 @@ static void printStatus() {
   Serial.printf("state %s for %lus | idle %lus\n", stateName(curState),
                 (unsigned long)((millis() - stateMs) / 1000), (unsigned long)((millis() - lastInteract) / 1000));
   Serial.printf("eyes  %s %s (seed 0x%08X)\n", SHAPE_NAMES[d_shape], cw.name, eyeSeed);
-  Serial.printf("sense shake %.1f | temp %.1fC%s | sound %d%s | tilt %.0f,%.0f | mpu %s\n",
+  Serial.printf("sense shake %.1f | temp %.1fC%s | sound %d%s | tilt %.0f deg from rest | mpu %s\n",
                 shakeE, ambientTemp, fakeTempOn ? " (fake)" : "", soundPeak, fakeSoundOn ? " (fake)" : "",
-                tiltAngleX, tiltAngleY, mpuOK ? "ok" : "missing");
+                tiltLean, mpuOK ? "ok" : "missing");
   Serial.printf("tune  shake %.1f | cold %.1f | loud %d | doze %lus | sleep %lus | rare %lus\n",
                 tune.shakeOnG, tune.coldC, tune.loudP2P,
                 (unsigned long)(tune.dozeMs / 1000), (unsigned long)(tune.sleepMs / 1000), (unsigned long)(tune.rareMs / 1000));

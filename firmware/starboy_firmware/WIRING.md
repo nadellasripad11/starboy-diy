@@ -137,7 +137,7 @@ Cut the JST plug off and solder. **Check polarity with a multimeter first.**
 | Keep shaking hard | Full rage state (deep red squint + heavy furrow) |
 | Temp < 10°C | Chill → shiver → freeze (progressively icier, blue tint, crystalline overlay) |
 | Loud sound | Startled → anxious darting eyes → overwhelmed |
-| Tilt the device | Eyes track the direction of gravity |
+| Tip it more than 25° from how it's been resting | Eyes look downhill, then settle within a few seconds as he gets used to the new angle (so hanging on a belt loop doesn't keep him tilted or awake) |
 | 25s no interaction | Doze — eyes half close, brows droop, backlight dims |
 | 75s no interaction | Full sleep — slow breathing blink, occasional dream state, backlight nearly off |
 | Shake or sound during sleep | Wakes up ("just woke" expression) |
