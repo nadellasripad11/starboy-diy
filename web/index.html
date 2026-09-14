@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>starboy</title>
+<meta name="description" content="a chrome star keychain with a tiny round screen for an eye. shake it, chill it, yell at it, and it reacts. every star rolls its own eyes.">
+<meta property="og:title" content="starboy">
+<meta property="og:description" content="a chrome star keychain with a living eye. shake it, chill it, yell at it, and it reacts.">
+<meta property="og:image" content="render_front.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #07070a;
+    --panel: #101015;
+    --line: #23232b;
+    --text: #ececf1;
+    --muted: #8d8d99;
+    --violet: #7b43f5;
+    --gold: #f6bd49;
+    --display: "Bricolage Grotesque", "Arial Black", system-ui, sans-serif;
+    --body: "Instrument Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--ground); color: var(--text); font: 17px/1.6 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration-color: color-mix(in srgb, var(--gold) 60%, transparent); text-underline-offset: 3px; }
+  a:hover { color: var(--gold); }
+  :focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; border-radius: 4px; }
+  .wrap { width: min(1120px, 100% - 40px); margin-inline: auto; }
+  .label { font: 500 12px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  h1, h2 { font-family: var(--display); font-weight: 800; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+  h2 { font-size: clamp(32px, 5vw, 52px); line-height: 1; }
+  p { margin: 0; }
+  .lede { color: #c9c9d3; max-width: 52ch; }
+  section { padding: 96px 0; border-top: 1px solid var(--line); }
+  .section-head { display: grid; gap: 14px; margin-bottom: 44px; max-width: 64ch; }
+
+  /* nav */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { font: 800 20px/1 var(--display); letter-spacing: -.02em; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+  .brand svg { width: 22px; height: 22px; }
+  .navlinks { display: flex; gap: 22px; font-size: 15px; color: var(--muted); }
+  .navlinks a { text-decoration: none; }
+
+  /* hero */
+  .hero { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; padding: 48px 0 104px; }
+  .hero h1 { font-size: clamp(76px, 13vw, 168px); line-height: .82; margin: 18px 0 26px;
+    background: linear-gradient(180deg, #ffffff 0%, #d6d7de 38%, #7d7f8a 52%, #e9eaf0 64%, #9a9ca8 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .hero .lede { font-size: 20px; }
+  .facts { display: flex; flex-wrap: wrap; gap: 10px 26px; margin-top: 30px; font: 400 14px/1.4 var(--mono); color: var(--muted); }
+  .facts b { color: var(--text); font-weight: 500; }
+  .cta { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 34px; }
+  .btn { font: 600 15px/1 var(--body); padding: 13px 18px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; gap: 8px; }
+  .btn:hover { border-color: #3a3a46; color: var(--text); }
+  .btn.primary { background: var(--text); color: var(--ground); border-color: var(--text); }
+  .btn.primary:hover { background: var(--gold); border-color: var(--gold); color: var(--ground); }
+
+  /* the display */
+  .device { display: grid; justify-items: center; gap: 18px; }
+  .bezel { width: min(100%, 440px); aspect-ratio: 1; border-radius: 50%; padding: 4.5%;
+    background: conic-gradient(from 210deg, #f4f5f8, #7c7e89, #dfe0e6, #5f616b, #f0f1f5, #8d8f9a, #f4f5f8);
+    box-shadow: 0 30px 80px -30px rgba(123, 67, 245, .35), inset 0 0 0 1px rgba(255,255,255,.2); }
+  .bezel canvas { width: 100%; height: 100%; border-radius: 50%; display: block; background: #000; image-rendering: pixelated; box-shadow: inset 0 0 0 3px #000; }
+  .readout { font: 400 13px/1.5 var(--mono); color: var(--muted); text-align: center; min-height: 3em; }
+  .readout b { color: var(--text); font-weight: 500; }
+
+  /* try it */
+  .try { display: grid; grid-template-columns: 1fr 380px; gap: 48px; align-items: start; }
+  .reactions { display: grid; gap: 10px; }
+  .reaction { display: grid; grid-template-columns: 1fr auto; gap: 4px 18px; align-items: center; text-align: left; width: 100%;
+    padding: 18px 20px; border-radius: 14px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; font: inherit; }
+  .reaction:hover { border-color: #3a3a46; }
+  .reaction[aria-pressed="true"] { border-color: var(--gold); background: color-mix(in srgb, var(--gold) 8%, var(--panel)); }
+  .reaction .if { font-weight: 600; }
+  .reaction .then { color: var(--muted); font-size: 15px; grid-column: 1; }
+  .reaction .sensor { grid-row: 1 / span 2; grid-column: 2; font: 500 11px/1 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); padding: 6px 8px; border-radius: 6px; white-space: nowrap; }
+  .sticky { position: sticky; top: 24px; display: grid; gap: 18px; }
+  .sticky .bezel { width: 100%; }
+  .rare { margin-top: 34px; display: grid; gap: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font: 500 13px/1 var(--mono); padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--text); cursor: pointer; }
+  .chip:hover, .chip[aria-pressed="true"] { border-color: var(--violet); background: color-mix(in srgb, var(--violet) 18%, transparent); }
+
+  /* gallery */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 26px; }
+  .gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px 14px; }
+  @media (min-width: 640px) { .gallery { grid-template-columns: repeat(5, 1fr); } }
+  @media (min-width: 1000px) { .gallery { grid-template-columns: repeat(10, 1fr); } }
+  .swatch { margin: 0; display: grid; gap: 8px; justify-items: center; }
+  .swatch canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #000; image-rendering: pixelated; box-shadow: 0 0 0 1px var(--line); }
+  .swatch figcaption { font: 400 12px/1.3 var(--mono); color: var(--muted); text-align: center; }
+  .swatch figcaption b { color: var(--text); font-weight: 500; display: block; }
+
+  /* inside */
+  .inside { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; }
+  .parts { width: 100%; border-collapse: collapse; font-size: 15px; }
+  .parts td { padding: 13px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .parts td:first-child { font-weight: 600; padding-right: 18px; white-space: nowrap; }
+  .parts td:last-child { color: var(--muted); }
+  .cost { display: flex; align-items: baseline; gap: 14px; margin-top: 28px; }
+  .cost strong { font: 800 48px/1 var(--display); letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  .renders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .renders figure { margin: 0; border-radius: 14px; overflow: hidden; background: #f7f7f7; border: 1px solid var(--line); }
+  .renders img { display: block; width: 100%; height: auto; }
+  .renders figcaption { background: var(--panel); color: var(--muted); font: 400 12px/1.4 var(--mono); padding: 10px 12px; }
+  .dims { margin-top: 18px; font: 400 14px/1.7 var(--mono); color: var(--muted); }
+  .dims b { color: var(--text); font-weight: 500; }
+
+  footer { border-top: 1px solid var(--line); padding: 40px 0 56px; color: var(--muted); font-size: 15px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 16px; }
+
+  @media (max-width: 880px) {
+    .hero, .try, .inside { grid-template-columns: 1fr; }
+    .hero { padding-top: 16px; gap: 40px; }
+    .device { order: -1; }
+    .bezel { width: min(100%, 360px); }
+    .sticky { position: static; order: -1; }
+    .sticky .bezel { width: min(100%, 340px); justify-self: center; }
+    .navlinks { display: none; }
+    section { padding: 72px 0; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="#top" aria-label="starboy home">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#d9dae1" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      starboy
+    </a>
+    <div class="navlinks">
+      <a href="#try">try it</a>
+      <a href="#eyes">the eyes</a>
+      <a href="#inside">what's inside</a>
+      <a href="https://github.com/nadellasripad11/starboy-diy">github</a>
+    </div>
+  </nav>
+
+  <header class="hero" id="top">
+    <div>
+      <span class="label">diy keychain · hack club · by sripadbuilds</span>
+      <h1>starboy</h1>
+      <p class="lede">a chrome star you clip to your pants, with a tiny round screen for an eye. shake it and it gets dizzy, take it somewhere cold and it shivers, yell near it and it gets nervous. leave it alone and it falls asleep.</p>
+      <div class="facts">
+        <span><b>1.28"</b> round screen</span>
+        <span><b>3</b> sensors</span>
+        <span><b>400</b> eye combos</span>
+        <span><b>~4h</b> per charge</span>
+      </div>
+      <div class="cta">
+        <a class="btn primary" href="#try">make it react</a>
+        <button class="btn" id="hero-roll" type="button">roll new eyes</button>
+      </div>
+    </div>
+    <div class="device">
+      <div class="bezel"><canvas id="hero-eye" width="240" height="240" aria-label="animated starboy eyes that follow your cursor"></canvas></div>
+      <p class="readout" id="hero-readout" aria-live="polite"></p>
+    </div>
+  </header>
+</div>
+
+<section id="try">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">what it does</span>
+      <h2>it reacts to you</h2>
+      <p class="lede">the star has a motion sensor, a temperature sensor and a microphone inside. tap a reaction to see exactly what the screen does. these animations run the same code as the real firmware.</p>
+    </div>
+    <div class="try">
+      <div>
+        <div class="reactions" id="reactions"></div>
+        <div class="rare">
+          <span class="label">rare effects · one might play every ~90 seconds</span>
+          <div class="chips" id="rare-chips"></div>
+        </div>
+      </div>
+      <div class="sticky">
+        <div class="bezel"><canvas id="try-eye" width="240" height="240" aria-label="starboy eyes showing the selected reaction"></canvas></div>
+        <p class="readout" id="try-readout" aria-live="polite">idle · looking around</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="eyes">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">the eyes</span>
+      <h2>100 colorways × 4 shapes</h2>
+      <p class="lede">the first time a star turns on, it rolls one colorway and one eye shape and keeps them forever. some colorways are common, some show up 0.4% of the time. the rarest ones give each eye a different pupil.</p>
+    </div>
+    <div class="filters" id="shape-filters"></div>
+    <div class="gallery" id="gallery"></div>
+  </div>
+</section>
+
+<section id="inside">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="label">what's inside</span>
+      <h2>a whole computer in a keychain</h2>
+      <p class="lede">everything is hand-wired, no custom circuit board, so it all folds into a shell just 20.5mm thick. the shell is 3d printed in petg, sanded, primed and sprayed chrome.</p>
+    </div>
+    <div class="inside">
+      <div>
+        <table class="parts">
+          <tbody>
+            <tr><td>seeed xiao esp32c3</td><td>the brain. thumbnail-sized, charges the battery over usb-c</td></tr>
+            <tr><td>gc9a01 round screen</td><td>1.28", 240×240 pixels. this is the eye</td></tr>
+            <tr><td>mpu6050</td><td>feels shaking and tilting</td></tr>
+            <tr><td>ds18b20</td><td>pokes out of a tiny vent to read the air temperature</td></tr>
+            <tr><td>max4466 mic</td><td>hears loud sounds</td></tr>
+            <tr><td>320mah lipo</td><td>about 4 hours per charge, dims itself when sleepy</td></tr>
+          </tbody>
+        </table>
+        <div class="cost"><strong>$96.86</strong><span class="label">in parts for one star</span></div>
+      </div>
+      <div>
+        <div class="renders">
+          <figure><img src="render_front.png" alt="3d render of the star shell front with the round screen opening and keyring loop" loading="lazy"><figcaption>front · screen + keyring loop</figcaption></figure>
+          <figure><img src="render_back.png" alt="3d render of the star shell back with the engraved sripadbuilds medallion" loading="lazy"><figcaption>back · engraved medallion</figcaption></figure>
+        </div>
+        <p class="dims"><b>65 × 64 × 20.5 mm</b> body · <b>78 mm</b> with the loop<br>designed from scratch in openscad</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <span>made by <a href="https://github.com/nadellasripad11">@nadellasripad11</a> · sripadbuilds</span>
+    <span>code, cad and parts list on <a href="https://github.com/nadellasripad11/starboy-diy">github</a> · inspired by <a href="https://lilguy.net">creature's starboy</a></span>
+  </footer>
+</div>
+
+<script src="eyes.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
