@@ -115,6 +115,16 @@ the mood logic has its own tests too, run with a fake clock so the slow paths (f
 node tools/test_mood.js
 ```
 
+### choosing a star's eyes
+
+the website rolls eyes with the exact same math as the firmware. tap any look on the [eye looks page](https://starboy-diy.nadellasripad11.workers.dev/eyes.html) and it gives you a command like `seed 1da79c35`. type that in the star's serial console and he gets those eyes for good. it also works backwards: paste the seed a star prints on boot to see which look he rolled.
+
+```
+node tools/test_seed.js
+```
+
+checks the port against a second reference implementation, confirms the odds over 400,000 rolls, and finds a working seed for all 400 looks.
+
 ---
 
 ## about the battery

@@ -51,6 +51,25 @@
   .tier.rare { background: #dfe6ff; }
   .tier.legendary { background: #2b2c2f; color: #f6bd49; }
   footer { border-top: 1px solid var(--line); padding: 36px 0 60px; color: var(--muted); font-size: 15px; }
+  .look { cursor: pointer; border-radius: 16px; padding: 6px 2px; }
+  .look:hover canvas { transform: scale(1.04); }
+  .look canvas { transition: transform .2s; }
+  .seed-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .seed-form input { font: 700 15px/1 ui-monospace, Menlo, Consolas, monospace; padding: 10px 12px; border-radius: 999px; border: 2px solid var(--line); background: #fff; color: var(--ink); width: 150px; }
+  .seed-form input:focus { border-color: var(--ink); outline: none; }
+  .seed-msg { color: #b3261e; font-size: 14px; min-height: 1em; }
+  .pick { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); width: min(560px, calc(100% - 32px)); z-index: 20;
+    background: var(--ink); color: #fff; border-radius: 24px; padding: 18px; display: grid; grid-template-columns: 96px 1fr; gap: 16px; align-items: center;
+    box-shadow: 0 24px 60px -20px rgba(0,0,0,.5); }
+  .pick canvas { width: 96px; height: 96px; border-radius: 50%; background: #000; display: block; }
+  .pick-name { font: 800 22px/1.1 "Figtree", sans-serif; letter-spacing: -.02em; }
+  .pick-odds { color: #a9aab0; font-size: 14px; }
+  .pick-how { color: #cfd0d4; font-size: 14px; margin: 8px 0; }
+  .pick-cmd-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .pick code { font: 700 16px/1 ui-monospace, Menlo, Consolas, monospace; background: #1a1b1d; padding: 10px 12px; border-radius: 10px; user-select: all; }
+  .pick .chip { background: #3a3b40; color: #fff; }
+  .pick .chip:hover { background: #4a4b52; }
+  .pick-close { position: absolute; top: 10px; right: 12px; background: none; border: 0; color: #a9aab0; font-size: 22px; cursor: pointer; line-height: 1; }
 </style>
 </head>
 <body>
@@ -64,17 +83,38 @@
   </nav>
   <header>
     <h1>eye looks</h1>
-    <p class="lead">every starboy rolls one of these the first time he turns on, and keeps it forever. 100 colorways across 4 eye shapes, and the percentage is how often each exact look comes up.</p>
+    <p class="lead">every starboy rolls one of these the first time he turns on, and keeps it forever. 100 colorways across 4 eye shapes, and the percentage is how often each exact look comes up. tap one to get the seed that gives a star those eyes.</p>
   </header>
   <div class="controls">
     <div class="group" id="shape-group"><span>shape</span></div>
     <div class="group" id="sort-group"><span>sort</span></div>
+    <form class="seed-form" id="seed-form">
+      <label for="seed-input" style="color: var(--muted); font-size: 15px;">your star's seed</label>
+      <input id="seed-input" placeholder="1a2b3c4d" maxlength="10" autocomplete="off" spellcheck="false">
+      <button class="chip" type="submit">look up</button>
+      <span class="seed-msg" id="seed-msg" aria-live="polite"></span>
+    </form>
     <span class="count" id="count" aria-live="polite"></span>
   </div>
   <div class="grid" id="grid"></div>
   <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a></footer>
 </div>
+<div class="pick" id="pick" role="dialog" aria-labelledby="pick-name" hidden>
+  <button class="pick-close" id="pick-close" type="button" aria-label="close">×</button>
+  <canvas id="pick-eye" width="240" height="240" aria-hidden="true"></canvas>
+  <div>
+    <div class="pick-name" id="pick-name"></div>
+    <div class="pick-odds" id="pick-odds"></div>
+    <p class="pick-how">type this in the star's serial console to give him these eyes:</p>
+    <div class="pick-cmd-row">
+      <code id="pick-cmd"></code>
+      <button class="chip" type="button" id="pick-copy">copy</button>
+      <button class="chip" type="button" id="pick-another">another seed</button>
+    </div>
+  </div>
+</div>
 <script src="eyes.js"></script>
+<script src="seed.js"></script>
 <script src="gallery.js"></script>
 </body>
 </html>

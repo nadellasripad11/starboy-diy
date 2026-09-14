@@ -20,6 +20,11 @@
     const tier = tierOf(pct);
     cap.innerHTML = `<b>${cw.name}</b>${shape} · ${pct.toFixed(2)}%<br><span class="tier ${tier}">${tier}</span>`;
     fig.append(cv, cap);
+    fig.tabIndex = 0;
+    fig.setAttribute('role', 'button');
+    fig.setAttribute('aria-label', `choose ${shape} ${cw.name} for your star`);
+    fig.addEventListener('click', () => choose(i, j));
+    fig.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); choose(i, j); } });
     looks.push({ fig, cv, g: cv.getContext('2d'), i, j, pct, visible: false, order: looks.length,
                  gx: 0, gy: 0, phase: Math.random() * 10000, blinkEvery: 2600 + Math.random() * 4200, glance: { at: 0, gx: 0, gy: 0 } });
   }));
@@ -54,6 +59,54 @@
   chipGroup(document.getElementById('shape-group'), [['all', -1], ...E.SHAPES.map((s, i) => [s, i])], () => shapeFilter, (v) => { shapeFilter = v; });
   chipGroup(document.getElementById('sort-group'), [['most common', 'common'], ['rarest', 'rarest'], ['by color', 'color']], () => sort, (v) => { sort = v; });
   apply();
+
+  // ─── choose a look → a seed for the serial console, and seed → look ───
+  const S = window.StarboySeed;
+  const W = E.COLORWAYS.map((c) => c.w);
+  const panel = document.getElementById('pick');
+  const pickCanvas = document.getElementById('pick-eye');
+  const pickG = pickCanvas.getContext('2d');
+  const pickName = document.getElementById('pick-name');
+  const pickOdds = document.getElementById('pick-odds');
+  const pickCmd = document.getElementById('pick-cmd');
+  const copyBtn = document.getElementById('pick-copy');
+  const seedForm = document.getElementById('seed-form');
+  const seedInput = document.getElementById('seed-input');
+  const seedMsg = document.getElementById('seed-msg');
+  let picked = null;
+
+  function show(colorway, shape, seed) {
+    picked = { colorway, shape, seed };
+    const cw = E.COLORWAYS[colorway];
+    const pct = E.rarity(colorway) * E.SHAPE_WEIGHT[shape] / 100;
+    pickName.textContent = `${E.SHAPES[shape]} ${cw.name}`;
+    pickOdds.textContent = `${pct.toFixed(2)}% · ${tierOf(pct)}`;
+    pickCmd.textContent = `seed ${S.toHex(seed)}`;
+    copyBtn.textContent = 'copy';
+    panel.hidden = false;
+  }
+
+  function choose(colorway, shape) {
+    const seed = S.findSeed(colorway, shape, W, E.SHAPE_WEIGHT);
+    if (seed !== null) show(colorway, shape, seed);
+  }
+
+  document.getElementById('pick-another').addEventListener('click', () => picked && choose(picked.colorway, picked.shape));
+  document.getElementById('pick-close').addEventListener('click', () => { panel.hidden = true; });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') panel.hidden = true; });
+  copyBtn.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(pickCmd.textContent); copyBtn.textContent = 'copied'; }
+    catch { copyBtn.textContent = 'select it'; }
+  });
+
+  seedForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const seed = S.parseHex(seedInput.value);
+    if (seed === null) { seedMsg.textContent = 'a seed is 1 to 8 hex digits, like 1a2b3c4d (the console prints it on boot)'; return; }
+    seedMsg.textContent = '';
+    const d = S.designFromSeed(seed, W, E.SHAPE_WEIGHT);
+    show(d.colorway, d.shape, seed);
+  });
 
   const io = new IntersectionObserver((entries) => entries.forEach((en) => {
     const l = looks.find((x) => x.cv === en.target);
@@ -91,6 +144,11 @@
   function loop(now) {
     const dt = Math.min(100, now - last); last = now;
     for (const l of looks) if (l.visible && !l.fig.hidden) draw(l, now, dt);
+    if (picked && !panel.hidden) {
+      const b = reduceMotion ? 0 : blinkCurve((now + 700) % 3800);
+      E.render(pickG, { gx: 0, gy: 0, blinkT: b, blinkB: b * 0.45, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 },
+               picked.shape, E.COLORWAYS[picked.colorway], now);
+    }
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);

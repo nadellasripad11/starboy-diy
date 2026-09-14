@@ -114,6 +114,17 @@ expect(thaw && OFFSETS.thaw === +thaw[1], `web/mood.js: thaw offset ${OFFSETS.th
 expect(/soundPeak > LOUD_P2P \* 0\.5f/.test(ino) && /noise > cfg\.loudP2P \* 0\.5/.test(read('web/mood.js')),
   'web/mood.js: wake-from-sleep noise level no longer matches the firmware (half the loud level)');
 
+// ─── seed.js rolls eyes exactly like initEyeDesign() ────
+const seedSrc = read('web/seed.js');
+const { LCG_MUL, LCG_ADD } = require(path.join(root, 'web/seed.js'));
+const lcg = ino.match(/void initEyeDesign\(\)[\s\S]*?s = s \* (\d+)u \+ (\d+)u;\s*return \(uint16_t\)\(\(s >> (\d+)\) % n\);/);
+expect(lcg && +lcg[1] === LCG_MUL && +lcg[2] === LCG_ADD, `web/seed.js: LCG ${LCG_MUL}/${LCG_ADD} != firmware ${lcg && lcg[1]}/${lcg && lcg[2]}`);
+expect(lcg && seedSrc.includes(`(s >>> ${lcg[3]}) % n`), `web/seed.js: shift/modulo order differs from firmware >> ${lcg && lcg[3]} then % n`);
+const initBody = (ino.match(/void initEyeDesign\(\)\s*\{([\s\S]*?)\n\}/) || [])[1] || '';
+const rollOrder = [...initBody.matchAll(/pick = rnd\((\w+)\)/g)].map((m) => m[1]);
+expect(rollOrder.join() === 'total,100', `firmware: eye roll order is [${rollOrder}], seed.js assumes colorway (total) then shape (100)`);
+expect(/if \(eyeSeed == 0\)/.test(initBody), 'firmware: seed 0 is no longer treated as unset; update parseHex in web/seed.js');
+
 // both must skip the shake interrupt while already in the dizzy chain
 expect(/shaking && curState != S_DIZZY_MILD && curState != S_DIZZY_SEVERE/.test(ino),
   'firmware: shake interrupt no longer skips S_DIZZY_MILD / S_DIZZY_SEVERE');
