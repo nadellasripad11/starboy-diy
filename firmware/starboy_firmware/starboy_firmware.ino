@@ -1,13 +1,13 @@
 // ============================================================
 // STARBOY DIY — Complete Eye Firmware  v2.0
 // ============================================================
-// 500+ animations | 6,480 eye design combinations
+// 500+ animations | 100 colorways × 4 eye shapes (matched to creature.company/eyes)
 // Behaviors: idle · blink · curious · happy · bored · alert
 //   suspicious · dizzy · angry · cold/shiver · loud/anxious
 //   tilt-tracking · doze · sleep · 20 rare special effects
 //
 // Hardware:
-//   Seeed XIAO ESP32C3 (built-in LiPo charger; 300mAh 402530 on BAT pads)
+//   Seeed XIAO ESP32C3 (built-in LiPo charger; EEMB 402535 320mAh on BAT pads)
 //   GC9A01 1.28" Round TFT (240×240) — SPI: SCK D8, MOSI D10, CS D3, DC D6
 //   Backlight — PWM on D2 (GPIO4)
 //   MPU6050 Accelerometer/Gyro — I2C (SDA=D4/GPIO6, SCL=D5/GPIO7)
@@ -71,79 +71,140 @@ OneWire           oneWire(ONE_WIRE_BUS);
 DallasTemperature ds18b20(&oneWire);
 Preferences       prefs;
 
-// ─── Color palette: 20 iris colors + secondaries ─────────
-// RGB565 values — ordered roughly by rarity
-const uint16_t IRIS_PAL[20] = {
-  0x07E0, // 00 vivid green       (common)
-  0x05FC, // 01 spring green      (common)
-  0x07FF, // 02 electric cyan     (common)
-  0x001F, // 03 deep blue         (common)
-  0xA145, // 04 hazel brown       (common)
-  0xC618, // 05 steel grey        (common)
-  0x7BEF, // 06 cool grey         (common)
-  0xFFE0, // 07 amber             (common)
-  0x0398, // 08 teal              (uncommon)
-  0x4C1F, // 09 deep purple       (uncommon)
-  0x781F, // 10 violet            (uncommon)
-  0xFC00, // 11 warm orange       (uncommon)
-  0xB41B, // 12 copper            (uncommon)
-  0xFD20, // 13 flame orange      (uncommon)
-  0xF81F, // 14 magenta           (rare)
-  0x3C1F, // 15 indigo            (rare)
-  0xFFFF, // 16 white/albino      (rare)
-  0xA000, // 17 deep crimson      (rare)
-          //    was 0x0000 "void black" — that only worked back when a white
-          //    sclera sat behind it. Drawn flat on a black field it renders
-          //    completely invisible: just a floating pupil dot. Do not put
-          //    0x0000 in this palette.
-  0x07E8, // 18 neon green        (legendary)
-  0xFD60, // 19 pure gold         (legendary)
+// ─── Eye design: 100 colorways × 4 shapes ────────────────
+// Matched to creature.company/eyes: each eye is a flat block of colour on
+// black with a pupil in a second colour. The rarest colorways give the two
+// eyes different pupils. weight = how often a colorway gets rolled.
+struct Colorway { const char *name; uint32_t body, pupL, pupR; uint8_t weight; };
+const Colorway COLORWAYS[100] = {
+  { "marmalade",    0xF99F05, 0x6E6123, 0x6E6123, 10 },
+  { "matcha",       0xC7FBA6, 0x5E6E06, 0x5E6E06, 10 },
+  { "houseplant",   0x039442, 0x71FF6F, 0x71FF6F, 10 },
+  { "terrarium",    0x6FF5D0, 0x106E54, 0x106E54, 10 },
+  { "whale",        0x0059A3, 0x0095FF, 0x0095FF, 10 },
+  { "frog",         0x42DE86, 0x436A16, 0x436A16, 10 },
+  { "denim",        0x6C92F8, 0x102A6E, 0x102A6E, 10 },
+  { "petunia",      0xF8AFFB, 0xF006B4, 0xF006B4, 10 },
+  { "lipgloss",     0xA10180, 0xFC609C, 0xFC609C, 10 },
+  { "jawbreaker",   0xF6759F, 0x56031F, 0x56031F, 10 },
+  { "cherry",       0xAE0002, 0xFF5252, 0xFF5252, 10 },
+  { "pebble",       0x645252, 0xA4A4A4, 0xA4A4A4, 10 },
+  { "valentine",    0xDD06CB, 0x7B1612, 0x7B1612, 10 },
+  { "plum",         0x7260E6, 0x622058, 0x622058, 10 },
+  { "gumball",      0xF20F07, 0xFFFFFF, 0xFFFFFF,  8 },
+  { "sprinkler",    0x59BF05, 0xFFFFFF, 0xFFFFFF,  8 },
+  { "pool",         0x05A8F9, 0xFCEEEE, 0xFCEEEE,  8 },
+  { "moon",         0x4028FF, 0xEBFFFC, 0xEBFFFC,  8 },
+  { "bubblegum",    0xF442E7, 0xFFFFFF, 0xFFFFFF,  8 },
+  { "seaglass",     0xFBFBFB, 0x167B61, 0x167B61,  9 },
+  { "laser",        0xFFFFFF, 0xFF0000, 0xFF0000,  9 },
+  { "snowball",     0xFFFFFF, 0x5A79F3, 0x5A79F3,  9 },
+  { "smoothie",     0xFFECE0, 0xCE0959, 0xCE0959,  9 },
+  { "peach",        0xFDFBE2, 0xF76E5D, 0xF76E5D,  9 },
+  { "goldfish",     0xE0F4FB, 0xDE9109, 0xDE9109,  9 },
+  { "seashell",     0xFCD9CF, 0x070571, 0x070571,  9 },
+  { "hydrangea",    0xE1BFE1, 0x2722DB, 0x2722DB,  9 },
+  { "cupcake",      0xF9FFB2, 0xCA00CA, 0xCA00CA,  9 },
+  { "limeade",      0xEAFCC5, 0x09B6CE, 0x09B6CE,  9 },
+  { "teacup",       0xF6E5A5, 0x0D73F7, 0x0D73F7,  9 },
+  { "candycane",    0x9CFBD5, 0x790C05, 0x790C05,  9 },
+  { "ladybug",      0xC3110E, 0x000000, 0x000000,  7 },
+  { "avocado",      0x8BD67C, 0x230606, 0x230606,  7 },
+  { "submarine",    0x0F7BA9, 0x000000, 0x000000,  7 },
+  { "eggplant",     0xE202E8, 0x0A0A0A, 0x0A0A0A,  7 },
+  { "og",           0xFFFFFF, 0x000000, 0x000000,  7 },
+  { "lobster",      0xF95320, 0x044A5F, 0x044A5F,  3 },
+  { "pumpkin",      0xE87102, 0x55FC6E, 0x55FC6E,  3 },
+  { "beachball",    0xF6FD21, 0x1C9DE3, 0x1C9DE3,  3 },
+  { "glowstick",    0xE9F905, 0x360342, 0x360342,  3 },
+  { "cactus",       0xC4F41D, 0x530AEC, 0x530AEC,  3 },
+  { "highlighter",  0x95F124, 0xF50DCF, 0xF50DCF,  3 },
+  { "kiwi",         0x55F927, 0x9F7717, 0x9F7717,  3 },
+  { "flytrap",      0x15F817, 0x5E045E, 0x5E045E,  3 },
+  { "junebug",      0x14DA70, 0x3516AF, 0x3516AF,  3 },
+  { "sunset",       0xAE2400, 0xF855FC, 0xF855FC,  3 },
+  { "robin",        0x15ABF8, 0x5E2304, 0x5E2304,  3 },
+  { "jukebox",      0x024BDE, 0xFB4CC3, 0xFB4CC3,  3 },
+  { "starboy",      0x7B43F5, 0xF6BD49, 0xF6BD49,  3 },
+  { "sonar",        0x126487, 0x2EE605, 0x2EE605,  3 },
+  { "guava",        0x84FB8E, 0xF64982, 0xF64982,  3 },
+  { "blacklight",   0x6922F0, 0xA3F410, 0xA3F410,  3 },
+  { "taffy",        0xF474DC, 0xE8FCA6, 0xE8FCA6,  3 },
+  { "lilac",        0x7202FC, 0xFDB0CE, 0xFDB0CE,  3 },
+  { "nightlight",   0x7768FE, 0x55FC87, 0x55FC87,  3 },
+  { "crocus",       0xD602E8, 0xFBF823, 0xFBF823,  3 },
+  { "rosebush",     0x1E6935, 0xFC7AC0, 0xFC7AC0,  3 },
+  { "parakeet",     0x018335, 0x23FAFB, 0x23FAFB,  3 },
+  { "glowworm",     0xF40DF8, 0x19F515, 0x19F515,  3 },
+  { "spearmint",    0x9CFBCE, 0x790572, 0x790572,  3 },
+  { "motel",        0xFA486F, 0x92FABE, 0x92FABE,  3 },
+  { "buoy",         0x14ABD6, 0xEEFA24, 0xEEFA24,  3 },
+  { "slushie",      0xC206AD, 0x49F6D9, 0x49F6D9,  3 },
+  { "siren",        0xFD0C0D, 0x2905E6, 0x2905E6,  3 },
+  { "ember",        0x994400, 0x00EEFF, 0x00EEFF,  3 },
+  { "jelly",        0xB60080, 0x429EFB, 0x429EFB,  3 },
+  { "popsicle",     0x71FEAE, 0x5598FC, 0x5598FC,  3 },
+  { "dragonfruit",  0xB60053, 0xCFFA0F, 0xCFFA0F,  3 },
+  { "hibiscus",     0xB6003C, 0x05E605, 0x05E605,  3 },
+  { "jam",          0xC5013C, 0x09CE93, 0x09CE93,  3 },
+  { "candle",       0x973849, 0xF7FBBC, 0xF7FBBC,  3 },
+  { "calculator",   0x737373, 0x09E151, 0x09E151,  3 },
+  { "doorbell",     0xBEBEBE, 0xE42D06, 0xE42D06,  3 },
+  { "postcard",     0xBE6A6A, 0x76D8EB, 0x76D8EB,  5 },
+  { "flowerpot",    0xCC6262, 0x3E4002, 0x3E4002,  5 },
+  { "juicebox",     0xF6826C, 0x95059B, 0x95059B,  5 },
+  { "mallard",      0x7B8401, 0x0737A7, 0x0737A7,  5 },
+  { "tomato",       0x60A611, 0xB4040F, 0xB4040F,  5 },
+  { "chamomile",    0x509156, 0xF4C524, 0xF4C524,  5 },
+  { "peacock",      0x02B0B6, 0x7923FB, 0x7923FB,  5 },
+  { "sandbox",      0xB8804A, 0xF7F574, 0xF7F574,  5 },
+  { "kite",         0x7DB5F4, 0xC10787, 0xC10787,  5 },
+  { "puddle",       0xA7AFF6, 0x837605, 0x837605,  5 },
+  { "moth",         0xEC75F6, 0x564803, 0x564803,  5 },
+  { "strawberry",   0xFCB7F2, 0x069A1E, 0x069A1E,  5 },
+  { "flamingo",     0xFCB7C3, 0x068F9A, 0x068F9A,  5 },
+  { "static",       0x666666, 0x000000, 0xFFFFFF,  2 },
+  { "eraser",       0x666666, 0xFFEDED, 0x000000,  2 },
+  { "pinball",      0xB60207, 0xD2F9F9, 0x60D105,  2 },
+  { "socks",        0xB865A8, 0x76D8EB, 0x8F1716,  2 },
+  { "koi",          0xFE6873, 0x0A0A0A, 0xD0F910,  2 },
+  { "marble",       0xD1D9FA, 0xC11207, 0xD20ADF,  2 },
+  { "stoplight",    0x34F7FD, 0x038C03, 0xF91024,  2 },
+  { "bumblebee",    0xFDCB21, 0x0A0A0A, 0xD10566,  2 },
+  { "lilypad",      0xD1F63B, 0x10812B, 0x0F91F4,  2 },
+  { "popcorn",      0xEAF66E, 0xBB240A, 0x0964E7,  2 },
+  { "spumoni",      0xF6EAB9, 0x177E39, 0x2722DB,  2 },
+  { "umbrella",     0xE7E3E9, 0xF65F28, 0x4F6BF8,  2 },
+  { "sherbet",      0xE4F4E2, 0x4A0A99, 0xDB8405,  2 },
+  { "neapolitan",   0x87493B, 0xEB76DD, 0xB7ABF3,  2 },
 };
-// Secondary/ring colors
-const uint16_t IRIS_PAL2[20] = {
-  0x0140, 0x024C, 0x03EF, 0x000F, 0x7000,
-  0x5A00, 0x8410, 0xBBC0, 0x0198, 0x300F,
-  0x580F, 0xB400, 0x7800, 0xBD00, 0xB00F,
-  0x200F, 0xC618, 0x2104, 0x04E0, 0xC8A0,
-};
-const uint16_t SCLERA_PAL[4] = {
-  0xFFFF,  // white
-  0xFFF5,  // warm white
-  0xEFFF,  // blue white
-  0xFEEB,  // cream
-};
+
+enum EyeShape : uint8_t { SHAPE_DOT = 0, SHAPE_CIRCLE, SHAPE_CAT, SHAPE_ACORN };
+const char   *SHAPE_NAMES[4]  = { "dot", "circle", "cat", "acorn" };
+const uint8_t SHAPE_WEIGHT[4] = { 10, 40, 30, 20 };   // percent
+
+inline uint16_t rgb565(uint32_t c) {
+  return ((c >> 16 & 0xF8) << 8) | ((c >> 8 & 0xFC) << 3) | ((c & 0xFF) >> 3);
+}
 
 // ─── Eye design (seed-based, unique per unit) ────────────
 uint32_t eyeSeed;
-uint8_t  d_irisIdx, d_iris2Idx;
-uint8_t  d_irisPattern;   // 0=solid 1=rings 2=spokes 3=swirl 4=nebula 5=hazel
-uint8_t  d_pupilShape;    // 0=circle 1=vOval 2=hSlit 3=star 4=heart 5=none
-uint8_t  d_scleraIdx;
-uint8_t  d_shineStyle;    // 0=single 1=double 2=triple 3=arc
-uint8_t  d_rarity;        // 0=common 1=uncommon 2=rare 3=legendary
-bool     d_limbalRing;
-uint16_t d_irisC, d_irisC2, d_scleraC;
-// flat-style extras (see drawEye): the reference eyes vary the pupil
-// colour rather than always using black, and some carry a bright streak
-uint16_t d_pupilC;
-uint16_t d_hiC;
-bool     d_hasHighlight;
+uint8_t  d_colorway;
+uint8_t  d_shape;
+uint16_t d_irisC;     // eye body
+uint16_t d_pupilC;    // left pupil
+uint16_t d_pupilC2;   // right pupil
 
 // ─── Eye geometry ────────────────────────────────────────
-// Styled off creature.company/eyes: there is NO white sclera. Each eye
-// is a single flat block of colour sitting straight on black, with a
-// small dark pupil dot. The two ovals are large and close together so
-// they nearly fill the round display.
-#define EYE_L_X   82    // left eye center x
-#define EYE_R_X   158   // right eye center x
-#define EYE_Y     122   // both eyes center y
-#define IRIS_RX   40    // eye half-width  (ovals are taller than wide)
-#define IRIS_RY   50    // eye half-height
-#define PUPIL_R   9     // pupil dot — small, like the reference
-// There is no sclera any more, but the special-FX code positions things
-// against these two names — keep them pointing at the eye's extent so it
-// all still builds and lands in sensible places.
-#define IRIS_R    IRIS_RY
+// Two big ovals almost touching, filling most of the round display.
+#define EYE_L_X   (CX - 52)
+#define EYE_R_X   (CX + 52)
+#define EYE_Y     CY
+#define IRIS_RX   48
+#define IRIS_RY   56
+#define EYE_TILT  0.10f   // radians; the top of each eye leans outward
+#define PUPIL_R   12      // nominal pupil size for the special effects
+#define IRIS_R    IRIS_RX
 #define SCLERA_R  IRIS_RY
 
 // ─── Animation expression table (50 base targets) ───────
@@ -305,11 +366,7 @@ void updateState();
 void updateInterp();
 void drawFrame();
 void drawEye(int cx, int cy, bool isLeft);
-void drawIrisPattern(int cx, int cy, int irx, int iry);
 void drawPupilShape(int cx, int cy, int pr);
-void drawEyelids(int cx, int cy, int irx, int iry);
-void drawBrow(int cx, int cy, float bwAngle, float bwY);
-void drawHighlights(int cx, int cy);
 void drawSpecialFX(int cx, int cy);
 void drawFXMatrix();
 void drawFXStarfield();
@@ -413,58 +470,36 @@ void initEyeDesign() {
   }
   prefs.end();
 
-  // Derive design from seed using LCG
   uint32_t s = eyeSeed;
-  auto rnd = [&](uint8_t n) -> uint8_t {
+  auto rnd = [&](uint16_t n) -> uint16_t {
     s = s * 1664525u + 1013904223u;
-    return (uint8_t)((s >> 16) % n);
+    return (uint16_t)((s >> 8) % n);
   };
 
-  // Rarity tier (affects what's available)
-  uint8_t r = rnd(100);
-  d_rarity = (r < 60) ? 0 : (r < 85) ? 1 : (r < 97) ? 2 : 3;
+  uint16_t total = 0;
+  for (int i = 0; i < 100; i++) total += COLORWAYS[i].weight;
+  uint16_t pick = rnd(total);
+  d_colorway = 99;
+  for (int i = 0; i < 100; i++) {
+    if (pick < COLORWAYS[i].weight) { d_colorway = i; break; }
+    pick -= COLORWAYS[i].weight;
+  }
 
-  // Iris color — higher rarity unlocks more options
-  uint8_t maxColor = (d_rarity == 0) ? 8 : (d_rarity == 1) ? 14 : (d_rarity == 2) ? 18 : 20;
-  d_irisIdx  = rnd(maxColor);
-  d_iris2Idx = rnd(20);
+  pick = rnd(100);
+  d_shape = SHAPE_ACORN;
+  for (int i = 0; i < 4; i++) {
+    if (pick < SHAPE_WEIGHT[i]) { d_shape = i; break; }
+    pick -= SHAPE_WEIGHT[i];
+  }
 
-  // Pattern
-  uint8_t maxPat = (d_rarity == 0) ? 4 : 6;
-  d_irisPattern = rnd(maxPat);
+  const Colorway &cw = COLORWAYS[d_colorway];
+  d_irisC   = rgb565(cw.body);
+  d_pupilC  = rgb565(cw.pupL);
+  d_pupilC2 = rgb565(cw.pupR);
 
-  // Pupil shape
-  uint8_t maxPup = (d_rarity == 0) ? 2 : (d_rarity == 1) ? 3 : (d_rarity == 2) ? 5 : 6;
-  d_pupilShape = rnd(maxPup);
-
-  // Sclera tint
-  d_scleraIdx = rnd(4);
-
-  // Shine style
-  d_shineStyle = rnd(4);
-
-  // Limbal ring (dark ring around iris edge)
-  d_limbalRing = (rnd(3) == 0);
-
-  // Resolve colors
-  d_irisC   = IRIS_PAL[d_irisIdx];
-  d_irisC2  = IRIS_PAL2[d_iris2Idx];
-  d_scleraC = SCLERA_PAL[d_scleraIdx];
-
-  // Pupil: mostly a near-black dot, but a slice of variants use a
-  // contrasting colour instead — that mix is what gives the reference
-  // grid its variety (green eyes w/ red pupils, cream w/ blue, etc.)
-  uint8_t pupRoll = rnd(100);
-  d_pupilC = (pupRoll < 65) ? 0x0000
-           : (pupRoll < 85) ? IRIS_PAL2[rnd(20)]
-                            : IRIS_PAL[rnd(20)];
-
-  // A minority carry a bright vertical streak
-  d_hasHighlight = (rnd(100) < 28);
-  d_hiC = (rnd(2) == 0) ? 0xFFFF : SCLERA_PAL[rnd(4)];
-
-  Serial.printf("Eye seed: 0x%08X | rarity: %d | iris: %d | pattern: %d | pupil: %d\n",
-                eyeSeed, d_rarity, d_irisIdx, d_irisPattern, d_pupilShape);
+  Serial.printf("Eye seed: 0x%08X | %s %s | colorway %.1f%% | shape %u%%\n",
+                eyeSeed, SHAPE_NAMES[d_shape], cw.name,
+                100.0f * cw.weight / total, SHAPE_WEIGHT[d_shape]);
 }
 
 // ════════════════════════════════════════════════════════
@@ -977,251 +1012,113 @@ void drawFrame() {
   spr.pushSprite(0, 0);
 }
 
+// Row span of a rotated, filled ellipse at screen row y. False if the row misses it.
+static bool ellSpan(float cx, float cy, float rx, float ry, float ang,
+                    float y, float &x0, float &x1) {
+  float c = cosf(ang), s = sinf(ang), dy = y - cy;
+  float irx = 1.0f / (rx * rx), iry = 1.0f / (ry * ry);
+  float A = c * c * irx + s * s * iry;
+  float B = 2.0f * dy * c * s * (irx - iry);
+  float C = dy * dy * (s * s * irx + c * c * iry) - 1.0f;
+  float disc = B * B - 4.0f * A * C;
+  if (disc <= 0) return false;
+  float r = sqrtf(disc);
+  x0 = cx + (-B - r) / (2.0f * A);
+  x1 = cx + (-B + r) / (2.0f * A);
+  return true;
+}
+
+// Pupil placement per shape, as fractions of the eye body. u points toward
+// the nose, v points down, tilt leans the top of the pupil toward the nose.
+struct PupilDef { float u, v, rxF, ryF, tilt; bool round; };
+const PupilDef PUPILS[4] = {
+  { 0.50f, 0.00f, 0.11f, 0.00f, 0.00f, true  },  // dot
+  { 0.33f, 0.03f, 0.50f, 0.00f, 0.00f, true  },  // circle
+  { 0.36f, 0.00f, 0.21f, 0.66f, 0.14f, false },  // cat
+  { 0.19f, 0.24f, 0.50f, 0.92f, 0.06f, false },  // acorn, runs off the bottom edge
+};
+
 void drawEye(int cx, int cy, bool isLeft) {
-  // Constrain gaze
-  float gx = constrain(eye.gx, -20.0f, 20.0f);
-  float gy = constrain(eye.gy, -14.0f, 14.0f);
-  // Mirror gaze for right eye
-  if (!isLeft) gx = -gx * 0.85f;
+  float side = isLeft ? 1.0f : -1.0f;   // +1 = toward the nose
+  float gx = constrain(eye.gx, -26.0f, 26.0f);
+  float gy = constrain(eye.gy, -18.0f, 18.0f);
 
-  int ex = cx + (int)gx;
-  int ey = cy + (int)gy;
-  int irx = (int)(IRIS_RX * eye.irX);
-  int iry = (int)(IRIS_RY * eye.irY);
-  irx = constrain(irx, 6, IRIS_RX + 10);
-  iry = constrain(iry, 4, IRIS_RY + 10);
+  float rx = IRIS_RX * constrain(eye.irX, 0.5f, 1.2f);
+  float ry = IRIS_RY * constrain(eye.irY, 0.5f, 1.2f);
+  float ex = cx + gx * 0.35f;
+  float ey = cy + gy * 0.35f;
+  float bodyAng = -side * EYE_TILT;     // top of each eye leans outward
 
-  // 1. The eye body — one flat block of colour straight on black.
-  //    No sclera: that is the whole look on creature.company/eyes.
-  uint16_t c = (eye.colMix > 0.5f) ? eye.colOvr
-                                   : blend565(d_irisC, eye.colOvr, eye.colMix);
-  sprFillEllipse(ex, ey, irx, iry, c);
+  // Blinking squashes the whole eye toward a point just below its middle
+  float open  = 1.0f - 0.94f * constrain(eye.blinkT, 0.0f, 1.0f);
+  float pivot = ey + ry * 0.45f;
 
-  // 2. Pupil — a small dot, not a big black disc
-  if (eye.fx != 15 && eye.fx != 9) {  // not dead-X or derp
-    int pr = constrain((int)(PUPIL_R * eye.pupR), 2, irx - 2);
-    // sits slightly toward the middle of the face, like the reference
-    int px = ex + (isLeft ? 4 : -4);
-    sprFillEllipse(px, ey + 2, pr, pr, d_pupilC);
+  const PupilDef &pd = PUPILS[d_shape];
+  float pupScale = constrain(eye.pupR, 0.4f, 1.6f);
+  float prx = pd.rxF * rx * pupScale;
+  float pry = pd.round ? prx : pd.ryF * ry * pupScale;
+  float ppx = ex + side * pd.u * rx + gx * 0.65f;
+  float ppy = ey + pd.v * ry + gy * 0.55f;
+  float pupAng = side * pd.tilt;
+  bool drawPupil = (eye.fx != 15 && eye.fx != 9);
+
+  uint16_t bodyC = (eye.colMix > 0.5f) ? eye.colOvr
+                                       : blend565(d_irisC, eye.colOvr, eye.colMix);
+  uint16_t pupC  = isLeft ? d_pupilC : d_pupilC2;
+
+  // Expression lids: a slanted black cut across the top (angry, drowsy)
+  // and a flat one along the bottom (squinting)
+  float top = pivot + (ey - ry - pivot) * open;
+  float bot = pivot + (ey + ry - pivot) * open;
+  float bw  = isLeft ? eye.bwL : eye.bwR;
+  float cutDepth = max(0.0f, eye.bwY) * 1.6f + max(0.0f, bw) * 0.9f;
+  float cutSlope = max(0.0f, bw) * 0.025f * side;
+  float cutA     = top + cutDepth - cutSlope * ex;
+  float botCut   = bot - max(0.0f, eye.blinkB - 0.45f * eye.blinkT) * ry * 1.4f;
+
+  int y0 = max(0,     (int)floorf(pivot + (ey - ry - 2 - pivot) * open));
+  int y1 = min(H - 1, (int)ceilf (pivot + (ey + ry + 2 - pivot) * open));
+
+  for (int Y = y0; Y <= y1; Y++) {
+    if (Y > botCut) break;
+    float sy = pivot + (Y - pivot) / open;
+    float bx0, bx1;
+    if (!ellSpan(ex, ey, rx, ry, bodyAng, sy, bx0, bx1)) continue;
+
+    if (cutDepth > 0.3f || cutSlope != 0.0f) {
+      if (fabsf(cutSlope) < 1e-4f) {
+        if (Y < cutA) continue;
+      } else {
+        float xl = (Y - cutA) / cutSlope;
+        if (cutSlope > 0) bx1 = min(bx1, xl);
+        else              bx0 = max(bx0, xl);
+      }
+    }
+    if (bx1 - bx0 < 0.5f) continue;
+
+    int ix0 = (int)lroundf(bx0), ix1 = (int)lroundf(bx1);
+    spr.drawFastHLine(ix0, Y, ix1 - ix0, bodyC);
+
+    float px0, px1;
+    if (drawPupil && ellSpan(ppx, ppy, prx, pry, pupAng, sy, px0, px1)) {
+      px0 = max(px0, bx0);
+      px1 = min(px1, bx1);
+      if (px1 - px0 >= 0.5f) {
+        int jx0 = (int)lroundf(px0), jx1 = (int)lroundf(px1);
+        spr.drawFastHLine(jx0, Y, max(1, jx1 - jx0), pupC);
+      }
+    }
   }
 
-  // 3. Optional bright highlight streak (some variants have one)
-  if (d_hasHighlight) {
-    sprFillEllipse(ex - irx/3, ey - iry/5, max(2, irx/6), max(4, iry/3), d_hiC);
-  }
-
-  // 4. Eyelids — black, so they read as the eye closing against the field
-  drawEyelids(cx, cy, irx, iry);
-
-  // 5. Brow
-  if (isLeft)  drawBrow(cx, cy, eye.bwL, eye.bwY);
-  else         drawBrow(cx, cy, eye.bwR, eye.bwY);
-
-  // 6. Special FX overlay
   if (eye.fx != 0 && eye.fx != 5 && eye.fx != 19) {
-    drawSpecialFX(ex, ey);
+    drawSpecialFX((int)ex, (int)ey);
   }
 }
 
-// ─── Iris pattern drawing ────────────────────────────────
-void drawIrisPattern(int cx, int cy, int irx, int iry) {
-  // Color with state override blend
-  uint16_t c1 = (eye.colMix > 0.5f) ? eye.colOvr
-                : blend565(d_irisC, eye.colOvr, eye.colMix);
-  uint16_t c2 = d_irisC2;
-
-  switch (d_irisPattern) {
-
-    case 0: // solid
-      sprFillEllipse(cx, cy, irx, iry, c1);
-      break;
-
-    case 1: // concentric rings
-      sprFillEllipse(cx, cy, irx, iry, c1);
-      for (int r = irx - 5; r > 5; r -= 9) {
-        int ry2 = (int)(r * (float)iry / irx);
-        sprDrawEllipse(cx, cy, r,   ry2,   c2);
-        sprDrawEllipse(cx, cy, r-1, ry2-1, c2);
-      }
-      break;
-
-    case 2: // spokes
-      sprFillEllipse(cx, cy, irx, iry, c1);
-      for (int a = 0; a < 360; a += 24) {
-        float ra = a * PI / 180.0f;
-        int x0 = cx + (int)(6 * cosf(ra));
-        int y0 = cy + (int)(6 * sinf(ra));
-        int x1 = cx + (int)((irx-3) * cosf(ra));
-        int y1 = cy + (int)((iry-3) * sinf(ra));
-        spr.drawLine(x0, y0, x1, y1, c2);
-      }
-      break;
-
-    case 3: { // swirl
-      sprFillEllipse(cx, cy, irx, iry, c1);
-      float rScale = (float)iry / irx;
-      for (int seg = 0; seg < 6; seg++) {
-        float aBase = seg * 60.0f * PI / 180.0f;
-        for (int r = 8; r < irx - 3; r += 5) {
-          float twist = r * 0.045f;
-          float a0 = aBase + twist;
-          float a1 = aBase + 0.5f + twist;
-          int x0 = cx + (int)(r * cosf(a0));
-          int y0 = cy + (int)(r * rScale * sinf(a0));
-          int x1 = cx + (int)(r * cosf(a1));
-          int y1 = cy + (int)(r * rScale * sinf(a1));
-          spr.drawLine(x0, y0, x1, y1, c2);
-        }
-      }
-      break;
-    }
-
-    case 4: { // nebula dots (deterministic from seed)
-      sprFillEllipse(cx, cy, irx, iry, c1);
-      uint32_t s = eyeSeed;
-      for (int i = 0; i < 50; i++) {
-        s = s * 1664525u + 1013904223u;
-        float r  = ((s >> 16) & 0xFF) / 255.0f * (irx - 4);
-        s = s * 1664525u + 1013904223u;
-        float a  = ((s >> 16) & 0xFF) / 255.0f * 2 * PI;
-        int dx = (int)(r * cosf(a));
-        int dy = (int)(r * (float)iry/irx * sinf(a));
-        spr.fillRect(cx + dx - 1, cy + dy - 1, 3, 3, c2);
-      }
-      break;
-    }
-
-    case 5: { // hazel wedges
-      float rScale = (float)iry / irx;
-      int segs = 8;
-      for (int seg = 0; seg < segs; seg++) {
-        float a0 = seg * 2 * PI / segs;
-        float a1 = (seg + 1) * 2 * PI / segs;
-        float aMid = (a0 + a1) * 0.5f;
-        uint16_t sc = (seg % 2 == 0) ? c1 : c2;
-        // Fill wedge via scan
-        for (float r = 1; r < irx - 2; r += 1.5f) {
-          int x0 = cx + (int)(r * cosf(a0));
-          int y0 = cy + (int)(r * rScale * sinf(a0));
-          int x1 = cx + (int)(r * cosf(aMid));
-          int y1 = cy + (int)(r * rScale * sinf(aMid));
-          spr.drawLine(x0, y0, x1, y1, sc);
-          int x2 = cx + (int)(r * cosf(a1));
-          int y2 = cy + (int)(r * rScale * sinf(a1));
-          spr.drawLine(x1, y1, x2, y2, sc);
-        }
-      }
-      break;
-    }
-  }
-}
-
-// ─── Pupil shapes ────────────────────────────────────────
+// Plain round pupil in the design colour, used by the rainbow effect
 void drawPupilShape(int cx, int cy, int pr) {
-  pr = constrain(pr, 4, IRIS_R - 4);
-  switch (d_pupilShape) {
-
-    case 0: // circle
-      spr.fillCircle(cx, cy, pr, TFT_BLACK);
-      break;
-
-    case 1: // vertical oval (cat-like)
-      sprFillEllipse(cx, cy, (int)(pr * 0.55f), pr, TFT_BLACK);
-      break;
-
-    case 2: // horizontal slit
-      sprFillEllipse(cx, cy, pr, (int)(pr * 0.22f), TFT_BLACK);
-      break;
-
-    case 3: { // star
-      for (int i = 0; i < 5; i++) {
-        float a0 = -PI/2 + i * 2*PI/5;
-        float a1 = a0 + PI/5;
-        float a2 = a0 + 2*PI/5;
-        int ir = pr/2;
-        spr.fillTriangle(cx, cy,
-          cx+(int)(pr*cosf(a0)), cy+(int)(pr*sinf(a0)),
-          cx+(int)(ir*cosf(a1)), cy+(int)(ir*sinf(a1)), TFT_BLACK);
-        spr.fillTriangle(cx, cy,
-          cx+(int)(ir*cosf(a1)), cy+(int)(ir*sinf(a1)),
-          cx+(int)(pr*cosf(a2)), cy+(int)(pr*sinf(a2)), TFT_BLACK);
-      }
-      break;
-    }
-
-    case 4: { // heart
-      int hr = pr * 55 / 100;
-      spr.fillCircle(cx - hr/2, cy - hr/4, hr/2 + 1, TFT_BLACK);
-      spr.fillCircle(cx + hr/2, cy - hr/4, hr/2 + 1, TFT_BLACK);
-      spr.fillTriangle(cx-hr, cy, cx+hr, cy, cx, cy+hr+2, TFT_BLACK);
-      break;
-    }
-
-    case 5: // no pupil (eerie) — tiny dot only
-      spr.fillCircle(cx, cy, 3, TFT_BLACK);
-      break;
-  }
-}
-
-// ─── Eyelids ─────────────────────────────────────────────
-void drawEyelids(int cx, int cy, int irx, int iry) {
-  // Top lid
-  if (eye.blinkT > 0.01f) {
-    int irisTop = cy - iry - 12;
-    int closeAmt = (int)(eye.blinkT * (iry * 2 + 24));
-    for (int y = irisTop; y < irisTop + closeAmt; y++) {
-      float dy = (float)(y - CY);
-      float xw = sqrtf(max(0.0f, (float)(CX*CX) - dy*dy));
-      if (xw < 1) continue;
-      spr.drawFastHLine((int)(CX - xw), y, (int)(xw * 2), TFT_BLACK);
-    }
-  }
-  // Bottom lid
-  if (eye.blinkB > 0.01f) {
-    int irisBot = cy + iry + 10;
-    int closeAmt = (int)(eye.blinkB * (iry * 2 + 18));
-    for (int y = irisBot; y > irisBot - closeAmt; y--) {
-      float dy = (float)(y - CY);
-      float xw = sqrtf(max(0.0f, (float)(CX*CX) - dy*dy));
-      if (xw < 1) continue;
-      spr.drawFastHLine((int)(CX - xw), y, (int)(xw * 2), TFT_BLACK);
-    }
-  }
-}
-
-// ─── Eyebrow ─────────────────────────────────────────────
-void drawBrow(int cx, int cy, float browAngle, float browY) {
-  int bw = 30;
-  int bt = 4;
-  int baseY = cy - SCLERA_R - 5 + (int)browY;
-  int innerEnd = (int)(browAngle * 0.55f); // angle → pixel offset
-
-  for (int t = -bt/2; t <= bt/2; t++) {
-    spr.drawLine(cx - bw/2, baseY - innerEnd + t,
-                 cx + bw/2, baseY + innerEnd + t, TFT_BLACK);
-  }
-}
-
-// ─── Specular highlights ─────────────────────────────────
-void drawHighlights(int cx, int cy) {
-  switch (d_shineStyle) {
-    case 0: // single large dot
-      spr.fillCircle(cx + 11, cy - 12, 7, TFT_WHITE);
-      break;
-    case 1: // two dots
-      spr.fillCircle(cx + 10, cy - 11, 6, TFT_WHITE);
-      spr.fillCircle(cx + 16, cy - 6,  3, TFT_WHITE);
-      break;
-    case 2: // three dots
-      spr.fillCircle(cx + 10, cy - 12, 5, TFT_WHITE);
-      spr.fillCircle(cx + 16, cy - 5,  3, TFT_WHITE);
-      spr.fillCircle(cx + 5,  cy - 16, 2, TFT_WHITE);
-      break;
-    case 3: // highlight arc
-      spr.fillCircle(cx + 9, cy - 12, 5, TFT_WHITE);
-      spr.drawCircle(cx, cy, (int)(IRIS_R * eye.irX) - 3, 0x8C71);
-      break;
-  }
+  spr.fillCircle(cx + ((cx < CX) ? 6 : -6), cy, constrain(pr, 3, 20),
+                 (cx < CX) ? d_pupilC : d_pupilC2);
 }
 
 // ─── Per-eye special effects ─────────────────────────────
@@ -1237,7 +1134,6 @@ void drawSpecialFX(int cx, int cy) {
         (int)(128 + 127 * sinf(p + 4.189f)));
       sprFillEllipse(cx, cy, (int)(IRIS_R*eye.irX), (int)(IRIS_R*eye.irY), rc);
       drawPupilShape(cx, cy, (int)(PUPIL_R * eye.pupR));
-      drawHighlights(cx, cy);
       break;
     }
 
@@ -1310,8 +1206,7 @@ void drawSpecialFX(int cx, int cy) {
 
     case 9: { // Derp — crossed eyes (pupil shifts toward nose)
       int pr = (int)(PUPIL_R * eye.pupR);
-      spr.fillCircle(cx + (cx < CX ? 8 : -8), cy, pr, TFT_BLACK);
-      drawHighlights(cx + (cx < CX ? 8 : -8), cy);
+      spr.fillCircle(cx + (cx < CX ? 8 : -8), cy, pr, (cx < CX) ? d_pupilC : d_pupilC2);
       break;
     }
 

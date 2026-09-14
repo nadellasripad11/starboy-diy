@@ -37,7 +37,7 @@ a small lipo sits at the back, and it charges through the xiao's usb-c port, whi
 | just let it sit | cycles through 50 little expressions |
 | wait around | every so often plays one of 20 rare effects like rainbow eyes, hearts, glitches, matrix rain or a galaxy swirl |
 
-the first time a star turns on, it rolls its own eye color, pupil color and highlight style and keeps them forever. so no two stars look the same.
+the first time a star turns on, it rolls one of 100 colorways and one of 4 eye shapes (dot, circle, cat or acorn) and keeps them forever. some colorways are way rarer than others, so your eyes could be a 0.4% pull.
 
 ---
 

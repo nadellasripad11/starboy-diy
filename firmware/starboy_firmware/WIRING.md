@@ -153,9 +153,10 @@ spiral · loading spinner · error/X eyes · derp/cross-eyed · smug · crying �
 laughing · shocked · "dead" eyes · galaxy swirl · heartbeat pulse · fire
 pupils · starfield dream · scanline glitch — 20 total, ~5 seconds each.
 
-**Eye design:** each unit generates its own eye on first boot (seed stored
-in flash) — eye colour, pupil colour and highlight style, with rarity tiers
-(common → legendary) gating the rarer colours.
+**Eye design:** each unit rolls its eyes on first boot (seed stored in
+flash): one of 100 colorways and one of 4 shapes (dot 10%, circle 40%,
+cat 30%, acorn 20%). Colorways are weighted, so the rarest ones come up
+about 0.4% of the time.
 
 ---
 

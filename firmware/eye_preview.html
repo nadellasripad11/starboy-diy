@@ -1,0 +1,141 @@
+<!-- Browser preview of the firmware's eye renderer. Mirrors drawEye() in
+     starboy_firmware.ino row for row, so what you see here is what the
+     GC9A01 draws. Open it in any browser. -->
+<title>starboy eye preview</title>
+<style>
+  body { margin: 0; background: #0b0b0c; color: #e8e8ea; font: 13px ui-monospace, Menlo, Consolas, monospace; }
+  header { padding: 16px 20px 4px; display: flex; gap: 16px; align-items: baseline; flex-wrap: wrap; }
+  h1 { font-size: 16px; margin: 0; font-weight: 600; }
+  .muted { color: #8a8a90; }
+  .controls { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 20px 12px; }
+  button { background: #1c1c1f; color: #e8e8ea; border: 1px solid #2c2c31; border-radius: 6px; padding: 5px 10px; font: inherit; cursor: pointer; }
+  button[aria-pressed="true"] { background: #e8e8ea; color: #0b0b0c; }
+  button:focus-visible { outline: 2px solid #7b43f5; outline-offset: 2px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; padding: 6px 20px 24px; }
+  figure { margin: 0; text-align: center; }
+  canvas { width: 100%; aspect-ratio: 1; border-radius: 50%; background: #000; display: block; }
+  figcaption { margin-top: 6px; }
+</style>
+<header>
+  <h1>starboy eye preview</h1>
+  <span class="muted">100 colorways × 4 shapes · 240×240 like the real display</span>
+</header>
+<div class="controls" id="shapes"></div>
+<div class="controls" id="moods"></div>
+<div class="grid" id="grid"></div>
+<script>
+const COLORWAYS = `marmalade f99f05 6e6123 6e6123|matcha c7fba6 5e6e06 5e6e06|houseplant 039442 71ff6f 71ff6f|terrarium 6ff5d0 106e54 106e54|whale 0059a3 0095ff 0095ff|frog 42de86 436a16 436a16|denim 6c92f8 102a6e 102a6e|petunia f8affb f006b4 f006b4|lipgloss a10180 fc609c fc609c|jawbreaker f6759f 56031f 56031f|cherry ae0002 ff5252 ff5252|pebble 645252 a4a4a4 a4a4a4|valentine dd06cb 7b1612 7b1612|plum 7260e6 622058 622058|gumball f20f07 ffffff ffffff|sprinkler 59bf05 ffffff ffffff|pool 05a8f9 fceeee fceeee|moon 4028ff ebfffc ebfffc|bubblegum f442e7 ffffff ffffff|seaglass fbfbfb 167b61 167b61|laser ffffff ff0000 ff0000|snowball ffffff 5a79f3 5a79f3|smoothie ffece0 ce0959 ce0959|peach fdfbe2 f76e5d f76e5d|goldfish e0f4fb de9109 de9109|seashell fcd9cf 070571 070571|hydrangea e1bfe1 2722db 2722db|cupcake f9ffb2 ca00ca ca00ca|limeade eafcc5 09b6ce 09b6ce|teacup f6e5a5 0d73f7 0d73f7|candycane 9cfbd5 790c05 790c05|ladybug c3110e 000000 000000|avocado 8bd67c 230606 230606|submarine 0f7ba9 000000 000000|eggplant e202e8 0a0a0a 0a0a0a|og ffffff 000000 000000|lobster f95320 044a5f 044a5f|pumpkin e87102 55fc6e 55fc6e|beachball f6fd21 1c9de3 1c9de3|glowstick e9f905 360342 360342|cactus c4f41d 530aec 530aec|highlighter 95f124 f50dcf f50dcf|kiwi 55f927 9f7717 9f7717|flytrap 15f817 5e045e 5e045e|junebug 14da70 3516af 3516af|sunset ae2400 f855fc f855fc|robin 15abf8 5e2304 5e2304|jukebox 024bde fb4cc3 fb4cc3|starboy 7b43f5 f6bd49 f6bd49|sonar 126487 2ee605 2ee605|guava 84fb8e f64982 f64982|blacklight 6922f0 a3f410 a3f410|taffy f474dc e8fca6 e8fca6|lilac 7202fc fdb0ce fdb0ce|nightlight 7768fe 55fc87 55fc87|crocus d602e8 fbf823 fbf823|rosebush 1e6935 fc7ac0 fc7ac0|parakeet 018335 23fafb 23fafb|glowworm f40df8 19f515 19f515|spearmint 9cfbce 790572 790572|motel fa486f 92fabe 92fabe|buoy 14abd6 eefa24 eefa24|slushie c206ad 49f6d9 49f6d9|siren fd0c0d 2905e6 2905e6|ember 994400 00eeff 00eeff|jelly b60080 429efb 429efb|popsicle 71feae 5598fc 5598fc|dragonfruit b60053 cffa0f cffa0f|hibiscus b6003c 05e605 05e605|jam c5013c 09ce93 09ce93|candle 973849 f7fbbc f7fbbc|calculator 737373 09e151 09e151|doorbell bebebe e42d06 e42d06|postcard be6a6a 76d8eb 76d8eb|flowerpot cc6262 3e4002 3e4002|juicebox f6826c 95059b 95059b|mallard 7b8401 0737a7 0737a7|tomato 60a611 b4040f b4040f|chamomile 509156 f4c524 f4c524|peacock 02b0b6 7923fb 7923fb|sandbox b8804a f7f574 f7f574|kite 7db5f4 c10787 c10787|puddle a7aff6 837605 837605|moth ec75f6 564803 564803|strawberry fcb7f2 069a1e 069a1e|flamingo fcb7c3 068f9a 068f9a|static 666666 000000 ffffff|eraser 666666 ffeded 000000|pinball b60207 d2f9f9 60d105|socks b865a8 76d8eb 8f1716|koi fe6873 0a0a0a d0f910|marble d1d9fa c11207 d20adf|stoplight 34f7fd 038c03 f91024|bumblebee fdcb21 0a0a0a d10566|lilypad d1f63b 10812b 0f91f4|popcorn eaf66e bb240a 0964e7|spumoni f6eab9 177e39 2722db|umbrella e7e3e9 f65f28 4f6bf8|sherbet e4f4e2 4a0a99 db8405|neapolitan 87493b eb76dd b7abf3`
+  .split('|').map((r, i) => { const [name, body, pl, pr] = r.split(' ');
+    const w = i < 14 ? 10 : i < 19 ? 8 : i < 31 ? 9 : i < 36 ? 7 : i < 73 ? 3 : i < 86 ? 5 : 2;
+    return { name, body: '#' + body, pl: '#' + pl, pr: '#' + pr, w }; });
+const TOTAL = COLORWAYS.reduce((a, c) => a + c.w, 0);
+
+const SHAPES = ['dot', 'circle', 'cat', 'acorn'];
+const PUPILS = [
+  { u: 0.50, v: 0.00, rxF: 0.11, ryF: 0.00, tilt: 0.00, round: true  },
+  { u: 0.33, v: 0.03, rxF: 0.50, ryF: 0.00, tilt: 0.00, round: true  },
+  { u: 0.36, v: 0.00, rxF: 0.21, ryF: 0.66, tilt: 0.14, round: false },
+  { u: 0.19, v: 0.24, rxF: 0.50, ryF: 0.92, tilt: 0.06, round: false },
+];
+// bwL/bwR/bwY/pupR/irX/irY straight from the firmware's EXPR table
+const MOODS = {
+  neutral: { bl: 0,    pr: 1.00, ix: 1.0, iy: 1.0, bw: 0,  by: 0 },
+  angry:   { bl: 0,    pr: 0.75, ix: 1.0, iy: 0.8, bw: 14, by: 4 },
+  drowsy:  { bl: 0.55, pr: 0.95, ix: 1.0, iy: 0.8, bw: 0,  by: 4 },
+  shocked: { bl: 0,    pr: 1.40, ix: 1.1, iy: 1.0, bw: 0,  by: 0 },
+};
+
+const CX = 120, CY = 120, H = 240, IRIS_RX = 48, IRIS_RY = 56, EYE_TILT = 0.10;
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+function ellSpan(cx, cy, rx, ry, ang, y) {
+  const c = Math.cos(ang), s = Math.sin(ang), dy = y - cy;
+  const irx = 1 / (rx * rx), iry = 1 / (ry * ry);
+  const A = c * c * irx + s * s * iry, B = 2 * dy * c * s * (irx - iry);
+  const C = dy * dy * (s * s * irx + c * c * iry) - 1, disc = B * B - 4 * A * C;
+  if (disc <= 0) return null;
+  const r = Math.sqrt(disc);
+  return [cx + (-B - r) / (2 * A), cx + (-B + r) / (2 * A)];
+}
+
+function drawEye(g, cx, cy, isLeft, eye, shape, cw) {
+  const side = isLeft ? 1 : -1;
+  const gx = clamp(eye.gx, -26, 26), gy = clamp(eye.gy, -18, 18);
+  const rx = IRIS_RX * clamp(eye.irX, 0.5, 1.2), ry = IRIS_RY * clamp(eye.irY, 0.5, 1.2);
+  const ex = cx + gx * 0.35, ey = cy + gy * 0.35, bodyAng = -side * EYE_TILT;
+  const open = 1 - 0.94 * clamp(eye.blinkT, 0, 1), pivot = ey + ry * 0.45;
+  const pd = PUPILS[shape], ps = clamp(eye.pupR, 0.4, 1.6);
+  const prx = pd.rxF * rx * ps, pry = pd.round ? prx : pd.ryF * ry * ps;
+  const ppx = ex + side * pd.u * rx + gx * 0.65, ppy = ey + pd.v * ry + gy * 0.55, pupAng = side * pd.tilt;
+  const top = pivot + (ey - ry - pivot) * open, bot = pivot + (ey + ry - pivot) * open;
+  const bw = isLeft ? eye.bwL : eye.bwR;
+  const cutDepth = Math.max(0, eye.bwY) * 1.6 + Math.max(0, bw) * 0.9;
+  const cutSlope = Math.max(0, bw) * 0.025 * side, cutA = top + cutDepth - cutSlope * ex;
+  const botCut = bot - Math.max(0, eye.blinkB - 0.45 * eye.blinkT) * ry * 1.4;
+  const y0 = Math.max(0, Math.floor(pivot + (ey - ry - 2 - pivot) * open));
+  const y1 = Math.min(H - 1, Math.ceil(pivot + (ey + ry + 2 - pivot) * open));
+  for (let Y = y0; Y <= y1; Y++) {
+    if (Y > botCut) break;
+    const sy = pivot + (Y - pivot) / open;
+    const b = ellSpan(ex, ey, rx, ry, bodyAng, sy);
+    if (!b) continue;
+    let [bx0, bx1] = b;
+    if (cutDepth > 0.3 || cutSlope !== 0) {
+      if (Math.abs(cutSlope) < 1e-4) { if (Y < cutA) continue; }
+      else { const xl = (Y - cutA) / cutSlope; if (cutSlope > 0) bx1 = Math.min(bx1, xl); else bx0 = Math.max(bx0, xl); }
+    }
+    if (bx1 - bx0 < 0.5) continue;
+    const ix0 = Math.round(bx0), ix1 = Math.round(bx1);
+    g.fillStyle = cw.body; g.fillRect(ix0, Y, ix1 - ix0, 1);
+    const p = ellSpan(ppx, ppy, prx, pry, pupAng, sy);
+    if (p) {
+      const px0 = Math.max(p[0], bx0), px1 = Math.min(p[1], bx1);
+      if (px1 - px0 >= 0.5) { g.fillStyle = isLeft ? cw.pl : cw.pr; const j0 = Math.round(px0); g.fillRect(j0, Y, Math.max(1, Math.round(px1) - j0), 1); }
+    }
+  }
+}
+
+let shapeFilter = -1, mood = 'neutral';
+function buttons(el, items, current, onPick) {
+  el.innerHTML = '';
+  for (const [val, label] of items) {
+    const b = document.createElement('button');
+    b.textContent = label; b.setAttribute('aria-pressed', String(val === current()));
+    b.onclick = () => { onPick(val); [...el.children].forEach((c, i) => c.setAttribute('aria-pressed', String(items[i][0] === current()))); };
+    el.appendChild(b);
+  }
+}
+buttons(document.getElementById('shapes'), [[-1, 'mixed shapes'], ...SHAPES.map((s, i) => [i, s])], () => shapeFilter, v => shapeFilter = v);
+buttons(document.getElementById('moods'), Object.keys(MOODS).map(m => [m, m]), () => mood, v => mood = v);
+
+const grid = document.getElementById('grid');
+const cells = COLORWAYS.map((cw, i) => {
+  const fig = document.createElement('figure');
+  const cv = document.createElement('canvas'); cv.width = cv.height = 240;
+  const cap = document.createElement('figcaption');
+  fig.append(cv, cap); grid.appendChild(fig);
+  return { cw, g: cv.getContext('2d'), cap, seedShape: [0,1,1,1,1,2,2,2,3,3][(i * 7) % 10], phase: Math.random() * 1000, nextBlink: 1000 + Math.random() * 3000 };
+});
+
+const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+function frame(t) {
+  const m = MOODS[mood];
+  for (const c of cells) {
+    const shape = shapeFilter < 0 ? c.seedShape : shapeFilter;
+    const lt = t + c.phase;
+    const blinkAge = (lt % (c.nextBlink + 200)) - c.nextBlink;
+    const blink = reduceMotion ? 0 : blinkAge > 0 ? (blinkAge < 80 ? blinkAge / 80 : 1 - (blinkAge - 80) / 120) * 0.95 : 0;
+    const eye = {
+      gx: reduceMotion ? 0 : Math.sin(lt / 1400) * 14, gy: reduceMotion ? 0 : Math.cos(lt / 1900) * 7,
+      blinkT: Math.max(m.bl, blink), blinkB: Math.max(m.bl, blink) * 0.45,
+      pupR: m.pr, irX: m.ix, irY: m.iy, bwL: m.bw, bwR: m.bw, bwY: m.by,
+    };
+    c.g.fillStyle = '#000'; c.g.fillRect(0, 0, 240, 240);
+    drawEye(c.g, CX - 52, CY, true, eye, shape, c.cw);
+    drawEye(c.g, CX + 52, CY, false, eye, shape, c.cw);
+    c.cap.innerHTML = `${SHAPES[shape]} ${c.cw.name} <span class="muted">${(100 * c.cw.w / TOTAL).toFixed(1)}%</span>`;
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
