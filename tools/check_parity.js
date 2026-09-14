@@ -84,6 +84,42 @@ expect(sbNum('COLD_C') === fwTune[1], `web/sandbox.js: COLD_C ${sbNum('COLD_C')}
 expect(sbNum('LOUD_P2P') === fwTune[2], `web/sandbox.js: LOUD_P2P ${sbNum('LOUD_P2P')} != firmware ${fwTune[2]}`);
 expect(sbNum('SHAKE_MS') === fwShakeMs, `web/sandbox.js: SHAKE_MS ${sbNum('SHAKE_MS')} != firmware ${fwShakeMs}`);
 
+// ─── mood.js transition timings match updateState() ─────
+const { TIMING, OFFSETS } = require(path.join(root, 'web/mood.js'));
+const fwAge = (to) => { const m = ino.match(new RegExp(`age > (\\d+)\\)[^;\\n]*setState\\(${to}\\)`)); return m && +m[1]; };
+const fwAgeIf = (cond, to) => { const m = ino.match(new RegExp(`${cond} && age > (\\d+)\\) setState\\(${to}\\)`)); return m && +m[1]; };
+const timingPairs = [
+  ['dizzyToSpin', fwAge('S_DIZZY_SEVERE')],
+  ['spinCalm', fwAgeIf('!shaking', 'S_RECOVERING')],
+  ['angryCalm', fwAge('isCold \\? S_CHILL : S_IDLE')],
+  ['startled', fwAge('isLoud \\? S_ANXIOUS : S_IDLE')],
+  ['anxiousCalm', fwAgeIf('!isLoud', 'S_IDLE')],
+  ['anxiousToOverwhelmed', fwAgeIf('isLoud', 'S_OVERWHELMED')],
+  ['dreamLength', fwAge('S_SLEEP')],
+];
+const recover = ino.match(/case S_RECOVERING:\s*if \(age > (\d+)\)/);
+timingPairs.push(['recoverToAngry', recover && +recover[1]]);
+const shiver = ino.match(/age > (\d+) && ambientTemp < COLD_C - (\d+)\) setState\(S_SHIVER\)/);
+const freeze = ino.match(/age > (\d+) && ambientTemp < COLD_C - (\d+)\) setState\(S_FREEZE\)/);
+const thaw = ino.match(/ambientTemp >= COLD_C \+ (\d+)\) setState\(S_IDLE\)/);
+const overwhelmed = ino.match(/case S_OVERWHELMED:\s*if \(!isLoud && age > (\d+)\)/);
+timingPairs.push(['chillToShiver', shiver && +shiver[1]], ['shiverToFreeze', freeze && +freeze[1]],
+                 ['overwhelmedCalm', overwhelmed && +overwhelmed[1]]);
+for (const [key, fw] of timingPairs) {
+  expect(fw !== null && TIMING[key] === fw, `web/mood.js: TIMING.${key} ${TIMING[key]} != firmware ${fw}`);
+}
+expect(shiver && OFFSETS.shiver === +shiver[2], `web/mood.js: shiver offset ${OFFSETS.shiver} != firmware ${shiver && shiver[2]}`);
+expect(freeze && OFFSETS.freeze === +freeze[2], `web/mood.js: freeze offset ${OFFSETS.freeze} != firmware ${freeze && freeze[2]}`);
+expect(thaw && OFFSETS.thaw === +thaw[1], `web/mood.js: thaw offset ${OFFSETS.thaw} != firmware ${thaw && thaw[1]}`);
+expect(/soundPeak > LOUD_P2P \* 0\.5f/.test(ino) && /noise > cfg\.loudP2P \* 0\.5/.test(read('web/mood.js')),
+  'web/mood.js: wake-from-sleep noise level no longer matches the firmware (half the loud level)');
+
+// both must skip the shake interrupt while already in the dizzy chain
+expect(/shaking && curState != S_DIZZY_MILD && curState != S_DIZZY_SEVERE/.test(ino),
+  'firmware: shake interrupt no longer skips S_DIZZY_MILD / S_DIZZY_SEVERE');
+expect(/\['dizzy', 'spin', 'recovering', 'angry'\]\.includes\(m\.state\)/.test(read('web/mood.js')),
+  "web/mood.js: shake interrupt no longer skips 'dizzy' and 'spin'");
+
 // ─── colorway names used by name in page scripts exist ───
 const names = new Set(fwColorways.map((c) => c.name));
 for (const rel of ['web/app.js', 'devlog/cards.html']) {

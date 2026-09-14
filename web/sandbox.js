@@ -1,6 +1,6 @@
-// Sensor sandbox: a JS copy of updateState() in starboy_firmware.ino, driven by
-// on-page controls instead of the real sensors. Thresholds match the firmware
-// defaults; only the idle timers are shortened so doze and sleep show up fast.
+// Sensor sandbox: drives the shared mood state machine (mood.js, a copy of the
+// firmware's updateState()) from on-page controls. Thresholds match the
+// firmware defaults; only the idle timers are shortened so doze and sleep show up fast.
 (function () {
   const E = window.StarboyEyes;
   const { clamp } = E;
@@ -37,13 +37,6 @@
   showDesign();
   document.getElementById('reroll').addEventListener('click', () => { design = E.roll(); showDesign(); });
 
-  const s = {
-    state: 'idle', t0: performance.now(), lastInteract: performance.now(),
-    shakeHeld: false, shakeStart: 0, dizzyAngle: 0, shiverPhase: 0,
-    cur: { ...NEUTRAL }, glance: { at: 0, next: 1500, gx: 0, gy: 0 },
-    blink: { at: -1e4, next: 2500 }, dart: { at: 0, gx: 0, gy: 0 },
-  };
-
   function log(text) {
     const li = document.createElement('li');
     const secs = new Date().toLocaleTimeString([], { minute: '2-digit', second: '2-digit' });
@@ -52,17 +45,25 @@
     while (logEl.children.length > 7) logEl.lastChild.remove();
   }
 
-  function setState(next, reason) {
-    if (s.state === next) return;
-    s.state = next;
-    s.t0 = performance.now();
-    moodEl.textContent = LABELS[next];
-    log(`<b>${LABELS[next]}</b>${reason ? ' · ' + reason : ''}`);
-  }
+  const mood = window.StarboyMood.createMood({
+    coldC: COLD_C, loudP2P: LOUD_P2P, shakeMs: SHAKE_MS, dozeMs: DOZE_MS, sleepMs: SLEEP_MS,
+    now: performance.now(),
+    random: reduceMotion ? () => 1 : Math.random,
+    onChange: (next, reason) => {
+      moodEl.textContent = LABELS[next];
+      log(`<b>${LABELS[next]}</b>${reason ? ' · ' + reason : ''}`);
+    },
+  });
+
+  const anim = {
+    cur: { ...NEUTRAL }, dizzyAngle: 0, shiverPhase: 0,
+    glance: { at: 0, next: 1500, gx: 0, gy: 0 }, blink: { at: -1e4, next: 2500 }, dart: { at: 0, gx: 0, gy: 0 },
+  };
 
   // hold to shake: pointer or keyboard
-  const startShake = () => { if (!s.shakeHeld) { s.shakeHeld = true; s.shakeStart = performance.now(); shakeBtn.classList.add('held'); } };
-  const stopShake = () => { s.shakeHeld = false; s.shakeStart = 0; shakeBtn.classList.remove('held'); };
+  let shakeHeld = false;
+  const startShake = () => { shakeHeld = true; shakeBtn.classList.add('held'); };
+  const stopShake = () => { shakeHeld = false; shakeBtn.classList.remove('held'); };
   shakeBtn.addEventListener('pointerdown', (e) => { shakeBtn.setPointerCapture(e.pointerId); startShake(); });
   ['pointerup', 'pointercancel', 'lostpointercapture'].forEach((ev) => shakeBtn.addEventListener(ev, stopShake));
   shakeBtn.addEventListener('keydown', (e) => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); startShake(); } });
@@ -77,71 +78,23 @@
   noiseIn.addEventListener('input', renderInputs);
   renderInputs();
 
-  function updateState(now) {
-    const age = now - s.t0;
-    const idle = now - s.lastInteract;
-    const temp = +tempIn.value, noise = +noiseIn.value;
-    const shaking = s.shakeHeld && now - s.shakeStart > SHAKE_MS;
-    const isCold = temp < COLD_C, isLoud = noise > LOUD_P2P;
-
-    if (s.shakeHeld) s.lastInteract = now;
-    if (shaking && !['spin', 'recovering', 'angry'].includes(s.state)) {
-      setState('dizzy', 'shaken for 1s');
-    }
-
-    switch (s.state) {
-      case 'dizzy': if (age > 2000) setState('spin', 'still shaking'); break;
-      case 'spin': if (!shaking && age > 3500) setState('recovering', 'shaking stopped'); break;
-      case 'recovering': if (age > 2000) setState('angry'); break;
-      case 'angry': if (age > 3500) setState(isCold ? 'chill' : 'idle', 'calmed down'); break;
-      case 'chill':
-        if (!isCold) setState('idle', 'warmed up');
-        else if (age > 4000 && temp < COLD_C - 5) setState('shiver', `below ${COLD_C - 5}°c`);
-        break;
-      case 'shiver':
-        if (!isCold) setState('idle', 'warmed up');
-        else if (age > 8000 && temp < COLD_C - 8) setState('freeze', `below ${COLD_C - 8}°c`);
-        break;
-      case 'freeze': if (temp >= COLD_C + 2) setState('idle', 'thawed out'); break;
-      case 'startled': if (age > 800) setState(isLoud ? 'anxious' : 'idle', isLoud ? 'still loud' : 'quiet again'); break;
-      case 'anxious':
-        if (!isLoud && age > 2500) setState('idle', 'quiet again');
-        else if (isLoud && age > 4000) setState('overwhelmed', 'loud for 4s');
-        break;
-      case 'overwhelmed': if (!isLoud && age > 3000) setState('idle', 'quiet again'); break;
-      case 'doze':
-        if (s.shakeHeld || isLoud) { s.lastInteract = now; setState('idle', 'woken up'); }
-        else if (idle > SLEEP_MS) setState('sleep', 'left alone longer');
-        break;
-      case 'sleep':
-        if (s.shakeHeld || noise > LOUD_P2P * 0.5) { s.lastInteract = now; setState('woke', s.shakeHeld ? 'shaken awake' : 'noise woke him'); }
-        else if (!reduceMotion && age > 6000 && Math.random() < 0.004) setState('dream');
-        break;
-      case 'dream': if (age > 6000) setState('sleep'); break;
-      case 'woke': if (age > 1600) setState('idle'); break;
-    }
-
-    if (s.state === 'idle') {
-      if (isCold) setState('chill', `below ${COLD_C}°c`);
-      else if (isLoud) { s.lastInteract = now; setState('startled', 'loud noise'); }
-      else if (idle > DOZE_MS) setState('doze', 'left alone');
-    }
-
-    const frac = s.state === 'sleep' || s.state === 'dream' ? 1 : clamp(idle / SLEEP_MS, 0, 1);
-    idleEl.style.width = `${frac * 100}%`;
+  function tick() {
+    const now = performance.now();
+    mood.update(now, { temp: +tempIn.value, noise: +noiseIn.value, shaking: shakeHeld });
+    idleEl.style.width = `${mood.idleFraction(now) * 100}%`;
   }
 
   function target(now) {
-    const t = now - s.t0;
+    const t = now - mood.t0;
     const tg = { ...NEUTRAL };
     let colOvr = '#000000', fx = 0, gazeSpd = 0.10;
 
-    switch (s.state) {
+    switch (mood.state) {
       case 'dizzy':
       case 'spin': {
-        s.dizzyAngle += s.state === 'spin' ? 0.14 : 0.08;
-        const r = s.state === 'spin' ? 26 : 18;
-        tg.gx = Math.cos(s.dizzyAngle) * r; tg.gy = Math.sin(s.dizzyAngle) * r;
+        anim.dizzyAngle += mood.state === 'spin' ? 0.14 : 0.08;
+        const r = mood.state === 'spin' ? 26 : 18;
+        tg.gx = Math.cos(anim.dizzyAngle) * r; tg.gy = Math.sin(anim.dizzyAngle) * r;
         tg.blinkT = 0.2 + 0.2 * Math.sin(now * 0.005); tg.pupR = 0.8; gazeSpd = 0.22;
         break;
       }
@@ -153,36 +106,36 @@
         colOvr = '#ff0000';
         break;
       case 'chill':
-        s.shiverPhase += 0.08;
-        Object.assign(tg, { blinkT: 0.4, pupR: 0.9, irX: 1.1, irY: 0.8, bwL: 4, bwR: 4, colMix: 0.3 * Math.abs(Math.sin(s.shiverPhase * 0.3)) });
-        tg.gx = Math.sin(s.shiverPhase) * 3; colOvr = '#0000ff';
+        anim.shiverPhase += 0.08;
+        Object.assign(tg, { blinkT: 0.4, pupR: 0.9, irX: 1.1, irY: 0.8, bwL: 4, bwR: 4, colMix: 0.3 * Math.abs(Math.sin(anim.shiverPhase * 0.3)) });
+        tg.gx = Math.sin(anim.shiverPhase) * 3; colOvr = '#0000ff';
         break;
       case 'shiver':
-        s.shiverPhase += 0.18;
-        Object.assign(tg, { blinkT: 0.25 + 0.1 * Math.sin(s.shiverPhase * 0.4), pupR: 0.6, irY: 1.2, bwL: 12, bwR: 12, bwY: 5, colMix: 0.5 });
-        tg.gx = Math.sin(s.shiverPhase) * 7 + Math.sin(s.shiverPhase * 2.7) * 4;
+        anim.shiverPhase += 0.18;
+        Object.assign(tg, { blinkT: 0.25 + 0.1 * Math.sin(anim.shiverPhase * 0.4), pupR: 0.6, irY: 1.2, bwL: 12, bwR: 12, bwY: 5, colMix: 0.5 });
+        tg.gx = Math.sin(anim.shiverPhase) * 7 + Math.sin(anim.shiverPhase * 2.7) * 4;
         colOvr = '#0000ff'; fx = 10; gazeSpd = 0.3;
         break;
       case 'freeze':
-        s.shiverPhase += 0.12;
+        anim.shiverPhase += 0.12;
         Object.assign(tg, { blinkT: 0.5, pupR: 0.5, irX: 0.8, irY: 1.3, bwL: 10, bwR: 10, bwY: 4, colMix: 0.8 });
-        tg.gx = Math.sin(s.shiverPhase * 0.7) * 3; colOvr = '#00ffff'; fx = 10;
+        tg.gx = Math.sin(anim.shiverPhase * 0.7) * 3; colOvr = '#00ffff'; fx = 10;
         break;
       case 'startled':
         Object.assign(tg, { pupR: 1.25, irX: 1.05, irY: 1.05, bwL: 5, bwR: 5, bwY: -3 });
         tg.gx = t < 300 ? Math.sin(t * 0.1) * 8 : 0; gazeSpd = 0.3;
         break;
       case 'anxious':
-        if (now - s.dart.at > 300) s.dart = { at: now, gx: Math.random() * 36 - 18, gy: Math.random() * 24 - 12 };
+        if (now - anim.dart.at > 300) anim.dart = { at: now, gx: Math.random() * 36 - 18, gy: Math.random() * 24 - 12 };
         Object.assign(tg, { pupR: 0.9, irX: 1.1, irY: 0.8, bwL: 4, bwR: 4, blinkT: 0.3 + 0.2 * Math.sin(now * 0.008) });
-        tg.gx = s.dart.gx; tg.gy = s.dart.gy; gazeSpd = 0.22;
+        tg.gx = anim.dart.gx; tg.gy = anim.dart.gy; gazeSpd = 0.22;
         break;
       case 'overwhelmed':
         Object.assign(tg, { blinkT: 0.45, pupR: 0.6, irY: 1.2, bwL: 12, bwR: 12, bwY: 5, colMix: 0.3 });
         tg.gx = Math.sin(now * 0.015) * 10; colOvr = '#ffff00';
         break;
       case 'doze': {
-        const dl = clamp((now - s.lastInteract - DOZE_MS) / (SLEEP_MS - DOZE_MS), 0, 1);
+        const dl = mood.dozeLevel(now);
         Object.assign(tg, { blinkT: 0.45 + dl * 0.35, pupR: 0.85, gy: 6 * dl, bwY: 5 * dl });
         break;
       }
@@ -199,21 +152,21 @@
         Object.assign(tg, { gy: -1, irX: 1.05, irY: 1.05, bwY: -2 });
         break;
       default:
-        if (!reduceMotion && now - s.glance.at > s.glance.next) {
-          s.glance.at = now;
-          s.glance.next = 900 + Math.random() * 2300;
+        if (!reduceMotion && now - anim.glance.at > anim.glance.next) {
+          anim.glance.at = now;
+          anim.glance.next = 900 + Math.random() * 2300;
           const back = Math.random() < 0.33;
-          s.glance.gx = back ? 0 : Math.random() * 28 - 14;
-          s.glance.gy = back ? 0 : Math.random() * 12 - 6;
+          anim.glance.gx = back ? 0 : Math.random() * 28 - 14;
+          anim.glance.gy = back ? 0 : Math.random() * 12 - 6;
         }
-        tg.gx = s.glance.gx; tg.gy = s.glance.gy;
-        if (now - s.glance.at < 140) gazeSpd = 0.4;
+        tg.gx = anim.glance.gx; tg.gy = anim.glance.gy;
+        if (now - anim.glance.at < 140) gazeSpd = 0.4;
     }
     return { tg, colOvr, fx, gazeSpd };
   }
 
   const blinkCurve = (b) => (b < 80 ? (b / 80) * 0.95 : b < 200 ? (1 - (b - 80) / 120) * 0.95 : 0);
-  const asleep = () => s.state === 'sleep' || s.state === 'dream' || s.state === 'doze';
+  const sleepy = () => ['sleep', 'dream', 'doze'].includes(mood.state);
 
   let last = performance.now();
   function frame(now) {
@@ -223,21 +176,22 @@
     const k = (spd) => 1 - Math.pow(1 - spd, dt * 30 / 1000);
     for (const key of LERP_KEYS) {
       const spd = key === 'gx' || key === 'gy' ? gazeSpd : key === 'blinkT' || key === 'blinkB' ? 0.18 : 0.08;
-      s.cur[key] += ((tg[key] ?? 0) - s.cur[key]) * k(spd);
+      anim.cur[key] += ((tg[key] ?? 0) - anim.cur[key]) * k(spd);
     }
     let blink = 0;
-    if (!reduceMotion && !asleep()) {
-      if (now - s.blink.at > s.blink.next) { s.blink.at = now; s.blink.next = Math.random() < 0.1 ? 200 : 2200 + Math.random() * 4300; }
-      blink = blinkCurve(now - s.blink.at);
+    if (!reduceMotion && !sleepy()) {
+      if (now - anim.blink.at > anim.blink.next) { anim.blink.at = now; anim.blink.next = Math.random() < 0.1 ? 200 : 2200 + Math.random() * 4300; }
+      blink = blinkCurve(now - anim.blink.at);
     }
-    const eye = { ...s.cur, blinkT: Math.max(s.cur.blinkT, blink), colOvr, fx, fxP: now / 1000 * (fx === 11 ? 3.6 : 1.5) };
+    const eye = { ...anim.cur, blinkT: Math.max(anim.cur.blinkT, blink), colOvr, fx, fxP: now / 1000 * (fx === 11 ? 3.6 : 1.5) };
     eye.blinkB = eye.blinkT * 0.45;
     E.render(g, eye, design.shape, E.COLORWAYS[design.colorway], now);
     requestAnimationFrame(frame);
   }
+
   moodEl.textContent = LABELS.idle;
   log('<b>idle</b> · switched on');
   // mood logic on its own timer so it keeps ticking while the tab isn't painting
-  setInterval(() => updateState(performance.now()), 50);
+  setInterval(tick, 50);
   requestAnimationFrame(frame);
 })();

@@ -619,8 +619,11 @@ void updateState() {
   if (curState >= S_RARE_RAINBOW && age < 5000) return;
 
   // ── SHAKE ──
-  if (shaking && curState != S_DIZZY_SEVERE && curState != S_RECOVERING &&
-      curState != S_ANGRY && curState != S_SEETHING) {
+  // Only interrupt INTO the dizzy chain. Already-dizzy states fall through, or
+  // this returned every frame while shaking: the spin animation never ran
+  // and mild dizzy could never escalate to severe.
+  if (shaking && curState != S_DIZZY_MILD && curState != S_DIZZY_SEVERE &&
+      curState != S_RECOVERING && curState != S_ANGRY && curState != S_SEETHING) {
     setState(shakeE > 30 ? S_DIZZY_SEVERE : S_DIZZY_MILD);
     lastInteract = now;
     return;

@@ -107,7 +107,13 @@ the eye design lives in the firmware and in the website's copy of the renderer. 
 node tools/check_parity.js
 ```
 
-it checks ~280 values across the firmware, the site, the preview page and the sensor sandbox, and fails with the exact file and value if anything drifted.
+it checks ~300 values across the firmware, the site, the preview page and the sensor sandbox (colorways, odds, pupil shapes, geometry, thresholds and mood timings), and fails with the exact file and value if anything drifted.
+
+the mood logic has its own tests too, run with a fake clock so the slow paths (freezing, falling asleep) finish instantly:
+
+```
+node tools/test_mood.js
+```
 
 ---
 
