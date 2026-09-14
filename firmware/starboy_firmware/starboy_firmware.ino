@@ -471,9 +471,12 @@ void loop() {
   updateBacklight();
   drawFrame();
 
-  // Target ~33ms per frame (30fps)
+  // 30fps awake. Dozing and sleeping eyes barely move, so drop to 15 / 8 fps
+  // and let the CPU idle in delay() instead of pushing frames over SPI.
+  uint32_t frameMs = (curState == S_SLEEP || curState == S_DREAMING) ? 125
+                   : (curState == S_DOZE) ? 66 : 33;
   uint32_t elapsed = millis() - now;
-  if (elapsed < 33) delay(33 - elapsed);
+  if (elapsed < frameMs) delay(frameMs - elapsed);
 }
 
 // ════════════════════════════════════════════════════════
