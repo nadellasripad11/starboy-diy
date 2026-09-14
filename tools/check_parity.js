@@ -142,6 +142,14 @@ expect(tiltCase.includes('TILT_OFF_DEG') && !/lastInteract\s*=/.test(tiltCase.re
   'firmware: S_TILT refreshes lastInteract again, so a star left at an angle would never sleep');
 expect(!/atan2f\(accelY, accelZ\)/.test(ino), 'firmware: tilt is measured against lying flat again, so a hanging keychain reads as tilted');
 
+// ─── frame-rate independence (sleep runs at 8fps, awake at 30) ─
+expect(/powf\(0\.85f, frameScale\)/.test(ino), 'firmware: shake smoothing is per-frame again, so shakes register slower while asleep');
+expect(/powf\(0\.93f, frameScale\)/.test(ino), 'firmware: sound decay is per-frame again, so noise lingers 4x longer while asleep');
+expect(/dozeLevel \+ 0\.002f \* frameScale/.test(ino), 'firmware: doze level ramps per-frame again, so dozing slows at 15fps');
+expect(/while \(millis\(\) - now < frameMs\)\s*\{\s*if \(HAS_MIC\) listenMic\(\);/.test(ino),
+  'firmware: the frame wait no longer listens to the mic, so a sleeping star can miss claps');
+expect(!/shakeE \* 0\.85f|soundPeak \* 0\.93f\)/.test(ino), 'firmware: an old per-frame smoothing line is back');
+
 // ─── colorway names used by name in page scripts exist ───
 const names = new Set(fwColorways.map((c) => c.name));
 for (const rel of ['web/app.js', 'devlog/cards.html']) {

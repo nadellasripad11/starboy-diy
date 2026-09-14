@@ -342,6 +342,9 @@ uint32_t   blinkPhaseMs = 0;
 // ─── Sensor values ───────────────────────────────────────
 float  accelX=0, accelY=0, accelZ=9.8f;
 float  shakeE=0;               // smoothed shake energy
+// Frame time / 33ms. Smoothing written "per frame" gets raised to this power so
+// it runs at the same real-time speed at 30fps awake and 8fps asleep.
+float  frameScale=1.0f;
 float  ambientTemp=20.0f;
 int    soundPeak=0;
 uint32_t shakeStart=0;
@@ -394,6 +397,7 @@ void drawFXStarfield();
 void checkRare();
 void setupRareTarget(StarState s);
 void handleSerial();
+void listenMic();
 void loadTuning();
 void applySensorOverrides();
 void setState(StarState s);
@@ -472,6 +476,9 @@ void setup() {
 // ════════════════════════════════════════════════════════
 void loop() {
   uint32_t now = millis();
+  static uint32_t lastFrame = 0;
+  frameScale = lastFrame ? constrain((now - lastFrame) / 33.33f, 0.25f, 8.0f) : 1.0f;
+  lastFrame = now;
 
   handleSerial();
   readSensors();
@@ -484,8 +491,12 @@ void loop() {
   // and let the CPU idle in delay() instead of pushing frames over SPI.
   uint32_t frameMs = (curState == S_SLEEP || curState == S_DREAMING) ? 125
                    : (curState == S_DOZE) ? 66 : 33;
-  uint32_t elapsed = millis() - now;
-  if (elapsed < frameMs) delay(frameMs - elapsed);
+  // Keep listening while we wait. At 8fps one short mic burst per frame hears
+  // only ~3% of the time, so a clap could slip past a sleeping star.
+  while (millis() - now < frameMs) {
+    if (HAS_MIC) listenMic();
+    delay(8);
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -536,6 +547,18 @@ void initEyeDesign() {
 // ════════════════════════════════════════════════════════
 // SENSOR READING
 // ════════════════════════════════════════════════════════
+// Short mic burst between frames. Attack only: the per-frame decay in
+// readSensors() still decides how fast the level falls.
+void listenMic() {
+  int lo = 4095, hi = 0;
+  for (int i = 0; i < 16; i++) {
+    int raw = analogRead(MIC_PIN);
+    if (raw < lo) lo = raw;
+    if (raw > hi) hi = raw;
+  }
+  if (hi - lo > soundPeak) soundPeak = hi - lo;
+}
+
 void readSensors() {
   uint32_t now = millis();
 
@@ -549,7 +572,7 @@ void readSensors() {
 
     float mag = sqrtf(accelX*accelX + accelY*accelY + accelZ*accelZ);
     float instant = fabsf(mag - 9.81f);
-    shakeE = shakeE * 0.85f + instant * 0.15f;  // smooth
+    shakeE += (instant - shakeE) * (1.0f - powf(0.85f, frameScale));  // smooth, frame-rate independent
 
     static uint32_t lastTiltMs = 0;
     float dt = lastTiltMs ? (float)(now - lastTiltMs) : 0.0f;
@@ -608,7 +631,7 @@ void readSensors() {
     }
     int p2p = hi - lo;
     if (p2p > soundPeak) soundPeak = p2p;                 // fast attack
-    else soundPeak = (int)(soundPeak * 0.93f);            // slow decay
+    else soundPeak = (int)(soundPeak * powf(0.93f, frameScale));  // slow decay, same speed at any fps
   }
 
   applySensorOverrides();
@@ -713,7 +736,7 @@ void updateState() {
       break;
 
     case S_DOZE:
-      dozeLevel = min(1.0f, dozeLevel + 0.002f);
+      dozeLevel = min(1.0f, dozeLevel + 0.002f * frameScale);
       if (idle > IDLE_SLEEP_MS) setState(S_SLEEP);
       if (shakeE > 3 || isLoud) { setState(S_IDLE); dozeLevel=0; lastInteract=now; }
       break;
@@ -1487,6 +1510,7 @@ void updateBacklight() {
     target = BL_AWAKE + (BL_DOZE - BL_AWAKE) * min(1.0f, dozeLevel);
   else if (curState == S_SLEEP || curState == S_DREAMING)
     target = BL_SLEEP;
-  bl += (target - bl) * ((target > bl) ? 0.25f : 0.02f);
+  float rate = (target > bl) ? 0.25f : 0.02f;
+  bl += (target - bl) * (1.0f - powf(1.0f - rate, frameScale));
   setBacklight((uint8_t)constrain(bl, 0.0f, 255.0f));
 }
