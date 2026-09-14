@@ -95,6 +95,20 @@ install these from the library manager:
 
 one extra step for tft_espi: copy [`user_setup.h`](firmware/starboy_firmware/User_Setup.h) into its library folder so it knows about the round screen and which pins it's on.
 
+before closing the shell, flash [`firmware/hardware_test`](firmware/hardware_test/hardware_test.ino) first. it checks the screen, backlight and all three sensors one by one and tells you which wire to fix. once the real firmware is on, open the serial monitor and type `help` for the tuning console.
+
+both sketches compile clean for the xiao esp32c3 (esp32 core 3.3.11).
+
+### keeping the eyes in sync
+
+the eye design lives in the firmware and in the website's copy of the renderer. after changing colorways, shapes or thresholds, run:
+
+```
+node tools/check_parity.js
+```
+
+it checks ~280 values across the firmware, the site, the preview page and the sensor sandbox, and fails with the exact file and value if anything drifted.
+
 ---
 
 ## about the battery
