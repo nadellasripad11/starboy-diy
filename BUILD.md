@@ -98,8 +98,8 @@ the hole; that plugs it.
 - **Layer height:** 0.16mm or finer — the back engraving is only 0.5mm deep.
 - **Walls:** 3+ perimeters. The shell is load-bearing at the bail.
 - **Material:** PETG. The bail takes the keyring load every day, and PETG
-  handles that (and a hot car) far better than PLA. White under the chrome,
-  black for the bezel ring.
+  handles that (and a hot car) far better than PLA. White for everything,
+  since it all gets chromed.
 - **Do not scale.** Every clearance here is absolute.
 
 ### Finishing

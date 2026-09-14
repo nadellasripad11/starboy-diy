@@ -57,7 +57,7 @@ there's no custom pcb. everything is hand-wired to the xiao with thin 30awg wire
 
 ## what it costs
 
-i'm building two stars, and everything for both comes to **$150.48**, filament included. it's all from amazon, so it shows up in a few days instead of a month. the full list is in [bom.csv](BOM.csv).
+i'm building two stars, and everything for both comes to **$134.74**, filament included. it's all from amazon, so it shows up in a few days instead of a month. the full list is in [bom.csv](BOM.csv).
 
 most parts come in multi-packs, so only the xiao and the battery get bought twice.
 
@@ -73,7 +73,7 @@ every module runs off the xiao's 3.3v pin. if you want every single connection s
 
 ## printing and finishing
 
-print the three files in [`stl/`](stl/) in petg, with white for the shell and black for the bezel ring. petg holds up way better than pla when it's hanging off a belt loop every day or sitting in a hot car. orientation and supports are in [build.md](BUILD.md).
+print the three files in [`stl/`](stl/) in white petg. everything gets chromed anyway, so one color is all you need. petg holds up way better than pla when it's hanging off a belt loop every day or sitting in a hot car. orientation and supports are in [build.md](BUILD.md).
 
 for the chrome look, sand it smooth (400, then 800, then 1500), hit it with plastic primer, spray the chrome, and buff it lightly with 0000 steel wool once it's dry.
 

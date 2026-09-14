@@ -2,7 +2,7 @@
 
 everything i need to build **two** stars, all from amazon. prices checked 2026-09-13.
 
-**total: $150.48** → [BOM.csv](BOM.csv)
+**total: $134.74** → [BOM.csv](BOM.csv)
 
 | part | qty | price | link | what it's for |
 |------|-----|-------|------|---------------|
@@ -16,9 +16,8 @@ everything i need to build **two** stars, all from amazon. prices checked 2026-0
 | mini carabiners + key rings (10 + 10) | 1 | $4.98 | [amazon](https://www.amazon.com/dp/B095NBHTTH) | keyring and pants clip |
 | rust-oleum plastic primer 12oz | 1 | $6.97 | [amazon](https://www.amazon.com/dp/B003CT498U) | lets the chrome stick to the print |
 | rust-oleum bright coat chrome 11oz | 1 | $6.47 | [amazon](https://www.amazon.com/dp/B000Z8DGXK) | chrome finish |
-| polymaker petg 1.75mm 1kg, white | 1 | $17.99 | [amazon](https://www.amazon.com/dp/B0FG3FHG29) | star shells |
-| polymaker petg 1.75mm 1kg, black | 1 | $15.74 | [amazon](https://www.amazon.com/dp/B0FG3HMCVY) | bezel rings |
-| | | **$150.48** | | |
+| polymaker petg 1.75mm 1kg, white | 1 | $17.99 | [amazon](https://www.amazon.com/dp/B0FG3FHG29) | star shells and bezel rings |
+| | | **$134.74** | | |
 
 only the xiao and the battery need to be bought twice. everything else comes in packs big enough for both stars.
 
