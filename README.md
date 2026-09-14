@@ -2,6 +2,8 @@
 
 a chrome star keychain with a little animated eye in the middle. shake it and the eye gets dizzy, take it somewhere cold and it starts shivering, yell near it and it gets nervous. leave it alone long enough and it falls asleep.
 
+**see it live → [starboy-diy.nadellasripad11.workers.dev](https://starboy-diy.nadellasripad11.workers.dev/)** (the eyes on the site run the same code as the firmware)
+
 it's my handbuilt take on the [creature starboy](https://lilguy.net). i wanted one, and more than that i wanted to know how one works inside, so i designed the shell from scratch in openscad, picked the smallest parts i could find that would fit, and wrote the eye animations myself.
 
 <p align="center">
