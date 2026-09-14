@@ -144,7 +144,7 @@
     <p class="hint" id="hint">every little guy rolled his own eyes · tap one to reroll it · hover a sleepy one to wake him up</p>
   </header>
 
-  <section class="story" aria-label="about starboy diy">
+  <section class="story" aria-label="about starboy diy" data-fx="text">
     <p>starboy diy is a tiny wearable pet i built by hand. he clips onto your belt loop and acts like he's actually alive.</p>
     <p>he feels the world through an accelerometer, a temperature sensor and a microphone. make a loud noise and he gets anxious. take him somewhere cold and he shivers. shake him and he gets dizzy, then mad at you. ignore him long enough and he dozes off and dreams.</p>
     <p>every star rolls his own eyes the first time he turns on. there are 400 looks, 100 colorways across 4 eye shapes, each with its own rarity. once he rolls, those eyes are his forever.</p>
@@ -153,7 +153,7 @@
   </section>
 
   <section class="looks" aria-labelledby="looks-title">
-    <h2 id="looks-title">eye looks</h2>
+    <h2 id="looks-title" data-fx="heading">eye looks</h2>
     <a class="bar" href="eyes.html" target="_blank" rel="noopener">
       <span class="go">view all <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 18L18 6M9 6h9v9" fill="none" stroke="#9a9ba1" stroke-width="3" stroke-linecap="square"/></svg></span>
       <span class="count">400</span>
@@ -163,8 +163,8 @@
 
 <section class="section" id="try">
   <div class="wrap">
-    <h2>what he does</h2>
-    <p class="lead">tap a reaction and watch the screen. it's the same animation code that runs on the real star. want to be his sensors yourself? try the <a href="sandbox.html">sensor sandbox</a>.</p>
+    <h2 data-fx="heading">what he does</h2>
+    <p class="lead" data-fx="text">tap a reaction and watch the screen. it's the same animation code that runs on the real star. want to be his sensors yourself? try the <a href="sandbox.html">sensor sandbox</a>.</p>
     <div class="try">
       <div>
         <div class="reactions" id="reactions"></div>
@@ -183,8 +183,8 @@
 
 <section class="section" id="inside">
   <div class="wrap">
-    <h2>what's inside</h2>
-    <p class="lead">everything is hand-wired with no custom circuit board, so it all folds into a shell thinner than your thumb.</p>
+    <h2 data-fx="heading">what's inside</h2>
+    <p class="lead" data-fx="text">everything is hand-wired with no custom circuit board, so it all folds into a shell thinner than your thumb.</p>
     <div class="inside">
       <div>
         <div class="parts">
@@ -222,5 +222,6 @@
 
 <script src="eyes.js"></script>
 <script src="app.js"></script>
+<script src="textfx.js"></script>
 </body>
 </html>
