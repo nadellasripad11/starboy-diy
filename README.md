@@ -1,15 +1,25 @@
 # starboy diy
 
-my handbuilt version of the [creature starboy](https://lilguy.net): a chrome 5-point star keychain with a round animated eye that reacts to how you move it, how cold it is, and how loud it gets around you. the eye looks different on every unit. built by sripadbuilds.
+a chrome star keychain with a little animated eye in the middle. shake it and the eye gets dizzy, take it somewhere cold and it starts shivering, yell near it and it gets nervous. leave it alone long enough and it falls asleep.
 
-i made it because i wanted a starboy and wanted to know how one actually works inside. so i designed the shell from scratch in openscad, picked the smallest parts that could fit, and wrote the eye animation firmware myself.
+it's my handbuilt take on the [creature starboy](https://lilguy.net). i wanted one, and more than that i wanted to know how one works inside, so i designed the shell from scratch in openscad, picked the smallest parts i could find that would fit, and wrote the eye animations myself.
 
 <p align="center">
-  <img src="images/render_front.png" width="48%" alt="front of the star shell with the round display opening and keyring bail">
+  <img src="images/render_front.png" width="48%" alt="front of the star shell with the round display opening and keyring loop">
   <img src="images/render_back.png" width="48%" alt="back of the star shell with the engraved sripadbuilds medallion">
 </p>
 
-**what's inside:** seeed XIAO ESP32C3, 1.28" round TFT (GC9A01), mpu6050, ds18b20, max4466 mic, 320mAh lipo. charges over usb-c and clips to your pants.
+---
+
+## how it works
+
+the brain is a seeed xiao esp32c3, a board about the size of a thumbnail with a battery charger built in. it drives a 1.28" round screen that acts as the eye, and it listens to three sensors:
+
+- an **mpu6050** that feels shaking and tilting
+- a **ds18b20** that pokes out of a tiny vent to read the air temperature
+- a **max4466** mic that hears loud sounds
+
+a small lipo sits at the back, and it charges through the xiao's usb-c port, which lines up with a cutout in the shell. the whole thing is 20.5mm thick and clips onto your pants.
 
 ---
 
@@ -17,41 +27,39 @@ i made it because i wanted a starboy and wanted to know how one actually works i
 
 | if you... | the eye... |
 |-----------|-----------|
-| shake it hard for 1s+ | goes dizzy → rage → calms down |
-| drop below 10°c | chills → shivers → freezes, blue tint |
-| make a loud sound | startles → gets anxious, darting eyes |
-| tilt it | follows gravity |
-| leave it alone for 25s | starts dozing, backlight dims |
-| leave it alone for 75s | falls asleep, slow breathing, almost off |
-| shake it or make noise while it's asleep | wakes up |
-| just let it sit there | 50 different micro-expressions, cycling every few seconds |
-| wait around (~every 90s, 40% chance) | one of 20 rare effects: rainbow, hearts, glitch, matrix rain, hypnotic spiral, fire pupils, galaxy swirl... |
+| shake it hard for a second | gets dizzy, then angry, then calms down |
+| take it below 10°c | gets chilly, shivers, then freezes with a blue tint |
+| make a loud noise | jumps, then darts around nervously |
+| tilt it | looks toward the ground |
+| ignore it for 25s | starts dozing and the screen dims |
+| ignore it for 75s | falls asleep and breathes slowly |
+| shake it or make noise while it sleeps | wakes up |
+| just let it sit | cycles through 50 little expressions |
+| wait around | every so often plays one of 20 rare effects like rainbow eyes, hearts, glitches, matrix rain or a galaxy swirl |
 
-on first boot every unit generates its own eye color, pupil color and highlight style, then keeps them forever. no two are the same.
-
----
-
-## what's in this repo
-
-| folder / file | what it is |
-|---------------|-----------|
-| [`CAD/starboy_assembly.step`](CAD/starboy_assembly.step) | full 3d assembly: front, back, bezel |
-| [`CAD/starboy_star.scad`](CAD/starboy_star.scad) | parametric openscad source the step and stls come from |
-| [`stl/`](stl/) | print-ready front, back and bezel |
-| [`firmware/starboy_firmware/`](firmware/starboy_firmware/) | arduino firmware, TFT_eSPI config, pin-by-pin wiring |
-| [`BOM.csv`](BOM.csv) | parts list with prices and buy links |
-| [`BOM.md`](BOM.md) | same list, readable, plus the second-build list |
-| [`BUILD.md`](BUILD.md) | printing, finishing and assembly order |
-
-there's no custom PCB. everything is hand-wired to the XIAO with 30AWG wire so it all packs into a 20.5mm-thick shell.
+the first time a star turns on, it rolls its own eye color, pupil color and highlight style and keeps them forever. so no two stars look the same.
 
 ---
 
-## parts & cost
+## what's in here
 
-**$96.86 for one build**, all from amazon. full list → [BOM.csv](BOM.csv)
+- [`cad/starboy_assembly.step`](CAD/starboy_assembly.step): the full 3d assembly (front, back and bezel)
+- [`cad/starboy_star.scad`](CAD/starboy_star.scad): the parametric openscad file everything comes from
+- [`stl/`](stl/): print-ready front, back and bezel
+- [`firmware/`](firmware/starboy_firmware/): the arduino code, the screen config and the pin-by-pin wiring
+- [`bom.csv`](BOM.csv): parts, prices and buy links
+- [`bom.md`](BOM.md): the same list in plain words, plus what a second star costs
+- [`build.md`](BUILD.md): printing, painting and putting it together
 
-the display, mpu6050, mic, temp sensor, wire, carabiners and paint come in multi-packs, so a second star only costs **$53.62** more (another XIAO, another battery, and white + black PETG). that list is in [BOM.md](BOM.md#build-2).
+there's no custom pcb. everything is hand-wired to the xiao with thin 30awg wire, because that's the only way it all fits in the shell.
+
+---
+
+## what it costs
+
+one star is **$96.86**, all from amazon, so it shows up in a few days instead of a month. the full list is in [bom.csv](BOM.csv).
+
+most of the parts come in multi-packs, so a second star only needs another xiao, another battery and filament. that comes to **$53.62**, and the list is in [bom.md](BOM.md#build-2).
 
 ---
 
@@ -59,40 +67,39 @@ the display, mpu6050, mic, temp sensor, wire, carabiners and paint come in multi
 
 ![wiring diagram](images/wiring.svg)
 
-full pin-by-pin breakdown → [`firmware/starboy_firmware/WIRING.md`](firmware/starboy_firmware/WIRING.md)
+every module runs off the xiao's 3.3v pin. if you want every single connection spelled out, it's in [wiring.md](firmware/starboy_firmware/WIRING.md).
 
 ---
 
-## 3d printing
+## printing and finishing
 
-print the three stls in [`stl/`](stl/) in PETG: white for the shell, black for the bezel ring. the body is about **65×64mm and 20.5mm thick** (78mm with the keyring loop). print orientation and supports are in [BUILD.md](BUILD.md).
+print the three files in [`stl/`](stl/) in petg, with white for the shell and black for the bezel ring. petg holds up way better than pla when it's hanging off a belt loop every day or sitting in a hot car. orientation and supports are in [build.md](BUILD.md).
 
-**finish:** sand 400 → 800 → 1500, plastic primer, bright coat chrome, then buff with 0000 steel wool.
+for the chrome look, sand it smooth (400, then 800, then 1500), hit it with plastic primer, spray the chrome, and buff it lightly with 0000 steel wool once it's dry.
 
 ---
 
-## firmware setup
+## flashing the firmware
 
-open `firmware/starboy_firmware/starboy_firmware.ino` in the arduino IDE.
+open `firmware/starboy_firmware/starboy_firmware.ino` in the arduino ide, pick **xiao_esp32c3** as the board, and turn on **usb cdc on boot**.
 
-board settings:
-- board: **XIAO_ESP32C3** (espressif ESP32 package)
-- usb cdc on boot: **enabled**
+install these from the library manager:
 
-libraries (library manager):
-- **TFT_eSPI** by bodmer. copy [`User_Setup.h`](firmware/starboy_firmware/User_Setup.h) into the TFT_eSPI library folder after installing, replacing the default one
-- adafruit MPU6050
+- tft_espi by bodmer
+- adafruit mpu6050
 - adafruit unified sensor
-- DallasTemperature
-- OneWire
+- dallastemperature
+- onewire
+
+one extra step for tft_espi: copy [`user_setup.h`](firmware/starboy_firmware/User_Setup.h) into its library folder so it knows about the round screen and which pins it's on.
 
 ---
 
-## battery
+## about the battery
 
-the XIAO has BAT+ / BAT− solder pads on its underside instead of a plug, so the battery's connector gets cut off and the wires solder straight to the pads. polarity gets checked with a multimeter first, since cheap lipo wire colors don't always follow the convention.
+the xiao doesn't have a battery plug, just two little pads on the bottom marked bat+ and bat−. so the plug gets cut off the battery and the wires get soldered straight onto those pads. check which wire is which with a multimeter before soldering, since cheap batteries don't always use red for positive.
 
-a charge lasts about 4 hours, and the backlight dims on its own when the eye goes idle.
+a full charge lasts around 4 hours, and the screen dims itself whenever the eye gets sleepy to save power.
 
 ---
 
