@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>tuning console · starboy diy</title>
+<meta name="description" content="every command in starboy's serial console: trigger moods, tune sensors, test the hardware and film a demo tour.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+  :root {
+    --ground: #f8f8f8; --ink: #2b2c2f; --muted: #8e8f95; --soft: #ebebeb; --line: #e1e1e4; --card: #ffffff;
+    --term: #141517; --term-ink: #e6e6e9; --prompt: #7ee2a8;
+    --display: "Figtree", "Helvetica Neue", Arial, sans-serif;
+    --body: "Nunito", "Varela Round", system-ui, sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--ground); color: var(--ink); font: 600 17px/1.5 var(--body); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .wrap { width: min(1000px, 100% - 40px); margin-inline: auto; }
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 24px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font: 800 20px/1 var(--display); letter-spacing: -.03em; text-decoration: none; }
+  .brand svg { width: 24px; height: 24px; }
+  nav .back { color: var(--muted); text-decoration: none; }
+  nav .back:hover { color: var(--ink); }
+  header { padding: 40px 0 30px; display: grid; gap: 18px; }
+  h1 { font: 800 clamp(58px, 10vw, 112px)/.9 var(--display); letter-spacing: -.045em; margin: 0; }
+  h2 { font: 800 clamp(30px, 4vw, 40px)/1 var(--display); letter-spacing: -.03em; margin: 0 0 16px; }
+  .lead { font-size: clamp(19px, 2vw, 23px); line-height: 1.4; color: #55565c; max-width: 52ch; }
+  section { padding: 44px 0; border-top: 1px solid var(--line); }
+  .setup { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .setup div { background: var(--card); border-radius: 18px; padding: 18px 20px; box-shadow: 0 1px 0 var(--line); }
+  .setup b { display: block; font-size: 18px; margin-bottom: 4px; }
+  .setup span { color: #55565c; font-size: 16px; }
+  code, kbd { font-family: var(--mono); font-size: .92em; }
+  .cmds { display: grid; gap: 10px; }
+  .cmd { display: grid; grid-template-columns: minmax(200px, 280px) 1fr; gap: 6px 22px; align-items: baseline; background: var(--card); border-radius: 16px; padding: 16px 20px; box-shadow: 0 1px 0 var(--line); }
+  .cmd code { font-weight: 700; font-size: 16px; color: var(--ink); white-space: nowrap; }
+  .cmd p { margin: 0; color: #55565c; }
+  .cmd p em { font-style: normal; color: var(--muted); }
+  .term { background: var(--term); color: var(--term-ink); border-radius: 20px; padding: 22px 24px; font: 500 15px/1.6 var(--mono); overflow-x: auto; white-space: pre; margin: 0; }
+  .term .p { color: var(--prompt); }
+  .term .d { color: #8e8f95; }
+  .note { color: var(--muted); font-size: 15px; margin-top: 10px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font: 700 14px/1 var(--mono); padding: 9px 12px; border-radius: 999px; background: var(--soft); border: 0; color: var(--ink); cursor: pointer; }
+  .chip:hover { background: #dfdfe2; }
+  .copied { background: var(--ink); color: #fff; }
+  footer { border-top: 1px solid var(--line); padding: 36px 0 60px; color: var(--muted); font-size: 15px; }
+  @media (max-width: 760px) {
+    .setup { grid-template-columns: 1fr; }
+    .cmd { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <a class="brand" href="index.html">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2b2c2f" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      starboy diy
+    </a>
+    <a class="back" href="index.html">back home</a>
+  </nav>
+
+  <header>
+    <h1 data-fx="heading">tuning console</h1>
+    <p class="lead" data-fx="text">every star listens over usb. plug him in, open a serial monitor and you can make him shiver, play any effect, check his wiring or change how sensitive he is, all without reflashing.</p>
+  </header>
+
+  <section aria-labelledby="setup-title">
+    <h2 id="setup-title">connecting</h2>
+    <div class="setup">
+      <div><b>1. plug in usb-c</b><span>the same port he charges from</span></div>
+      <div><b>2. open a serial monitor</b><span>arduino ide, 115200 baud, newline line endings</span></div>
+      <div><b>3. type <code>help</code></b><span>he lists every command, mood and effect</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="look-title">
+    <h2 id="look-title">looking around</h2>
+    <div class="cmds">
+      <div class="cmd"><code>status</code><p>his current mood and how long he's been in it, his eyes and seed, live sensor readings and every tuning value</p></div>
+      <div class="cmd"><code>hw</code><p>which parts he can find: screen, motion sensor, temperature sensor and mic. anything missing comes with the wire to check</p></div>
+      <div class="cmd"><code>debug on</code><p>prints shake, temperature and sound once a second. <code>debug off</code> stops it</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="play-title">
+    <h2 id="play-title">making him react</h2>
+    <div class="cmds">
+      <div class="cmd"><code>mood &lt;name&gt;</code><p>jump straight to a mood</p></div>
+      <div class="cmd"><code>fx &lt;name&gt;</code><p>play a rare effect right now</p></div>
+      <div class="cmd"><code>fake temp 2</code><p>pretend the air is 2°c. <em>moods that depend on the cold end right away without this</em></p></div>
+      <div class="cmd"><code>fake sound 2000</code><p>pretend the room is loud. <code>fake off</code> goes back to the real sensors</p></div>
+      <div class="cmd"><code>demo</code><p>a ~77 second tour for filming: loud room, cold, shaken, four rare effects, falling asleep and waking up. <code>demo stop</code> ends it early</p></div>
+    </div>
+    <p class="note">moods</p>
+    <div class="chips" id="moods"></div>
+    <p class="note">rare effects</p>
+    <div class="chips" id="rares"></div>
+  </section>
+
+  <section aria-labelledby="eyes-title">
+    <h2 id="eyes-title">his eyes</h2>
+    <div class="cmds">
+      <div class="cmd"><code>reroll</code><p>rolls brand-new eyes and keeps them</p></div>
+      <div class="cmd"><code>seed 1da79c35</code><p>gives him an exact look. tap any of the 400 looks on the <a href="eyes.html">eye looks page</a> to get its seed, or paste his seed there to see which look he rolled</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="tune-title">
+    <h2 id="tune-title">tuning him</h2>
+    <p class="lead" style="margin-bottom: 18px">every star's sensors are a little different. changes apply live, and <code>save</code> keeps them after a restart. <code>defaults</code> puts everything back.</p>
+    <div class="cmds">
+      <div class="cmd"><code>set shake 16</code><p>how hard a shake has to be to make him dizzy, in m/s² above gravity</p></div>
+      <div class="cmd"><code>set cold 10</code><p>the temperature in °c where he starts feeling chilly. he warms back up 1°c above it</p></div>
+      <div class="cmd"><code>set loud 600</code><p>how loud it has to get before he's startled. depends on the mic's gain knob</p></div>
+      <div class="cmd"><code>set tempoffset 0</code><p>corrects the temperature reading. the sensor sits near the warm board, so compare <code>status</code> with a real thermometer once</p></div>
+      <div class="cmd"><code>set doze 25</code><p>seconds alone before he starts dozing</p></div>
+      <div class="cmd"><code>set sleep 75</code><p>seconds alone before he's fully asleep</p></div>
+      <div class="cmd"><code>set rare 90</code><p>seconds between chances of a rare effect</p></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="loop-title">
+    <h2 id="loop-title">a good first tuning session</h2>
+    <pre class="term" aria-label="example tuning session"><span class="p">&gt; hw</span>
+<span class="d">check every part shows up before anything else</span>
+<span class="p">&gt; debug on</span>
+<span class="d">leave him still in a quiet room for a minute and note the sound number</span>
+<span class="p">&gt; set loud 900</span>
+<span class="d">a few hundred above the quiet level, so talking doesn't startle him</span>
+<span class="p">&gt; set tempoffset -2</span>
+<span class="d">if status reads 2°c warmer than a real thermometer</span>
+<span class="p">&gt; save</span>
+<span class="p">&gt; demo</span>
+<span class="d">start recording</span></pre>
+    <p class="note">these defaults are the firmware's starting values; the right numbers for your star come from the real parts.</p>
+  </section>
+
+  <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a></footer>
+</div>
+<script>
+(function () {
+  const MOODS = ['idle', 'curious', 'happy', 'bored', 'alert', 'suspicious', 'dizzy', 'spin', 'angry', 'rage', 'chill', 'shiver', 'freeze', 'startled', 'anxious', 'overwhelmed', 'doze', 'sleep', 'dream'];
+  const RARES = ['rainbow', 'hearts', 'stars', 'glitch', 'matrix', 'spiral', 'loading', 'error', 'derp', 'smug', 'cry', 'laugh', 'shocked', 'dead', 'galaxy', 'heartbeat', 'fire', 'hypno', 'starfield', 'rgb'];
+  function fill(id, prefix, names) {
+    const el = document.getElementById(id);
+    for (const n of names) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip';
+      b.textContent = n;
+      b.title = `copy "${prefix} ${n}"`;
+      b.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(`${prefix} ${n}`);
+          b.classList.add('copied');
+          b.textContent = 'copied';
+          setTimeout(() => { b.classList.remove('copied'); b.textContent = n; }, 900);
+        } catch { /* clipboard blocked: the name is still readable */ }
+      });
+      el.appendChild(b);
+    }
+  }
+  fill('moods', 'mood', MOODS);
+  fill('rares', 'fx', RARES);
+})();
+</script>
+<script src="textfx.js"></script>
+</body>
+</html>

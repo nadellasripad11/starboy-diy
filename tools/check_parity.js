@@ -155,6 +155,27 @@ expect(/while \(millis\(\) - now < frameMs\)\s*\{\s*if \(HAS_MIC\) listenMic\(\)
   'firmware: the frame wait no longer listens to the mic, so a sleeping star can miss claps');
 expect(!/shakeE \* 0\.85f|soundPeak \* 0\.93f\)/.test(ino), 'firmware: an old per-frame smoothing line is back');
 
+// ─── the console reference page matches the real console ─
+const consoleIno = read('firmware/starboy_firmware/serial_console.ino');
+const consolePage = read('web/console.html');
+const fwNames = (table) => [...((consoleIno.match(new RegExp(`const NamedState ${table}\\[\\] = \\{([\\s\\S]*?)\\};`)) || [])[1] || '')
+  .matchAll(/\{ "([a-z]+)", S_\w+ \}/g)].map((m) => m[1]);
+const pageNames = (name) => [...((consolePage.match(new RegExp(`const ${name} = \\[([^\\]]*)\\]`)) || [])[1] || '')
+  .matchAll(/'([a-z]+)'/g)].map((m) => m[1]);
+expect(fwNames('MOODS').length > 0 && fwNames('MOODS').join() === pageNames('MOODS').join(),
+  `web/console.html: mood list [${pageNames('MOODS')}] != console [${fwNames('MOODS')}]`);
+expect(fwNames('RARES').length > 0 && fwNames('RARES').join() === pageNames('RARES').join(),
+  `web/console.html: rare effect list [${pageNames('RARES')}] != console [${fwNames('RARES')}]`);
+const pageDefault = (key) => { const m = consolePage.match(new RegExp(`<code>set ${key} (-?[\\d.]+)</code>`)); return m && +m[1]; };
+const defaultPairs = [['shake', fwTune[0]], ['cold', fwTune[1]], ['loud', fwTune[2]], ['doze', fwTune[3] / 1000],
+                      ['sleep', fwTune[4] / 1000], ['rare', fwTune[5] / 1000], ['tempoffset', fwTune[6]]];
+for (const [key, fw] of defaultPairs) {
+  expect(pageDefault(key) === fw, `web/console.html: shows "set ${key} ${pageDefault(key)}" but the firmware default is ${fw}`);
+}
+for (const cmd of ['status', 'hw', 'demo', 'reroll', 'seed', 'save', 'defaults', 'debug', 'fake', 'mood', 'fx', 'set']) {
+  expect(new RegExp(`cmd == "${cmd}"`).test(consoleIno), `console command '${cmd}' is documented on web/console.html but no longer exists`);
+}
+
 // ─── colorway names used by name in page scripts exist ───
 const names = new Set(fwColorways.map((c) => c.name));
 for (const rel of ['web/app.js', 'devlog/cards.html']) {
