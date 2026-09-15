@@ -407,18 +407,15 @@
     ctx.fill();
     const fx = x0 + ((x1 - x0) * pct) / 100;
     if (fx > x0 + h) {
-      const g = ctx.createLinearGradient(x0, 0, fx, 0);
-      g.addColorStop(0, '#7b43f5');
-      g.addColorStop(1, '#f6bd49');
-      ctx.fillStyle = g;
+      ctx.fillStyle = '#b9bac1';
       ctx.beginPath();
       ctx.roundRect(x0, y - h / 2, fx - x0, h, h / 2);
       ctx.fill();
       // a soft glow on the leading edge
       const pulse = 0.5 + 0.5 * Math.sin(t * 5);
       const glow = ctx.createRadialGradient(fx, y, 0, fx, y, 34);
-      glow.addColorStop(0, `rgba(246,189,73,${0.55 + 0.3 * pulse})`);
-      glow.addColorStop(1, 'rgba(246,189,73,0)');
+      glow.addColorStop(0, `rgba(255,255,255,${0.35 + 0.2 * pulse})`);
+      glow.addColorStop(1, 'rgba(255,255,255,0)');
       ctx.fillStyle = glow;
       ctx.fillRect(fx - 34, y - 34, 68, 68);
     }
@@ -429,7 +426,7 @@
     ctx.fillText('build progress', x0, y - 22);
     ctx.textAlign = 'right';
     const waiting = t >= T.outro;
-    ctx.fillStyle = waiting ? '#f6bd49' : '#b9bac1';
+    ctx.fillStyle = waiting ? '#ffffff' : '#b9bac1';
     ctx.fillText(waiting ? `${PROGRESS}% · parts on the way` : `${Math.round(pct)}%`, x1, y - 22);
     ctx.restore();
   }
@@ -762,7 +759,7 @@
   }
 
   // ─── cold open: straight into the panic, then cut to the title ───
-  const coldTint = (t) => 0.2 + 0.08 * Math.sin(t * 22);
+  const OPEN_X = 540, OPEN_Y = 1080, OPEN_D = 840;
   function panicEye(t) {
     const k = Math.floor(t / 0.12);
     return { ...BASE_EYE, gx: hash(k + 900) * 40 - 20, gy: hash(k + 950) * 26 - 13, pupR: 0.9, irX: 1.1, irY: 0.8, bwL: 6, bwR: 6, blinkT: 0.25, fxP: t * 1.5 };
@@ -780,12 +777,11 @@
   function coldOpen(t) {
     background(t, E.COLORWAYS[cw('starlight')].body);
     const out = easeInCubic(prog(t, 1.2, 0.4));
-    ctx.fillStyle = `rgba(255,40,70,${coldTint(t) * (1 - out)})`;
-    ctx.fillRect(0, 0, W, H);
     const sx = Math.sin(t * 67) * 10 * (1 - out), sy = Math.cos(t * 53) * 6 * (1 - out);
-    bigScreen(540 + sx, 900 + sy, 900 * (1 - out * 0.8), panicEye(t), t, 1 - out);
-    kinetic('i built a pet that', 540, 210, 78, t, 0.06, { color: '#b9bac1', weight: 700, stagger: 0.01, dur: 0.3, exit: 1.15 });
-    kinetic('panics when you yell', 540, 325, 94, t, 0.3, { stagger: 0.012, dur: 0.3, exit: 1.18, jitter: 4 });
+    bigScreen(OPEN_X + sx, OPEN_Y + sy, OPEN_D * (1 - out * 0.8), panicEye(t), t, 1 - out);
+    kinetic('i built a pet that', 540, 200, 96, t, 0.06, { color: '#b9bac1', weight: 700, stagger: 0.01, dur: 0.3, exit: 1.15 });
+    kinetic('panics when', 540, 355, 150, t, 0.3, { stagger: 0.015, dur: 0.3, exit: 1.18, jitter: 4 });
+    kinetic('you yell', 540, 510, 150, t, 0.45, { stagger: 0.02, dur: 0.3, exit: 1.2, jitter: 4 });
     if (out > 0) { ctx.fillStyle = `rgba(0,0,0,${out})`; ctx.fillRect(0, 0, W, H); }
   }
 
@@ -796,7 +792,6 @@
 
   function sceneVote(t) {
     const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
-    if (loop > 0) { ctx.fillStyle = `rgba(255,40,70,${coldTint(0) * loop})`; ctx.fillRect(0, 0, W, H); }
     kinetic('which eyes should', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: LOOP0 - 0.1 });
     kinetic('mine get?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: LOOP0 - 0.08 });
 
@@ -813,7 +808,7 @@
 
       if (i === 0) {
         // look #1 grows back into the cold open's screen: same spot, size and eyes as frame 0
-        x = lerp(x, 540, loop); y = lerp(y, 906, loop); d = lerp(d, 900, loop);
+        x = lerp(x, OPEN_X, loop); y = lerp(y, OPEN_Y + Math.cos(0) * 6, loop); d = lerp(d, OPEN_D, loop);
         bigScreen(x, y, d, loop > 0.5 ? panicEye(0) : { ...eye, colOvr: '#000000' }, t);
       } else {
         if (badgeAlpha <= 0) return;
