@@ -63,7 +63,8 @@
   // sound cues, read by promo/sfx.js
   const EVENTS = [];
   const ev = (t, name, gain = 1) => EVENTS.push({ t: Math.round(t * 1000) / 1000, name, gain });
-  ev(0.0, 'riser', 0.55); ev(0.35, 'boom'); ev(1.0, 'blink', 0.8); ev(1.3, 'pop'); ev(1.55, 'hit');
+  ev(0.0, 'riser', 0.55); ev(0.35, 'boom'); ev(0.55, 'pop', 0.5); ev(0.8, 'pop', 0.6);
+  ev(1.0, 'blink', 0.8); ev(1.3, 'pop'); ev(1.55, 'hit');
   ev(3.3, 'pop'); ev(3.6, 'pop'); ev(3.9, 'pop');
   for (const b of BEATS) { ev(b.t - 0.08, 'whoosh', 0.55); ev(b.t + 0.05, b.sfx, 0.9); ev(b.t + 0.3, 'pop', 0.45); }
   ev(11.0, 'whoosh'); ev(11.35, 'swipe', 0.6);
@@ -364,7 +365,51 @@
   }
 
   // ─── scenes ────────────────────────────────────────────
+  // build progress bar along the bottom: fills to 40% and waits on the parts
+  const PROGRESS = 40;
+  function progressBar(t) {
+    const show = easeOutCubic(prog(t, 0.6, 0.5));
+    if (show <= 0) return;
+    const pct = PROGRESS * easeInOutCubic(prog(t, 0.8, T.outro - 0.8));
+    const x0 = 64, x1 = W - 64, y = 1884, h = 10;
+    ctx.save();
+    ctx.globalAlpha = show;
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    ctx.beginPath();
+    ctx.roundRect(x0, y - h / 2, x1 - x0, h, h / 2);
+    ctx.fill();
+    const fx = x0 + ((x1 - x0) * pct) / 100;
+    if (fx > x0 + h) {
+      const g = ctx.createLinearGradient(x0, 0, fx, 0);
+      g.addColorStop(0, '#7b43f5');
+      g.addColorStop(1, '#f6bd49');
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.roundRect(x0, y - h / 2, fx - x0, h, h / 2);
+      ctx.fill();
+      // a soft glow on the leading edge
+      const pulse = 0.5 + 0.5 * Math.sin(t * 5);
+      const glow = ctx.createRadialGradient(fx, y, 0, fx, y, 34);
+      glow.addColorStop(0, `rgba(246,189,73,${0.55 + 0.3 * pulse})`);
+      glow.addColorStop(1, 'rgba(246,189,73,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(fx - 34, y - 34, 68, 68);
+    }
+    ctx.font = `700 30px ${FONT}`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#8e8f95';
+    ctx.textAlign = 'left';
+    ctx.fillText('build progress', x0, y - 22);
+    ctx.textAlign = 'right';
+    const waiting = t >= T.outro;
+    ctx.fillStyle = waiting ? '#f6bd49' : '#b9bac1';
+    ctx.fillText(waiting ? `${PROGRESS}% · parts on the way` : `${Math.round(pct)}%`, x1, y - 22);
+    ctx.restore();
+  }
+
   function sceneIntro(t) {
+    kinetic('my first ever', 540, 215, 92, t, 0.55, { exit: 3.0, color: '#b9bac1', weight: 700, stagger: 0.02 });
+    kinetic('hardware build', 540, 340, 124, t, 0.8, { exit: 3.02, stagger: 0.025 });
     kinetic('meet', 540, 1420, 120, t, 1.3, { exit: 3.0, color: '#b9bac1' });
     kinetic('starboy', 540, 1660, 240, t, 1.55, { exit: 3.05, stagger: 0.04 });
   }
@@ -711,6 +756,8 @@
       sceneOutro(t);
       if (t >= T.follow) sceneFollow(t);
     }
+
+    progressBar(t);
 
     // a quick fade in from black at the very start
     const fadeIn = 1 - prog(t, 0, 0.3);
