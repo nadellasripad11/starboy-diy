@@ -186,6 +186,8 @@ endings and type commands:
 ```
 status                 sensors, current mood, eyes and every threshold
 hw                     which parts are detected, with the wire to check for anything missing
+demo                   a ~77s tour for filming: loud room, cold, shaken, four rare effects,
+                       falling asleep and waking up. `demo stop` ends it early
 debug on               print shake / temp / sound once a second
 set shake 12           shake needed to get dizzy (m/s² above gravity, default 16)
 set cold 8             °C that starts the shiver (default 10)

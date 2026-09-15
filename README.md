@@ -105,7 +105,7 @@ both sketches compile clean for the xiao esp32c3 (esp32 core 3.3.11).
 node tools/test_all.js --compile
 ```
 
-runs the parity check, the mood tests and the seed tests, then builds both sketches (point `ARDUINO_CLI` at arduino-cli if it isn't on your PATH). drop `--compile` for the 3-second version. the sections below explain each check.
+runs the parity check, the mood tests, the seed tests and the demo tour check, then builds both sketches (point `ARDUINO_CLI` at arduino-cli if it isn't on your PATH). drop `--compile` for the 3-second version. the sections below explain each check.
 
 ### keeping the eyes in sync
 

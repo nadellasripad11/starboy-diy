@@ -12,6 +12,7 @@ const steps = [
   { name: 'firmware ↔ website parity', cmd: process.execPath, args: [path.join(__dirname, 'check_parity.js')] },
   { name: 'mood state machine', cmd: process.execPath, args: [path.join(__dirname, 'test_mood.js')] },
   { name: 'eye seeds', cmd: process.execPath, args: [path.join(__dirname, 'test_seed.js')] },
+  { name: 'demo tour', cmd: process.execPath, args: [path.join(__dirname, 'test_demo.js')] },
 ];
 
 if (process.argv.includes('--compile')) {

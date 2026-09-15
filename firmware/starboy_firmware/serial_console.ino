@@ -84,7 +84,7 @@ void applySensorOverrides() {
 
 // ─── commands ────────────────────────────────────────────
 static void printHelp() {
-  Serial.println(F("commands: status | hw | mood <name> | fx <name> | reroll | seed <hex>"));
+  Serial.println(F("commands: status | hw | demo | mood <name> | fx <name> | reroll | seed <hex>"));
   Serial.println(F("          set <shake|cold|loud|doze|sleep|rare|tempoffset> <value> | save | defaults"));
   Serial.println(F("          fake temp <c> | fake sound <p2p> | fake off | debug on|off"));
   Serial.print(F("moods: "));
@@ -163,6 +163,64 @@ static void setEyeSeed(uint32_t seed) {
   initEyeDesign();
 }
 
+// ─── demo: a ~77s tour of his moods for filming ──────────
+// Most steps only fake the sensors and let the real mood logic react, so the
+// video shows actual behaviour. tools/test_demo.js reads this table and
+// replays it through web/mood.js to check each step ends in `expect`.
+enum DemoAction : uint8_t { DEMO_NONE, DEMO_SHAKE, DEMO_FX, DEMO_SLEEPY };
+struct DemoStep { const char *label; uint16_t ms; float temp; int sound; uint8_t action; const char *arg; const char *expect; };
+
+const DemoStep DEMO[] = {
+  { "just sitting there",  4000, 20.0f,    0, DEMO_NONE,   nullptr,   "idle" },
+  { "loud room",           6000, 20.0f, 2500, DEMO_NONE,   nullptr,   "overwhelmed" },
+  { "quiet again",         3500, 20.0f,    0, DEMO_NONE,   nullptr,   "idle" },
+  { "cold outside",       14000,  0.0f,    0, DEMO_NONE,   nullptr,   "freeze" },
+  { "back inside",         2500, 20.0f,    0, DEMO_NONE,   nullptr,   "idle" },
+  { "shaken",             11500, 20.0f,    0, DEMO_SHAKE,  nullptr,   "idle" },
+  { "rare: hearts",        5600, 20.0f,    0, DEMO_FX,     "hearts",  nullptr },
+  { "rare: fire",          5600, 20.0f,    0, DEMO_FX,     "fire",    nullptr },
+  { "rare: galaxy",        5600, 20.0f,    0, DEMO_FX,     "galaxy",  nullptr },
+  { "rare: rainbow",       5600, 20.0f,    0, DEMO_FX,     "rainbow", nullptr },
+  { "left alone",         10000, 20.0f,    0, DEMO_SLEEPY, nullptr,   "sleep" },
+  { "a noise wakes him",   3000, 20.0f,  400, DEMO_NONE,   nullptr,   "idle" },
+};
+const uint8_t DEMO_STEPS = sizeof(DEMO) / sizeof(DEMO[0]);
+
+static int8_t   demoStep = -1;
+static uint32_t demoStepMs = 0;
+
+static void startDemoStep(uint8_t i) {
+  const DemoStep &st = DEMO[i];
+  demoStep = i;
+  demoStepMs = millis();
+  fakeTempOn = true;  fakeTempC = st.temp;
+  fakeSoundOn = true; fakeSound = st.sound;
+  lastRareCheck = millis();              // keep random rare effects out of the way
+  // the demo counts as attention, or he dozes off mid-tour (cold and noise
+  // don't reset the idle timer); only "left alone" lets the clock run
+  if (st.action != DEMO_SLEEPY) lastInteract = millis();
+  Serial.printf("demo %u/%u: %s\n", i + 1, DEMO_STEPS, st.label);
+  switch (st.action) {
+    case DEMO_SHAKE:  lastInteract = millis(); setState(S_DIZZY_MILD); break;
+    case DEMO_FX:     jumpTo(true, String(st.arg)); break;
+    case DEMO_SLEEPY: setState(S_IDLE); lastInteract = millis() - (tune.sleepMs - 6000UL); break;
+    default: break;
+  }
+}
+
+static void stopDemo(const char *why) {
+  demoStep = -1;
+  fakeTempOn = fakeSoundOn = false;
+  lastInteract = millis();
+  Serial.printf("demo %s, back to the real sensors\n", why);
+}
+
+void runDemo() {
+  if (demoStep < 0 || millis() - demoStepMs < DEMO[demoStep].ms) return;
+  if (demoStep + 1 < DEMO_STEPS) startDemoStep(demoStep + 1);
+  else stopDemo("done");
+}
+
 static void runCommand(String line) {
   line.trim();
   line.toLowerCase();
@@ -186,6 +244,16 @@ static void runCommand(String line) {
   }
   if (cmd == "fx") {
     if (!jumpTo(true, arg)) Serial.println(F("unknown effect, try `help`"));
+    return;
+  }
+
+  if (cmd == "demo") {
+    if (arg == "stop") { if (demoStep >= 0) stopDemo("stopped"); return; }
+    uint32_t total = 0;
+    for (uint8_t i = 0; i < DEMO_STEPS; i++) total += DEMO[i].ms;
+    Serial.printf("demo: %u steps, about %lus. start filming! (`demo stop` to end early)\n",
+                  DEMO_STEPS, (unsigned long)(total / 1000));
+    startDemoStep(0);
     return;
   }
 
@@ -245,6 +313,7 @@ static void runCommand(String line) {
 }
 
 void handleSerial() {
+  runDemo();
   static String buf;
   while (Serial.available()) {
     char c = (char)Serial.read();
