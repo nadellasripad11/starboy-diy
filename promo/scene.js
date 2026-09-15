@@ -2,7 +2,8 @@
 // Everything is a pure function of time, so frames are deterministic and the
 // sound effect cue list (EVENTS) lines up exactly with what's on screen.
 (function () {
-  const W = 1080, H = 1920, FPS = 30, DURATION = 27.5;
+  const W = 1080, H = 1920, FPS = 30, DURATION = 31;
+  const HANDLE = '@sripadnn';
   const E = window.StarboyEyes;
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
@@ -34,7 +35,8 @@
   const BASE_EYE = { gx: 0, gy: 0, blinkT: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
 
   // ─── timeline ──────────────────────────────────────────
-  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2 };
+  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2, follow: 27.2 };
+  const TAP = 28.58;   // the moment the follow button gets pressed
   const BEATS = [
     { t: 5.6,  caption: 'shake him.',   sub: 'he gets dizzy',   sfx: 'rattle', kind: 'shake' },
     { t: 6.95, caption: 'freeze him.',  sub: 'he shivers',      sfx: 'ice',    kind: 'cold' },
@@ -77,6 +79,8 @@
   for (let i = 0; i < 13; i++) ev(22.15 + i * 0.09, 'tick', 0.3);
   ev(SEED_LAND, 'sparkle'); ev(SEED_LAND + 0.02, 'pop', 0.7); ev(24.1, 'whoosh', 0.5);
   ev(24.3, 'boom'); ev(24.65, 'hit'); ev(25.05, 'pop'); ev(25.45, 'soft', 0.6);
+  ev(27.15, 'whoosh', 0.6); ev(27.35, 'pop'); ev(27.55, 'pop', 0.5); ev(27.6, 'swipe', 0.7);
+  ev(TAP - 0.03, 'tick', 0.9); ev(TAP, 'pop'); ev(TAP + 0.02, 'sparkle'); ev(29.15, 'pop', 0.6);
   EVENTS.sort((a, b) => a.t - b.t);
 
   // ─── star pose keyframes ───────────────────────────────
@@ -98,7 +102,9 @@
     { t: 22.1,  x: 540, y: 1320, s: 0.7 },
     { t: 24.2,  x: 540, y: 1320, s: 0.7 },
     { t: 24.75, x: 540, y: 780,  s: 1.02, ease: 'back' },
-    { t: 99,    x: 540, y: 780,  s: 1.02 },
+    { t: 27.2,  x: 540, y: 780,  s: 1.02 },
+    { t: 27.75, x: 540, y: 470,  s: 0.55 },
+    { t: 99,    x: 540, y: 470,  s: 0.55 },
   ];
   function starPose(t) {
     let i = 0;
@@ -177,6 +183,11 @@
       if (t >= SEED_LAND) bump = 1 - easeOutCubic(prog(t, SEED_LAND, 0.35));
     } else if (t >= T.outro) {
       Object.assign(eye, { smile: 0.8, blinkT: Math.max(blinkAt(t), 0.08), gx: Math.sin(t * 1.2) * 6, gy: 0 });
+      if (t >= T.follow && t < TAP) Object.assign(eye, { smile: 0, gx: 14, gy: 12 });   // watching the button
+      if (t >= TAP) {
+        Object.assign(eye, { smile: 1, pupR: 1.15, gx: 0, gy: 0 });
+        bump = 1 - easeOutCubic(prog(t, TAP, 0.4));
+      }
     }
     return { eye, cwi, shape, bump };
   }
@@ -560,9 +571,124 @@
   }
 
   function sceneOutro(t) {
-    kinetic('starboy diy', 540, 1450, 176, t, 24.65, { stagger: 0.035 });
-    kinetic('follow the build', 540, 1570, 80, t, 25.05, { color: '#c9cad0', weight: 700, stagger: 0.02 });
-    kinetic('starboy-diy.nadellasripad11.workers.dev', 540, 1760, 38, t, 25.45, { color: '#8e8f95', weight: 700, stagger: 0.008, spacing: 0 });
+    kinetic('starboy diy', 540, 1450, 176, t, 24.65, { stagger: 0.035, exit: T.follow - 0.1 });
+    kinetic('handmade, from scratch', 540, 1570, 80, t, 25.05, { color: '#c9cad0', weight: 700, stagger: 0.02, exit: T.follow - 0.08 });
+    kinetic('starboy-diy.nadellasripad11.workers.dev', 540, 1760, 38, t, 25.45, { color: '#8e8f95', weight: 700, stagger: 0.008, spacing: 0, exit: T.follow - 0.06 });
+  }
+
+  // ─── follow me ─────────────────────────────────────────
+  function sceneFollow(t) {
+    kinetic('follow me', 540, 880, 150, t, 27.35, { stagger: 0.03 });
+    kinetic('for more builds', 540, 990, 92, t, 27.55, { color: '#b9bac1', weight: 700, stagger: 0.02 });
+
+    const cardIn = easeOutBack(prog(t, 27.6, 0.55));
+    if (cardIn <= 0) return;
+    const cw0 = 900, ch = 340;
+    const cx = 540, cy = lerp(1560, 1290, cardIn);
+    const left = cx - cw0 / 2, top = cy - ch / 2;
+    ctx.save();
+    ctx.globalAlpha = clamp01(cardIn * 1.4);
+
+    ctx.fillStyle = '#15161a';
+    ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(left, top, cw0, ch, 48);
+    ctx.fill();
+    ctx.stroke();
+
+    // avatar: a tiny starboy screen in a chrome ring
+    const ax = left + 130, ay = top + 118;
+    ctx.beginPath();
+    ctx.arc(ax, ay, 84, 0, Math.PI * 2);
+    ctx.fillStyle = chrome(84, 0.8 + t * 0.6);
+    ctx.fill();
+    const avatarEye = { ...BASE_EYE, gx: Math.sin(t * 1.7) * 10, gy: Math.cos(t * 1.2) * 4, blinkT: blinkAt(t + 1.1), smile: t >= TAP ? 0.8 : 0 };
+    screen(ax, ay, 146, avatarEye, 2, cw('starlight'), t);
+
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `800 64px ${FONT}`;
+    ctx.fillText(HANDLE, left + 250, top + 110);
+    ctx.fillStyle = '#9a9ba3';
+    ctx.font = `700 38px ${FONT}`;
+    ctx.fillText('building hardware from scratch', left + 252, top + 162);
+
+    // follow button with a press
+    const pressed = t >= TAP;
+    const press = t >= TAP - 0.12 && t < TAP + 0.2 ? 1 - 0.06 * Math.sin(prog(t, TAP - 0.12, 0.32) * Math.PI) : 1;
+    const bx = cx, by = top + 262, bw = 820, bh = 104;
+    ctx.save();
+    ctx.translate(bx, by);
+    ctx.scale(press, press);
+    ctx.beginPath();
+    ctx.roundRect(-bw / 2, -bh / 2, bw, bh, 28);
+    ctx.fillStyle = pressed ? '#2a2b31' : '#3b82f6';
+    ctx.fill();
+    ctx.fillStyle = '#ffffff';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.font = `800 50px ${FONT}`;
+    if (pressed) {
+      const w = ctx.measureText('following').width;
+      ctx.fillText('following', 24, 2);
+      // a drawn check mark, so it never depends on a font having the glyph
+      const k = easeOutCubic(prog(t, TAP, 0.25));
+      ctx.strokeStyle = '#7ee2a8';
+      ctx.lineWidth = 9;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      const x0 = -w / 2 - 40;
+      ctx.beginPath();
+      ctx.moveTo(x0 - 18, 2);
+      ctx.lineTo(x0 - 18 + 14 * Math.min(1, k * 2), 2 + 14 * Math.min(1, k * 2));
+      if (k > 0.5) ctx.lineTo(x0 - 4 + 28 * (k - 0.5) * 2, 16 - 30 * (k - 0.5) * 2);
+      ctx.stroke();
+    } else {
+      ctx.fillText('follow', 0, 2);
+    }
+    ctx.restore();
+    ctx.restore();
+
+    // a finger-tap dot glides in, presses, and ripples
+    const glide = easeInOutCubic(prog(t, 28.0, 0.5));
+    if (t >= 28.0 && t < TAP + 0.6) {
+      // presses the empty right side of the button so the dot never covers the label
+      const px = lerp(900, bx + 300, glide), py = lerp(1760, by + 6, glide);
+      const fade = t < TAP ? clamp01((t - 28.0) * 5) : 1 - prog(t, TAP + 0.1, 0.4);
+      ctx.globalAlpha = 0.85 * fade;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(px, py, t < TAP ? 34 : 28, 0, Math.PI * 2);
+      ctx.fill();
+      if (t >= TAP) {
+        const rp = easeOutCubic(prog(t, TAP, 0.45));
+        ctx.globalAlpha = 0.6 * (1 - rp);
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.arc(px, py, 30 + rp * 130, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    // sparkle burst off the button
+    if (t >= TAP && t < TAP + 1.0) {
+      const b = prog(t, TAP, 1.0);
+      for (let i = 0; i < 14; i++) {
+        const a = (i / 14) * Math.PI * 2 + hash(i) * 0.4;
+        const dist = easeOutCubic(b) * (120 + hash(i + 30) * 160);
+        ctx.globalAlpha = (1 - b) * 0.95;
+        ctx.fillStyle = i % 3 === 0 ? '#f6bd49' : i % 3 === 1 ? '#7b43f5' : '#ffffff';
+        // burst from the tap point, kept flat so it doesn't cover the handle and bio
+        sparkle(bx + 300 + Math.cos(a) * dist * 1.1, by + 6 + Math.sin(a) * dist * 0.4, 10 + hash(i + 60) * 12);
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    kinetic('next up: he wakes up for real', 540, 1740, 56, t, 29.15, { color: '#8e8f95', weight: 700, stagger: 0.012 });
   }
 
   function render(t) {
@@ -581,7 +707,10 @@
     else if (t >= T.rare && t < T.build) sceneRare(t);
     else if (t >= T.build && t < T.seed) sceneBuild(t);
     else if (t >= T.seed && t < T.outro) sceneSeed(t);
-    else if (t >= T.outro) sceneOutro(t);
+    else if (t >= T.outro) {
+      sceneOutro(t);
+      if (t >= T.follow) sceneFollow(t);
+    }
 
     // a quick fade in from black at the very start
     const fadeIn = 1 - prog(t, 0, 0.3);
