@@ -6,7 +6,7 @@
   // The video loops: its last frame lands back on the cold open's first frame.
   const OPEN = 1.6;
   const W = 1080, H = 1920, FPS = 30, DURATION = OPEN + 35.4;
-  const HANDLE = '@sripadnn';
+  const HANDLE = '@sripinbuilds';
   const E = window.StarboyEyes;
   const canvas = document.getElementById('c');
   const ctx = canvas.getContext('2d');
