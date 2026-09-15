@@ -8,6 +8,7 @@
 !images/*.png
 !web/*.png
 !devlog/photos/*.png
+promo/out/
 *.amf
 *.dxf
 
