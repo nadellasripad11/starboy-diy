@@ -25,6 +25,7 @@ function run(label, cmd, args) {
 
 fs.rmSync(frames, { recursive: true, force: true });
 fs.mkdirSync(frames, { recursive: true });
+fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
 run('render frames', process.execPath, [path.join(__dirname, 'render.js'), '--out', frames, '--profile', path.join(work, 'edge-profile')]);
 run('synthesize soundtrack', process.execPath, [path.join(__dirname, 'sfx.js'), path.join(frames, 'events.json'), audio]);
