@@ -792,8 +792,8 @@
 
   function sceneVote(t) {
     const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
-    kinetic('which eyes should', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: LOOP0 - 0.1 });
-    kinetic('mine get?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: LOOP0 - 0.08 });
+    kinetic('which eyes are', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: LOOP0 - 0.1 });
+    kinetic('the best?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: LOOP0 - 0.08 });
 
     const step = t >= CYCLE ? Math.floor((t - CYCLE) / 0.35) : -1;
     const hi = step >= 0 && step < CYCLE_STEPS ? step % 4 : -1;
