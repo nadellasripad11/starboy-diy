@@ -2,7 +2,10 @@
 // Everything is a pure function of time, so frames are deterministic and the
 // sound effect cue list (EVENTS) lines up exactly with what's on screen.
 (function () {
-  const W = 1080, H = 1920, FPS = 30, DURATION = 31;
+  // OPEN: a cold open plays first, then the original timeline runs shifted by it.
+  // The video loops: its last frame lands back on the cold open's first frame.
+  const OPEN = 1.6;
+  const W = 1080, H = 1920, FPS = 30, DURATION = OPEN + 35.4;
   const HANDLE = '@sripadnn';
   const E = window.StarboyEyes;
   const canvas = document.getElementById('c');
@@ -35,7 +38,7 @@
   const BASE_EYE = { gx: 0, gy: 0, blinkT: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
 
   // ─── timeline ──────────────────────────────────────────
-  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2, follow: 27.2 };
+  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2, follow: 27.2, vote: 31.0 };
   const TAP = 28.58;   // the moment the follow button gets pressed
   const BEATS = [
     { t: 5.6,  caption: 'shake him.',   sub: 'he gets dizzy',   sfx: 'rattle', kind: 'shake' },
@@ -82,7 +85,17 @@
   ev(24.3, 'boom'); ev(24.65, 'hit'); ev(25.05, 'pop'); ev(25.45, 'soft', 0.6);
   ev(27.15, 'whoosh', 0.6); ev(27.35, 'pop'); ev(27.55, 'pop', 0.5); ev(27.6, 'swipe', 0.7);
   ev(TAP - 0.03, 'tick', 0.9); ev(TAP, 'pop'); ev(TAP + 0.02, 'sparkle'); ev(29.15, 'pop', 0.6);
+  // vote + loop (old timeline)
+  ev(31.0, 'whoosh', 0.6); ev(31.25, 'pop'); ev(31.45, 'hit', 0.7);
+  for (let i = 0; i < 4; i++) ev(31.7 + i * 0.1, 'tick', 0.6);
+  ev(32.2, 'pop'); ev(32.45, 'pop', 0.5);
+  for (let s = 0; s < 5; s++) ev(32.6 + s * 0.35, 'tick', 0.5);
+  ev(34.6, 'whoosh', 0.8);
+  // everything above is on the original timeline; shift it behind the cold open
+  for (const e of EVENTS) e.t = Math.round((e.t + OPEN) * 1000) / 1000;
+  ev(0.02, 'glitch', 0.9); ev(0.08, 'hit', 0.7); ev(0.32, 'pop', 0.6); ev(1.2, 'whoosh', 0.8);
   EVENTS.sort((a, b) => a.t - b.t);
+  const AUDIO = { beatStart: OPEN + 0.35, gaps: [[OPEN + 14.5, OPEN + 14.8], [OPEN + 24.0, OPEN + 24.3]], loop: true };
 
   // ─── star pose keyframes ───────────────────────────────
   const KEYS = [
@@ -105,7 +118,9 @@
     { t: 24.75, x: 540, y: 780,  s: 1.02, ease: 'back' },
     { t: 27.2,  x: 540, y: 780,  s: 1.02 },
     { t: 27.75, x: 540, y: 470,  s: 0.55 },
-    { t: 99,    x: 540, y: 470,  s: 0.55 },
+    { t: 31.0,  x: 540, y: 470,  s: 0.55 },
+    { t: 31.35, x: 540, y: 470,  s: 0,    ease: 'in' },
+    { t: 99,    x: 540, y: 470,  s: 0 },
   ];
   function starPose(t) {
     let i = 0;
@@ -225,6 +240,18 @@
     [[0, '#4d5058'], [0.18, '#d9dbe2'], [0.34, '#80838d'], [0.5, '#f4f5f9'], [0.66, '#6a6d76'], [0.84, '#cfd1d8'], [1, '#55585f']]
       .forEach(([o, c]) => g.addColorStop(o, c));
     return g;
+  }
+
+  // filled chrome disc at (x, y); the gradient is built around the disc's own
+  // centre, since chrome() spans the origin and far from it only the dark end shows
+  function chromeRing(x, y, r, angle) {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fillStyle = chrome(r, angle);
+    ctx.fill();
+    ctx.restore();
   }
 
   function drawStar(t, pose, me) {
@@ -368,7 +395,7 @@
   // build progress bar along the bottom: fills to 40% and waits on the parts
   const PROGRESS = 40;
   function progressBar(t) {
-    const show = easeOutCubic(prog(t, 0.6, 0.5));
+    const show = easeOutCubic(prog(t, 0.6, 0.5)) * (1 - easeInCubic(prog(t, 34.5, 0.5)));
     if (show <= 0) return;
     const pct = PROGRESS * easeInOutCubic(prog(t, 0.8, T.outro - 0.8));
     const x0 = 64, x1 = W - 64, y = 1884, h = 10;
@@ -499,10 +526,7 @@
       const d = 270 * s * grow;
       ctx.save();
       ctx.globalAlpha = dim;
-      ctx.beginPath();
-      ctx.arc(cx, cy, d / 2 + 14 * s, 0, Math.PI * 2);
-      ctx.fillStyle = chrome(d / 2 + 14, 0.7 + t * 0.5 + i);
-      ctx.fill();
+      chromeRing(cx, cy, d / 2 + 14 * s, 0.7 + t * 0.5 + i);
       const eye = { ...BASE_EYE, gx: Math.sin(t * 2 + i) * 12, gy: Math.cos(t * 1.4 + i) * 5, blinkT: blinkAt(t + i * 0.37) };
       screen(cx, cy, d, eye, shape, cwi, t);
       ctx.restore();
@@ -623,16 +647,18 @@
 
   // ─── follow me ─────────────────────────────────────────
   function sceneFollow(t) {
-    kinetic('follow me', 540, 880, 150, t, 27.35, { stagger: 0.03 });
-    kinetic('for more builds', 540, 990, 92, t, 27.55, { color: '#b9bac1', weight: 700, stagger: 0.02 });
+    kinetic('follow me', 540, 880, 150, t, 27.35, { stagger: 0.03, exit: T.vote });
+    kinetic('for more builds', 540, 990, 92, t, 27.55, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: T.vote + 0.02 });
+    kinetic('next up: he wakes up for real', 540, 1740, 56, t, 29.15, { color: '#8e8f95', weight: 700, stagger: 0.012, exit: T.vote + 0.04 });
 
     const cardIn = easeOutBack(prog(t, 27.6, 0.55));
-    if (cardIn <= 0) return;
+    const cardOut = easeInCubic(prog(t, T.vote, 0.4));
+    if (cardIn <= 0 || cardOut >= 1) return;
     const cw0 = 900, ch = 340;
-    const cx = 540, cy = lerp(1560, 1290, cardIn);
+    const cx = 540, cy = lerp(1560, 1290, cardIn) + cardOut * 600;
     const left = cx - cw0 / 2, top = cy - ch / 2;
     ctx.save();
-    ctx.globalAlpha = clamp01(cardIn * 1.4);
+    ctx.globalAlpha = clamp01(cardIn * 1.4) * (1 - cardOut);
 
     ctx.fillStyle = '#15161a';
     ctx.strokeStyle = 'rgba(255,255,255,0.09)';
@@ -733,7 +759,95 @@
       ctx.globalAlpha = 1;
     }
 
-    kinetic('next up: he wakes up for real', 540, 1740, 56, t, 29.15, { color: '#8e8f95', weight: 700, stagger: 0.012 });
+  }
+
+  // ─── cold open: straight into the panic, then cut to the title ───
+  const coldTint = (t) => 0.2 + 0.08 * Math.sin(t * 22);
+  function panicEye(t) {
+    const k = Math.floor(t / 0.12);
+    return { ...BASE_EYE, gx: hash(k + 900) * 40 - 20, gy: hash(k + 950) * 26 - 13, pupR: 0.9, irX: 1.1, irY: 0.8, bwL: 6, bwR: 6, blinkT: 0.25, fxP: t * 1.5 };
+  }
+  // full-size screen used by the cold open and by the loop back into it
+  function bigScreen(x, y, d, eye, t, alpha = 1) {
+    if (d < 4 || alpha <= 0) return;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    chromeRing(x, y, d / 2 + d * 0.045, 0.6);
+    screen(x, y, d, eye, 2, cw('starlight'), t);
+    ctx.restore();
+  }
+
+  function coldOpen(t) {
+    background(t, E.COLORWAYS[cw('starlight')].body);
+    const out = easeInCubic(prog(t, 1.2, 0.4));
+    ctx.fillStyle = `rgba(255,40,70,${coldTint(t) * (1 - out)})`;
+    ctx.fillRect(0, 0, W, H);
+    const sx = Math.sin(t * 67) * 10 * (1 - out), sy = Math.cos(t * 53) * 6 * (1 - out);
+    bigScreen(540 + sx, 900 + sy, 900 * (1 - out * 0.8), panicEye(t), t, 1 - out);
+    kinetic('i built a pet that', 540, 210, 78, t, 0.06, { color: '#b9bac1', weight: 700, stagger: 0.01, dur: 0.3, exit: 1.15 });
+    kinetic('panics when you yell', 540, 325, 94, t, 0.3, { stagger: 0.012, dur: 0.3, exit: 1.18, jitter: 4 });
+    if (out > 0) { ctx.fillStyle = `rgba(0,0,0,${out})`; ctx.fillRect(0, 0, W, H); }
+  }
+
+  // ─── vote, then loop back into the cold open ───────────
+  const VOTES = [{ cw: 'starlight', shape: 2 }, { cw: 'firetruck', shape: 3 }, { cw: 'lagoon', shape: 1 }, { cw: 'redeye', shape: 0 }];
+  const VOTE_SLOTS = [[320, 880], [760, 880], [320, 1310], [760, 1310]];
+  const LOOP0 = 34.6, LOOP1 = 35.4, CYCLE = 32.6, CYCLE_STEPS = 5;
+
+  function sceneVote(t) {
+    const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
+    if (loop > 0) { ctx.fillStyle = `rgba(255,40,70,${coldTint(0) * loop})`; ctx.fillRect(0, 0, W, H); }
+    kinetic('which eyes should', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: LOOP0 - 0.1 });
+    kinetic('mine get?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: LOOP0 - 0.08 });
+
+    const step = t >= CYCLE ? Math.floor((t - CYCLE) / 0.35) : -1;
+    const hi = step >= 0 && step < CYCLE_STEPS ? step % 4 : -1;
+    VOTES.forEach((v, i) => {
+      const appear = easeOutBack(prog(t, T.vote + 0.7 + i * 0.1, 0.45));
+      if (appear <= 0.01) return;
+      let [x, y] = VOTE_SLOTS[i];
+      let d = 360 * appear;
+      if (hi === i) d *= 1 + 0.08 * (1 - easeOutCubic(prog(t, CYCLE + step * 0.35, 0.3)));
+      const eye = { ...BASE_EYE, gx: Math.sin(t * 2 + i) * 12, gy: Math.cos(t * 1.4 + i) * 5, blinkT: blinkAt(t + i * 0.41) };
+      const badgeAlpha = 1 - clamp01(loop * 2.5);
+
+      if (i === 0) {
+        // look #1 grows back into the cold open's screen: same spot, size and eyes as frame 0
+        x = lerp(x, 540, loop); y = lerp(y, 906, loop); d = lerp(d, 900, loop);
+        bigScreen(x, y, d, loop > 0.5 ? panicEye(0) : { ...eye, colOvr: '#000000' }, t);
+      } else {
+        if (badgeAlpha <= 0) return;
+        ctx.save();
+        ctx.globalAlpha = badgeAlpha;
+        chromeRing(x, y, d / 2 + d * 0.045, 0.7 + t * 0.5 + i);
+        screen(x, y, d, eye, v.shape, cw(v.cw), t);
+        ctx.restore();
+      }
+
+      if (badgeAlpha > 0 && appear > 0.3) {
+        const bx = x - d * 0.36, by = y - d * 0.36, br = 46 * appear;
+        ctx.save();
+        ctx.globalAlpha = badgeAlpha;
+        ctx.beginPath();
+        ctx.arc(bx, by, br, 0, Math.PI * 2);
+        ctx.fillStyle = hi === i ? '#f6bd49' : '#ffffff';
+        ctx.fill();
+        ctx.fillStyle = '#111114';
+        ctx.font = `800 ${58 * appear}px ${FONT}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(String(i + 1), bx, by + 3);
+        ctx.restore();
+      }
+    });
+
+    kinetic('comment a number', 540, 1660, 96, t, T.vote + 1.2, { stagger: 0.02, exit: LOOP0 - 0.05 });
+    kinetic('1, 2, 3 or 4', 540, 1770, 62, t, T.vote + 1.45, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: LOOP0 - 0.03 });
+  }
+
+  function renderFrame(t) {
+    if (t < OPEN) coldOpen(t);
+    else render(t - OPEN);
   }
 
   function render(t) {
@@ -754,7 +868,8 @@
     else if (t >= T.seed && t < T.outro) sceneSeed(t);
     else if (t >= T.outro) {
       sceneOutro(t);
-      if (t >= T.follow) sceneFollow(t);
+      if (t >= T.follow && t < T.vote + 0.6) sceneFollow(t);
+      if (t >= T.vote) sceneVote(t);
     }
 
     progressBar(t);
@@ -773,9 +888,9 @@
   })();
 
   window.PROMO = {
-    W, H, FPS, DURATION, EVENTS,
+    W, H, FPS, DURATION, EVENTS, AUDIO,
     frame(i, type = 'image/jpeg', quality = 0.95) {
-      render(i / FPS);
+      renderFrame(i / FPS);
       return canvas.toDataURL(type, quality);
     },
     render,
@@ -785,12 +900,12 @@
     window.promoReady.then(() => {
       const start = performance.now();
       const loop = (now) => {
-        render(((now - start) / 1000) % DURATION);
+        renderFrame(((now - start) / 1000) % DURATION);
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
     });
   } else {
-    window.promoReady.then(() => render(1.8));
+    window.promoReady.then(() => renderFrame(0.5));
   }
 })();

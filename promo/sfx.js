@@ -207,16 +207,19 @@ function build(meta) {
   const cache = {};
 
   // beat: 120bpm from the first boom until the fade at the end
-  const bpm = 120, beatLen = 60 / bpm, start = 0.35, end = meta.duration - 0.6;
+  const A = meta.audio || {};
+  const bpm = 120, beatLen = 60 / bpm;
+  const start = A.beatStart ?? 0.35;
+  const end = A.loop ? meta.duration : meta.duration - 0.6;   // a looping video keeps the beat to the last frame
   const roots = [55, 43.65, 65.41, 49];
   const kick = DRUM.kick(), hat = DRUM.hat(), snare = DRUM.snare();
   const bassNotes = roots.map((f) => DRUM.bass(f));
-  const gaps = [[14.5, 14.8], [24.0, 24.3]];
+  const gaps = A.gaps || [[14.5, 14.8], [24.0, 24.3]];
   for (let b = 0; start + b * beatLen < end; b++) {
     const t = start + b * beatLen;
     if (gaps.some(([a, z]) => t >= a && t < z)) continue;
-    const fade = t > meta.duration - 2 ? Math.max(0, (end - t) / 1.4) : 1;
-    const intro = t < 1.5 ? 0.6 : 1;
+    const fade = !A.loop && t > meta.duration - 2 ? Math.max(0, (end - t) / 1.4) : 1;
+    const intro = t < start + 1.15 ? 0.6 : 1;
     const g = 0.75 * fade * intro;
     place(L, R, kick, t, 0.55 * g, 0);
     place(L, R, hat, t + beatLen / 2, 0.1 * g, 0.3);

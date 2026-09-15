@@ -65,7 +65,7 @@ async function main() {
       await sleep(100);
     }
     await evaluate('window.promoReady');
-    const meta = await evaluate('({ fps: PROMO.FPS, duration: PROMO.DURATION, events: PROMO.EVENTS })');
+    const meta = await evaluate('({ fps: PROMO.FPS, duration: PROMO.DURATION, events: PROMO.EVENTS, audio: PROMO.AUDIO })');
     fs.writeFileSync(path.join(outDir, 'events.json'), JSON.stringify(meta, null, 2));
 
     const total = Math.round(meta.duration * meta.fps);
