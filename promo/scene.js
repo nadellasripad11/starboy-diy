@@ -38,8 +38,9 @@
   const BASE_EYE = { gx: 0, gy: 0, blinkT: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
 
   // ─── timeline ──────────────────────────────────────────
-  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2, follow: 27.2, vote: 31.0 };
-  const TAP = 28.58;   // the moment the follow button gets pressed
+  // the vote comes first so the ask is fresh, then follow me closes the video
+  const T = { pet: 3.2, react: 5.6, looks: 11.0, rare: 14.8, build: 18.0, seed: 21.6, outro: 24.2, vote: 27.2, follow: 31.0 };
+  const TAP = 32.38;   // the moment the follow button gets pressed
   const BEATS = [
     { t: 5.6,  caption: 'shake him.',   sub: 'he gets dizzy',   sfx: 'rattle', kind: 'shake' },
     { t: 6.95, caption: 'freeze him.',  sub: 'he shivers',      sfx: 'ice',    kind: 'cold' },
@@ -83,13 +84,14 @@
   for (let i = 0; i < 13; i++) ev(22.15 + i * 0.09, 'tick', 0.3);
   ev(SEED_LAND, 'sparkle'); ev(SEED_LAND + 0.02, 'pop', 0.7); ev(24.1, 'whoosh', 0.5);
   ev(24.3, 'boom'); ev(24.65, 'hit'); ev(25.05, 'pop'); ev(25.45, 'soft', 0.6);
-  ev(27.15, 'whoosh', 0.6); ev(27.35, 'pop'); ev(27.55, 'pop', 0.5); ev(27.6, 'swipe', 0.7);
-  ev(TAP - 0.03, 'tick', 0.9); ev(TAP, 'pop'); ev(TAP + 0.02, 'sparkle'); ev(29.15, 'pop', 0.6);
-  // vote + loop (old timeline)
-  ev(31.0, 'whoosh', 0.6); ev(31.25, 'pop'); ev(31.45, 'hit', 0.7);
-  for (let i = 0; i < 4; i++) ev(31.7 + i * 0.1, 'tick', 0.6);
-  ev(32.2, 'pop'); ev(32.45, 'pop', 0.5);
-  for (let s = 0; s < 5; s++) ev(32.6 + s * 0.35, 'tick', 0.5);
+  // vote
+  ev(27.2, 'whoosh', 0.6); ev(27.45, 'pop'); ev(27.65, 'hit', 0.7);
+  for (let i = 0; i < 4; i++) ev(27.9 + i * 0.1, 'tick', 0.6);
+  ev(28.4, 'pop'); ev(28.65, 'pop', 0.5);
+  for (let s = 0; s < 5; s++) ev(28.8 + s * 0.35, 'tick', 0.5);
+  // follow me, then the loop back into the cold open
+  ev(30.95, 'whoosh', 0.6); ev(31.15, 'pop'); ev(31.35, 'pop', 0.5); ev(31.4, 'swipe', 0.7);
+  ev(TAP - 0.03, 'tick', 0.9); ev(TAP, 'pop'); ev(TAP + 0.02, 'sparkle'); ev(32.95, 'pop', 0.6);
   ev(34.6, 'whoosh', 0.8);
   // everything above is on the original timeline; shift it behind the cold open
   for (const e of EVENTS) e.t = Math.round((e.t + OPEN) * 1000) / 1000;
@@ -117,9 +119,11 @@
     { t: 24.2,  x: 540, y: 1320, s: 0.7 },
     { t: 24.75, x: 540, y: 780,  s: 1.02, ease: 'back' },
     { t: 27.2,  x: 540, y: 780,  s: 1.02 },
-    { t: 27.75, x: 540, y: 470,  s: 0.55 },
-    { t: 31.0,  x: 540, y: 470,  s: 0.55 },
-    { t: 31.35, x: 540, y: 470,  s: 0,    ease: 'in' },
+    { t: 27.55, x: 540, y: 780,  s: 0,    ease: 'in' },   // out of the way for the vote
+    { t: 30.9,  x: 540, y: 470,  s: 0 },
+    { t: 31.35, x: 540, y: 470,  s: 0.55, ease: 'back' }, // back in above the follow card
+    { t: 34.4,  x: 540, y: 470,  s: 0.55 },
+    { t: 34.75, x: 540, y: 470,  s: 0,    ease: 'in' },
     { t: 99,    x: 540, y: 470,  s: 0 },
   ];
   function starPose(t) {
@@ -637,19 +641,21 @@
   }
 
   function sceneOutro(t) {
-    kinetic('starboy diy', 540, 1450, 176, t, 24.65, { stagger: 0.035, exit: T.follow - 0.1 });
-    kinetic('handmade, from scratch', 540, 1570, 80, t, 25.05, { color: '#c9cad0', weight: 700, stagger: 0.02, exit: T.follow - 0.08 });
-    kinetic('starboy-diy.nadellasripad11.workers.dev', 540, 1760, 38, t, 25.45, { color: '#8e8f95', weight: 700, stagger: 0.008, spacing: 0, exit: T.follow - 0.06 });
+    kinetic('starboy diy', 540, 1450, 176, t, 24.65, { stagger: 0.035, exit: T.vote - 0.1 });
+    kinetic('handmade, from scratch', 540, 1570, 80, t, 25.05, { color: '#c9cad0', weight: 700, stagger: 0.02, exit: T.vote - 0.08 });
+    kinetic('starboy-diy.nadellasripad11.workers.dev', 540, 1760, 38, t, 25.45, { color: '#8e8f95', weight: 700, stagger: 0.008, spacing: 0, exit: T.vote - 0.06 });
   }
 
   // ─── follow me ─────────────────────────────────────────
   function sceneFollow(t) {
-    kinetic('follow me', 540, 880, 150, t, 27.35, { stagger: 0.03, exit: T.vote });
-    kinetic('for more builds', 540, 990, 92, t, 27.55, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: T.vote + 0.02 });
-    kinetic('next up: he wakes up for real', 540, 1740, 56, t, 29.15, { color: '#8e8f95', weight: 700, stagger: 0.012, exit: T.vote + 0.04 });
+    // the avatar grows into the cold open's screen, so the video loops out of this card
+    const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
+    kinetic('follow me', 540, 880, 150, t, 31.15, { stagger: 0.03, exit: LOOP0 - 0.1 });
+    kinetic('for more builds', 540, 990, 92, t, 31.35, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: LOOP0 - 0.08 });
+    kinetic('next up: he wakes up for real', 540, 1740, 56, t, 32.95, { color: '#8e8f95', weight: 700, stagger: 0.012, exit: LOOP0 - 0.15 });
 
-    const cardIn = easeOutBack(prog(t, 27.6, 0.55));
-    const cardOut = easeInCubic(prog(t, T.vote, 0.4));
+    const cardIn = easeOutBack(prog(t, 31.4, 0.55));
+    const cardOut = clamp01(loop * 2);
     if (cardIn <= 0 || cardOut >= 1) return;
     const cw0 = 900, ch = 340;
     const cx = 540, cy = lerp(1560, 1290, cardIn) + cardOut * 600;
@@ -758,6 +764,15 @@
 
   }
 
+  // the follow card's avatar swells into the cold open's screen, closing the loop
+  function followLoop(t) {
+    const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
+    if (loop <= 0) return;
+    const AVX = 220, AVY = 1238, AVD = 146;   // where the avatar sits once the card has settled
+    const eye = loop > 0.5 ? panicEye(0) : { ...BASE_EYE, gx: Math.sin(t * 1.7) * 10, gy: Math.cos(t * 1.2) * 4, smile: 0.8 };
+    bigScreen(lerp(AVX, OPEN_X, loop), lerp(AVY, OPEN_Y, loop), lerp(AVD, OPEN_D, loop), eye, t);
+  }
+
   // ─── cold open: straight into the panic, then cut to the title ───
   const OPEN_X = 540, OPEN_Y = 1080, OPEN_D = 840;
   function panicEye(t) {
@@ -788,41 +803,36 @@
   // ─── vote, then loop back into the cold open ───────────
   const VOTES = [{ cw: 'starlight', shape: 2 }, { cw: 'firetruck', shape: 3 }, { cw: 'lagoon', shape: 1 }, { cw: 'redeye', shape: 0 }];
   const VOTE_SLOTS = [[320, 880], [760, 880], [320, 1310], [760, 1310]];
-  const LOOP0 = 34.6, LOOP1 = 35.4, CYCLE = 32.6, CYCLE_STEPS = 5;
+  const LOOP0 = 34.6, LOOP1 = 35.4, CYCLE = 28.8, CYCLE_STEPS = 5;
+  const VOTE_OUT = T.follow - 0.45;
 
   function sceneVote(t) {
-    const loop = easeInOutCubic(prog(t, LOOP0, LOOP1 - LOOP0));
-    kinetic('which eyes are', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: LOOP0 - 0.1 });
-    kinetic('the best?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: LOOP0 - 0.08 });
+    const out = easeInCubic(prog(t, VOTE_OUT, 0.4));
+    if (out >= 1) return;
+    kinetic('which eyes are', 540, 330, 100, t, T.vote + 0.25, { color: '#b9bac1', weight: 700, stagger: 0.018, exit: VOTE_OUT });
+    kinetic('the best?', 540, 490, 170, t, T.vote + 0.45, { stagger: 0.03, exit: VOTE_OUT + 0.02 });
 
     const step = t >= CYCLE ? Math.floor((t - CYCLE) / 0.35) : -1;
     const hi = step >= 0 && step < CYCLE_STEPS ? step % 4 : -1;
     VOTES.forEach((v, i) => {
       const appear = easeOutBack(prog(t, T.vote + 0.7 + i * 0.1, 0.45));
       if (appear <= 0.01) return;
-      let [x, y] = VOTE_SLOTS[i];
+      const [x, y0] = VOTE_SLOTS[i];
+      const y = y0 + out * 160;   // the whole grid drops away as the follow card comes up
       let d = 360 * appear;
       if (hi === i) d *= 1 + 0.08 * (1 - easeOutCubic(prog(t, CYCLE + step * 0.35, 0.3)));
       const eye = { ...BASE_EYE, gx: Math.sin(t * 2 + i) * 12, gy: Math.cos(t * 1.4 + i) * 5, blinkT: blinkAt(t + i * 0.41) };
-      const badgeAlpha = 1 - clamp01(loop * 2.5);
 
-      if (i === 0) {
-        // look #1 grows back into the cold open's screen: same spot, size and eyes as frame 0
-        x = lerp(x, OPEN_X, loop); y = lerp(y, OPEN_Y + Math.cos(0) * 6, loop); d = lerp(d, OPEN_D, loop);
-        bigScreen(x, y, d, loop > 0.5 ? panicEye(0) : { ...eye, colOvr: '#000000' }, t);
-      } else {
-        if (badgeAlpha <= 0) return;
-        ctx.save();
-        ctx.globalAlpha = badgeAlpha;
-        chromeRing(x, y, d / 2 + d * 0.045, 0.7 + t * 0.5 + i);
-        screen(x, y, d, eye, v.shape, cw(v.cw), t);
-        ctx.restore();
-      }
+      ctx.save();
+      ctx.globalAlpha = 1 - out;
+      chromeRing(x, y, d / 2 + d * 0.045, 0.7 + t * 0.5 + i);
+      screen(x, y, d, eye, v.shape, cw(v.cw), t);
+      ctx.restore();
 
-      if (badgeAlpha > 0 && appear > 0.3) {
+      if (appear > 0.3) {
         const bx = x - d * 0.36, by = y - d * 0.36, br = 46 * appear;
         ctx.save();
-        ctx.globalAlpha = badgeAlpha;
+        ctx.globalAlpha = 1 - out;
         ctx.beginPath();
         ctx.arc(bx, by, br, 0, Math.PI * 2);
         ctx.fillStyle = hi === i ? '#f6bd49' : '#ffffff';
@@ -836,8 +846,8 @@
       }
     });
 
-    kinetic('comment a number', 540, 1660, 96, t, T.vote + 1.2, { stagger: 0.02, exit: LOOP0 - 0.05 });
-    kinetic('1, 2, 3 or 4', 540, 1770, 62, t, T.vote + 1.45, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: LOOP0 - 0.03 });
+    kinetic('comment a number', 540, 1660, 96, t, T.vote + 1.2, { stagger: 0.02, exit: VOTE_OUT + 0.05 });
+    kinetic('1, 2, 3 or 4', 540, 1770, 62, t, T.vote + 1.45, { color: '#b9bac1', weight: 700, stagger: 0.02, exit: VOTE_OUT + 0.07 });
   }
 
   function renderFrame(t) {
@@ -863,8 +873,8 @@
     else if (t >= T.seed && t < T.outro) sceneSeed(t);
     else if (t >= T.outro) {
       sceneOutro(t);
-      if (t >= T.follow && t < T.vote + 0.6) sceneFollow(t);
-      if (t >= T.vote) sceneVote(t);
+      if (t >= T.vote && t < T.follow + 0.6) sceneVote(t);
+      if (t >= T.follow) { sceneFollow(t); followLoop(t); }
     }
 
     progressBar(t);
