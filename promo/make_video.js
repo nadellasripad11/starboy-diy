@@ -27,7 +27,8 @@ fs.rmSync(frames, { recursive: true, force: true });
 fs.mkdirSync(frames, { recursive: true });
 fs.mkdirSync(path.dirname(outFile), { recursive: true });
 
-run('render frames', process.execPath, [path.join(__dirname, 'render.js'), '--out', frames, '--profile', path.join(work, 'edge-profile')]);
+const short = process.argv.includes('--short') ? ['--short'] : [];
+run('render frames', process.execPath, [path.join(__dirname, 'render.js'), '--out', frames, '--profile', path.join(work, 'edge-profile'), ...short]);
 run('synthesize soundtrack', process.execPath, [path.join(__dirname, 'sfx.js'), path.join(frames, 'events.json'), audio]);
 
 const { fps } = JSON.parse(fs.readFileSync(path.join(frames, 'events.json'), 'utf8'));

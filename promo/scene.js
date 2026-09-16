@@ -99,6 +99,34 @@
   EVENTS.sort((a, b) => a.t - b.t);
   const AUDIO = { beatStart: OPEN + 0.35, gaps: [[OPEN + 14.5, OPEN + 14.8], [OPEN + 24.0, OPEN + 24.3]], loop: true };
 
+  // ─── short cut ─────────────────────────────────────────
+  // ?short keeps only these stretches of the full timeline (in finished-video
+  // seconds) and plays them back to back: hook, reactions, looks, vote, follow.
+  // The last kept second is still the loop back into the cold open.
+  const SHORT = location.search.includes('short');
+  const SEGS = [[0, 4.4], [7.2, 15.8], [29.0, DURATION]];
+  const SHORT_DURATION = SEGS.reduce((a, [s, e]) => a + (e - s), 0);
+  const mapTime = (o) => {
+    let acc = 0;
+    for (const [s, e] of SEGS) { if (o < acc + (e - s)) return s + (o - acc); acc += e - s; }
+    return SEGS[SEGS.length - 1][1];
+  };
+  const mapEvent = (t) => {
+    let acc = 0;
+    for (const [s, e] of SEGS) { if (t >= s && t < e) return Math.round((acc + (t - s)) * 1000) / 1000; acc += e - s; }
+    return null;
+  };
+  if (SHORT) {
+    for (let i = EVENTS.length - 1; i >= 0; i--) {
+      const mapped = mapEvent(EVENTS[i].t);
+      if (mapped == null) EVENTS.splice(i, 1);
+      else EVENTS[i].t = mapped;
+    }
+    EVENTS.sort((a, b) => a.t - b.t);
+    AUDIO.beatStart = mapEvent(AUDIO.beatStart) ?? 0.35;
+    AUDIO.gaps = AUDIO.gaps.map(([s, e]) => [mapEvent(s), mapEvent(e)]).filter(([s, e]) => s != null && e != null);
+  }
+
   // ─── star pose keyframes ───────────────────────────────
   const KEYS = [
     { t: 0,     x: 540, y: 800,  s: 0 },
@@ -893,9 +921,10 @@
   })();
 
   window.PROMO = {
-    W, H, FPS, DURATION, EVENTS, AUDIO,
+    W, H, FPS, EVENTS, AUDIO,
+    DURATION: SHORT ? SHORT_DURATION : DURATION,
     frame(i, type = 'image/jpeg', quality = 0.95) {
-      renderFrame(i / FPS);
+      renderFrame(SHORT ? mapTime(i / FPS) : i / FPS);
       return canvas.toDataURL(type, quality);
     },
     render,
@@ -905,7 +934,8 @@
     window.promoReady.then(() => {
       const start = performance.now();
       const loop = (now) => {
-        renderFrame(((now - start) / 1000) % DURATION);
+        const o = ((now - start) / 1000) % (SHORT ? SHORT_DURATION : DURATION);
+        renderFrame(SHORT ? mapTime(o) : o);
         requestAnimationFrame(loop);
       };
       requestAnimationFrame(loop);
