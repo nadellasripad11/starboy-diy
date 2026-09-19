@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="gate.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>sensor sandbox · starboy diy</title>
 <meta name="description" content="play with starboy's sensors: make him cold, loud, shaken or bored and watch his mood change.">
@@ -35,9 +36,8 @@
   .bezel { width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 4.5%;
     position: relative;
     background:
-      radial-gradient(circle at 30% 20%, rgba(255,255,255,.6), rgba(255,255,255,0) 18%),
-      radial-gradient(circle at 74% 84%, rgba(160,200,230,.35), rgba(160,200,230,0) 20%),
-      conic-gradient(from 200deg, #0d0e11, #5a5d67, #121317, #b9bcc5, #16171b, #44474f, #0d0e11, #7c7f89, #0d0e11);
+      radial-gradient(circle at 30% 18%, rgba(255,255,255,.9), rgba(255,255,255,0) 20%),
+      linear-gradient(180deg, #fbfcfe 0%, #d9dce3 30%, #a9adb7 47%, #3a3d44 50%, #5d616a 62%, #9ea2ac 82%, #dfe2e8 100%);
     box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), inset 0 -8px 16px rgba(0,0,0,.55), 0 30px 60px -28px rgba(0,0,0,.5); }
   /* the glass: glowing mint rim, depth toward the edge, a soft glare */
   .bezel canvas { display: block; width: 100%; height: 100%; border-radius: 50%; background: #000;
@@ -75,13 +75,15 @@
     .bezel { width: min(100%, 320px); }
   }
   @media (prefers-reduced-motion: reduce) { #shake.held { animation: none; } }
+  .pref { font: inherit; color: var(--ink); background: var(--soft); border: 0; border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+  .pref[aria-pressed="false"] { color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="brand" href="index.html">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="brand-chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a8d97"/><stop offset=".38" stop-color="#15161a"/><stop offset=".58" stop-color="#a9acb5"/><stop offset=".8" stop-color="#1b1c21"/><stop offset="1" stop-color="#55585f"/></linearGradient></defs><path fill="url(#brand-chrome)" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="brand-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f8"/><stop offset=".45" stop-color="#a7abb5"/><stop offset=".5" stop-color="#3a3d44"/><stop offset=".72" stop-color="#6d717a"/><stop offset="1" stop-color="#c9ccd3"/></linearGradient></defs><path fill="url(#brand-chrome)" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
       starboy diy
     </a>
     <a class="back" href="index.html">back home</a>
@@ -138,7 +140,7 @@
     </div>
   </main>
 
-  <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a></footer>
+  <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a> · intro <button class="pref" type="button" id="intro-pref" aria-pressed="true">on</button> · <a href="./?intro">watch it</a></footer>
 </div>
 <script src="eyes.js"></script>
 <script src="mood.js"></script>

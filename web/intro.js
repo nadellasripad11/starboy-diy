@@ -1,7 +1,7 @@
 // First-visit intro: starboy hops onto a dark stage, a spotlight clunks on and
 // finds him, and "leap into the experience" sends him flying into the camera.
 // His screen fills the view, then opens like an iris onto the page.
-// Plays on every visit to the homepage. ?intro forces it; ?intro=3.5 freezes it at
+// gate.js decides when it plays (every visit, from any page). ?intro=3.5 freezes it at
 // 3.5s and ?intro=5,0.6 freezes 0.6s into the leap (for checking frames).
 (function () {
   const root = document.documentElement;
@@ -18,6 +18,11 @@
   const ctx = canvas.getContext('2d');
   const leapBtn = document.getElementById('intro-leap');
   const skipBtn = document.getElementById('intro-skip');
+  const neverBtn = document.getElementById('intro-never');
+  const optsEl = el.querySelector('.intro-opts');
+  // where they were headed, if they landed on another page first (pages of this site only)
+  const nextRaw = new URLSearchParams(location.search).get('next');
+  const next = nextRaw && /^[\w-]+\.html([?#]\S*)?$/.test(nextRaw) ? nextRaw : null;
   const CW = Star.HERO.cw, SHAPE = Star.HERO.shape;
   const BASE = { gx: 0, gy: 0, blinkT: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
 
@@ -122,7 +127,7 @@
   // brushed gunmetal around the current origin, for the rim of the opening iris
   function chrome(R, angle) {
     const g = ctx.createLinearGradient(Math.cos(angle) * -R, Math.sin(angle) * -R, Math.cos(angle) * R, Math.sin(angle) * R);
-    [[0, '#131418'], [0.18, '#6b6e78'], [0.32, '#1d1f24'], [0.5, '#a9acb5'], [0.64, '#1a1b20'], [0.84, '#575a63'], [1, '#101114']]
+    [[0, '#4d5058'], [0.18, '#e2e4ea'], [0.34, '#80838d'], [0.5, '#f7f8fb'], [0.66, '#5f626b'], [0.84, '#d2d4db'], [1, '#4f525a']]
       .forEach(([o, c]) => g.addColorStop(o, c));
     return g;
   }
@@ -277,8 +282,17 @@
       leapBtn.focus({ preventScroll: true });
     }
     draw(t, u);
+    // headed to another page: go while his screen is shut, it opens there instead
+    if (next && u >= IRIS0 && freezeU == null) return go();
     if (u >= DONE && freezeU == null) return finish();
     raf = requestAnimationFrame(tick);
+  }
+
+  function go() {
+    ended = true;
+    cancelAnimationFrame(raf);
+    if (window.StarboyGate) StarboyGate.markNav();
+    location.replace(next);
   }
 
   function finish() {
@@ -288,19 +302,28 @@
     removeEventListener('keydown', onKey);
     root.classList.remove('intro-on');
     el.remove();
+    if (freeze == null && /[?&](intro|next)\b/.test(location.search)) history.replaceState(null, '', location.pathname + location.hash);
+    const target = location.hash && document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    if (target) target.scrollIntoView();
   }
 
   function leap() {
     if (leapAt != null) return;
     leapAt = performance.now();
     leapBtn.classList.add('gone');
-    skipBtn.hidden = true;
+    optsEl.hidden = true;
   }
 
   function skip() {
+    if (next) return go();
     leapBtn.classList.add('gone');
     el.classList.add('fade');
     setTimeout(finish, 350);
+  }
+
+  function never() {
+    if (window.StarboyGate) StarboyGate.turnOff();
+    skip();
   }
 
   function onKey(e) {
@@ -309,6 +332,7 @@
 
   leapBtn.addEventListener('click', leap);
   skipBtn.addEventListener('click', skip);
+  neverBtn.addEventListener('click', never);
   addEventListener('keydown', onKey);
   raf = requestAnimationFrame(tick);
 })();

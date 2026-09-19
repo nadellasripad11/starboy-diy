@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<script src="gate.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>eye looks · starboy diy</title>
 <meta name="description" content="all 400 eye looks a starboy can roll: 100 colorways across 4 shapes, each with its own rarity.">
@@ -70,13 +71,15 @@
   .pick .chip { background: #3a3b40; color: #fff; }
   .pick .chip:hover { background: #4a4b52; }
   .pick-close { position: absolute; top: 10px; right: 12px; background: none; border: 0; color: #a9aab0; font-size: 22px; cursor: pointer; line-height: 1; }
+  .pref { font: inherit; color: var(--ink); background: var(--soft); border: 0; border-radius: 999px; padding: 2px 10px; cursor: pointer; }
+  .pref[aria-pressed="false"] { color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <nav>
     <a class="brand" href="index.html">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="brand-chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a8d97"/><stop offset=".38" stop-color="#15161a"/><stop offset=".58" stop-color="#a9acb5"/><stop offset=".8" stop-color="#1b1c21"/><stop offset="1" stop-color="#55585f"/></linearGradient></defs><path fill="url(#brand-chrome)" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="brand-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4f5f8"/><stop offset=".45" stop-color="#a7abb5"/><stop offset=".5" stop-color="#3a3d44"/><stop offset=".72" stop-color="#6d717a"/><stop offset="1" stop-color="#c9ccd3"/></linearGradient></defs><path fill="url(#brand-chrome)" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
       starboy diy
     </a>
     <a class="back" href="index.html">back home</a>
@@ -97,7 +100,7 @@
     <span class="count" id="count" aria-live="polite"></span>
   </div>
   <div class="grid" id="grid"></div>
-  <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a></footer>
+  <footer>made by sripadbuilds · unofficial fan build, not affiliated with <a href="https://lilguy.net">creature</a> · intro <button class="pref" type="button" id="intro-pref" aria-pressed="true">on</button> · <a href="./?intro">watch it</a></footer>
 </div>
 <div class="pick" id="pick" role="dialog" aria-labelledby="pick-name" hidden>
   <button class="pick-close" id="pick-close" type="button" aria-label="close">×</button>

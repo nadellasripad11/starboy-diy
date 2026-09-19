@@ -1,4 +1,4 @@
-// Renders the shell STLs as dark polished chrome, for the site's product shots.
+// Renders the shell STLs as polished chrome, for the site's product shots.
 //   node tools/render_shell.js            writes web/shell_front.png, shell_back.png, shell_flat.png
 // Offline and dependency-free: an orthographic z-buffer rasterizer with smooth
 // normals (crease-aware), per-pixel reflections of a studio (soft boxes, a strip
@@ -81,17 +81,21 @@ const apply = (M, x, y, z) => [M[0][0] * x + M[0][1] * y + M[0][2] * z, M[1][0] 
 const clamp01 = (x) => Math.max(0, Math.min(1, x));
 const sstep = (a, b, x) => { const t = clamp01((x - a) / (b - a)); return t * t * (3 - 2 * t); };
 const unit = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l, z / l]; };
-const BOX = unit(-0.6, 0.65, 0.45), STRIP = unit(0.85, 0.25, 0.45), BOUNCE = unit(0.3, -0.85, 0.42), TOP = unit(0, 1, 0.15);
+const BOX = unit(-0.6, 0.65, 0.45), STRIP = unit(0.85, 0.25, 0.45), BOUNCE = unit(0.3, -0.85, 0.42);
 const dot = (a, x, y, z) => a[0] * x + a[1] * y + a[2] * z;
 
-// light seen along reflected ray (camera space: x right, y up, z toward the viewer)
+// the chrome world along reflected ray (camera space: x right, y up, z toward the viewer):
+// bright sky above a horizon, dark ground below, soft boxes on top. Same world as web/star.js.
 function studio(x, y, z) {
-  const room = 0.03 + 0.05 * sstep(-0.2, 0.8, y) + 0.24 * sstep(0.25, -0.4, x - y) * sstep(0.6, 1, z);
-  const floor = 0.2 * sstep(-0.15, -0.6, y);
-  const lights = 1.5 * sstep(0.78, 0.93, dot(BOX, x, y, z)) + 0.95 * sstep(0.9, 0.97, dot(STRIP, x, y, z))
-    + 0.4 * sstep(0.7, 0.95, dot(TOP, x, y, z));
-  const bounce = 0.3 * sstep(0.84, 0.95, dot(BOUNCE, x, y, z));
-  return [room + floor + lights + bounce * 0.7, room + floor + lights + bounce * 0.9, room * 1.05 + floor + lights + bounce];
+  const d = -y, HZ = 0.1;   // star.js measures y downward
+  const sky = 0.52 + 0.48 * sstep(HZ, -0.75, d);
+  const ground = 0.12 + 0.3 * sstep(0.3, 0.9, d);
+  const k = sstep(HZ - 0.012, HZ + 0.03, d);
+  const rim = 0.3 * Math.exp(-(((d - HZ + 0.03) / 0.02) ** 2));
+  const base = (sky + rim) * (1 - k) + ground * k;
+  const lights = 1.1 * sstep(0.8, 0.94, dot(BOX, x, y, z)) + 0.8 * sstep(0.9, 0.97, dot(STRIP, x, y, z));
+  const bounce = 0.25 * sstep(0.84, 0.95, dot(BOUNCE, x, y, z));
+  return [base * 0.93 + lights + bounce * 0.7, base * 0.96 + lights + bounce * 0.9, base * 1.02 + lights + bounce];
 }
 
 // ─── rendering ───────────────────────────────────────────

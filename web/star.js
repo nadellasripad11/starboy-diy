@@ -1,7 +1,7 @@
-// Starboy's dark chrome star. The silhouette becomes a height field (a rounded
+// Starboy's chrome star. The silhouette becomes a height field (a rounded
 // bevel round the edge, a slight dome, a raised ring round the screen, the
-// keyring loop) and every pixel reflects a studio of soft boxes off its normal,
-// so it reads like polished metal instead of painted stripes. The metal is
+// keyring loop) and every pixel reflects a sky, a horizon and soft boxes off its
+// normal, so it reads like polished chrome instead of painted stripes. The metal is
 // built once per size and cached; the glass screen and its glow are drawn live.
 (function () {
   const E = window.StarboyEyes;
@@ -19,18 +19,19 @@
   const STRIP = norm(0.85, -0.25, 0.45);   // tall strip light on the right
   const BOUNCE = norm(0.3, 0.85, 0.42);    // cool bounce from below right
 
-  // how bright the studio is along reflected ray (x, y, z); returns [r, g, b] in 0..1+
+  // the chrome world along reflected ray (x, y, z; y down): bright sky above a
+  // horizon, dark ground below, soft boxes on top. Returns [r, g, b] in 0..1+
   function studio(x, y, z) {
-    const d1 = x * BOX[0] + y * BOX[1] + z * BOX[2];
-    const d2 = x * STRIP[0] + y * STRIP[1] + z * STRIP[2];
-    const d3 = x * BOUNCE[0] + y * BOUNCE[1] + z * BOUNCE[2];
-    // the room behind the camera: what the face mostly sees, brighter up and left
-    const room = 0.03 + 0.06 * sstep(0.4, -0.8, y) + 0.08 * Math.exp(-(((y + 0.08) / 0.05) ** 2))
-      + 0.26 * sstep(0.25, -0.4, x + y) * sstep(0.6, 1, z);
-    const box = 1.5 * sstep(0.78, 0.93, d1);
-    const strip = 0.95 * sstep(0.9, 0.97, d2);
-    const bounce = 0.32 * sstep(0.84, 0.95, d3);
-    return [room * 0.9 + box + strip + bounce * 0.7, room * 0.93 + box + strip + bounce * 0.9, room + box + strip + bounce];
+    const HZ = 0.1;
+    const sky = 0.52 + 0.48 * sstep(HZ, -0.75, y);
+    const ground = 0.12 + 0.3 * sstep(0.3, 0.9, y);
+    const k = sstep(HZ - 0.012, HZ + 0.03, y);
+    const rim = 0.3 * Math.exp(-(((y - HZ + 0.03) / 0.02) ** 2));   // the bright band of sky at the horizon
+    const base = (sky + rim) * (1 - k) + ground * k;
+    const lights = 1.1 * sstep(0.8, 0.94, x * BOX[0] + y * BOX[1] + z * BOX[2])
+      + 0.8 * sstep(0.9, 0.97, x * STRIP[0] + y * STRIP[1] + z * STRIP[2]);
+    const bounce = 0.25 * sstep(0.84, 0.95, x * BOUNCE[0] + y * BOUNCE[1] + z * BOUNCE[2]);
+    return [base * 0.93 + lights + bounce * 0.7, base * 0.96 + lights + bounce * 0.9, base * 1.02 + lights + bounce];
   }
 
   function starPath(R, ratio) {
@@ -111,7 +112,7 @@
     for (let i = 0; i < N; i++) cover[i] = px[i * 4 + 3] / 255;
     const dist = edgeDistance(cover, S);
 
-    const B = Rp * 0.14, D = Rp * 0.08;                      // bevel width, dome height
+    const B = Rp * 0.14, D = Rp * 0.11;                      // bevel width, dome height
     const sr = Rp * 0.3956, rb = Rp * 0.5;                   // screen radius, bezel outer radius
     const rc = (sr + rb) / 2, tw = (rb - sr) / 2;
     const la = -Math.PI / 2 + (2 * Math.PI) / 5;             // keyring off the upper-right point
