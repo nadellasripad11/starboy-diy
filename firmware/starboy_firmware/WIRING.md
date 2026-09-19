@@ -4,7 +4,7 @@
 
 | | |
 |---|---|
-| Body | ~65 × 64 mm (78 mm including the keyring loop) |
+| Body | ~64 × 61 mm, keyring hole through the right-hand point |
 | Thickness | 20.5 mm |
 | Board | Seeed XIAO ESP32C3 (built-in LiPo charger) |
 | Display | GC9A01 1.28" round, centred in the front face |
@@ -20,7 +20,7 @@ Looking at the **front** (display facing you), with the keyring at the right
 
 | Angle | Feature |
 |-------|---------|
-| 0° | Keyring bail |
+| 0° | Keyring hole (5mm, through) |
 | 72° | Camera lens pocket (8mm) — optional |
 | 144° | DS18B20 temperature vent (4mm, through-hole) |
 | 180° (valley) | USB-C charging cutout (12.5 × 7.0mm) |

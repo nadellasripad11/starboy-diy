@@ -7,7 +7,7 @@ a chrome star keychain with a little animated eye in the middle. shake it and th
 it's my handbuilt take on the [creature starboy](https://lilguy.net). i wanted one, and more than that i wanted to know how one works inside, so i designed the shell from scratch in openscad, picked the smallest parts i could find that would fit, and wrote the eye animations myself.
 
 <p align="center">
-  <img src="images/render_front.png" width="48%" alt="front of the star shell with the round display opening and keyring loop">
+  <img src="images/render_front.png" width="48%" alt="front of the black chrome star shell with the round display and a keyring through its point">
   <img src="images/render_back.png" width="48%" alt="back of the star shell with the engraved sripadbuilds medallion">
 </p>
 

@@ -1,6 +1,6 @@
 # STARBOY DIY — Build Guide
 
-Shell: **body ~65 × 64mm (78mm including the keyring loop), 20.5mm thick.**
+Shell: **body ~64 × 61mm, 20.5mm thick**, with the keyring hole through the right-hand point.
 Print `stl/starboy_front.stl`, `stl/starboy_back.stl`, and `stl/starboy_bezel.stl`.
 
 Parts, prices and links: **[BOM.csv](BOM.csv)** · **[BOM.md](BOM.md)**
@@ -72,7 +72,7 @@ Front facing you, keyring to the right (0°):
 
 | Angle | Feature | Size |
 |-------|---------|------|
-| 0° | Keyring bail | 7.6mm hole |
+| 0° | Keyring hole, 27.5mm out along the point, sleeved through the hollow | 5mm, through, chamfered |
 | 72° | Camera pocket (optional) | 8mm |
 | 144° | DS18B20 vent | 4mm, through |
 | 180° valley | USB-C charging cutout | 12.5 × 7.0mm |
@@ -90,9 +90,8 @@ the hole; that plugs it.
 
 ## Printing
 
-- **Front half:** outer face **down** on the bed. Add a small support
-  (build plate only) under the keyring loop — it overhangs 2–4mm off the
-  bed. Nothing else needs support.
+- **Front half:** outer face **down** on the bed. No supports: the keyring
+  hole is a plain vertical hole with a chamfer at the face.
 - **Back half:** flat mating side **down**, engraving facing up. Supports
   (build plate only; tree supports come out easiest) inside the hollow —
   its roof is an unsupported span. Don't print it face-down: the 36mm
@@ -100,8 +99,8 @@ the hole; that plugs it.
 - **Bezel ring:** flat, no supports. It glues **on top of** the front face
   around the opening.
 - **Layer height:** 0.16mm or finer — the back engraving is only 0.5mm deep.
-- **Walls:** 3+ perimeters. The shell is load-bearing at the bail.
-- **Material:** PETG. The bail takes the keyring load every day, and PETG
+- **Walls:** 3+ perimeters. The shell is load-bearing round the keyring hole.
+- **Material:** PETG. The keyring hole takes the load every day, and PETG
   handles that (and a hot car) far better than PLA. White for everything,
   since it all gets chromed.
 - **Do not scale.** Every clearance here is absolute.

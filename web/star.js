@@ -1,6 +1,6 @@
 // Starboy's chrome star. The silhouette becomes a height field (a rounded
-// bevel round the edge, a slight dome, a raised ring round the screen, the
-// keyring loop) and every pixel reflects a sky, a horizon and soft boxes off its
+// bevel round the edge and into the keyring hole, a slight dome, a raised ring
+// round the screen) and every pixel reflects a sky, a horizon and soft boxes off its
 // normal, so it reads like polished chrome instead of painted stripes. The metal is
 // built once per size and cached; the glass screen and its glow are drawn live.
 (function () {
@@ -107,6 +107,14 @@
     sg.lineJoin = 'round';
     sg.fill(body);
     sg.stroke(body);
+    // the keyring hole through the upper-right point (CAD: 5mm at 27.5 of 33.5mm).
+    // Cut before the edge distance, so the rounded bevel wraps into the hole too.
+    const la = -Math.PI / 2 + (2 * Math.PI) / 5;
+    sg.globalCompositeOperation = 'destination-out';
+    sg.beginPath();
+    sg.arc(Math.cos(la) * Rp * 0.8, Math.sin(la) * Rp * 0.8, Rp * 0.074, 0, Math.PI * 2);
+    sg.fill();
+    sg.globalCompositeOperation = 'source-over';
     const px = sg.getImageData(0, 0, S, S).data;
     const cover = new Float32Array(N);
     for (let i = 0; i < N; i++) cover[i] = px[i * 4 + 3] / 255;
@@ -115,9 +123,6 @@
     const B = Rp * 0.14, D = Rp * 0.11;                      // bevel width, dome height
     const sr = Rp * 0.3956, rb = Rp * 0.5;                   // screen radius, bezel outer radius
     const rc = (sr + rb) / 2, tw = (rb - sr) / 2;
-    const la = -Math.PI / 2 + (2 * Math.PI) / 5;             // keyring off the upper-right point
-    const kx = C + Math.cos(la) * Rp * 1.02, ky = C + Math.sin(la) * Rp * 1.02;
-    const kr = Rp * 0.1, kt = Rp * 0.032;
 
     const h = new Float32Array(N), alpha = new Float32Array(N);
     for (let y = 0; y < S; y++) {
@@ -132,13 +137,6 @@
           if (Math.abs(q) < 1) hh = Math.max(hh, B + dome + tw * 1.3 * Math.sqrt(1 - q * q));
           else if (rho < sr) hh = B + dome;
           a *= clamp01(rho - sr + 0.5);                        // the screen goes here, live
-        }
-        const kq = Math.abs(Math.hypot(x + 0.5 - kx, y + 0.5 - ky) - kr);
-        if (kq < kt + 1) {
-          const ka = clamp01(kt + 0.5 - kq);
-          const kh = kq < kt ? kt * Math.sqrt(1 - (kq / kt) ** 2) : 0;
-          if (kh > hh) hh = kh;
-          a = Math.max(a, ka);
         }
         h[i] = hh;
         alpha[i] = a;

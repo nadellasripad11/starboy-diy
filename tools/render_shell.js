@@ -1,4 +1,4 @@
-// Renders the shell STLs as polished chrome, for the site's product shots.
+// Renders the shell STLs as glossy black chrome, for the site's product shots.
 //   node tools/render_shell.js            writes web/shell_front.png, shell_back.png, shell_flat.png
 // Offline and dependency-free: an orthographic z-buffer rasterizer with smooth
 // normals (crease-aware), per-pixel reflections of a studio (soft boxes, a strip
@@ -11,6 +11,7 @@ const zlib = require('zlib');
 const ROOT = path.join(__dirname, '..');
 const SIZE = 900, SS = 3;
 const SCREEN_D = 33.5, GLASS_Z = 10.25 - 1.2;   // starboy_star.scad: screen_diameter, front face minus the lip
+const KEYHOLE = [27.5, 0], KEYHOLE_D = 5;         // starboy_star.scad: keyhole_r along the 0 deg arm, keyhole_d
 
 // ─── geometry ────────────────────────────────────────────
 function loadSTL(file, mat) {
@@ -30,6 +31,24 @@ function glassDisc() {
     v.push(0, 0, GLASS_Z, Math.cos(a0) * r, Math.sin(a0) * r, GLASS_Z, Math.cos(a1) * r, Math.sin(a1) * r, GLASS_Z);
   }
   return { pos: Float64Array.from(v), mat: 2 };
+}
+
+// a steel split ring threaded through the keyhole, looping round the tip. Its
+// plane holds the hole's axis; at 15mm radius the arc through the 20.5mm-thick
+// body bows only ~4mm, so it fits the 5mm hole.
+function keyring() {
+  const R = 15, r = 1.0, cx = KEYHOLE[0] - 2 + R, n = 96, m = 12, v = [], nv = [];
+  const pt = (a, b) => {
+    const ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+    const nx = ca * cb, ny = sb, nz = sa * cb;   // tube normal
+    return [[cx + (R + r * cb) * ca, r * sb, (R + r * cb) * sa], [nx, ny, nz]];
+  };
+  for (let i = 0; i < n; i++) for (let j = 0; j < m; j++) {
+    const a0 = (i / n) * 2 * Math.PI, a1 = ((i + 1) / n) * 2 * Math.PI, b0 = (j / m) * 2 * Math.PI, b1 = ((j + 1) / m) * 2 * Math.PI;
+    const q = [pt(a0, b0), pt(a1, b0), pt(a1, b1), pt(a0, b1)];
+    for (const k of [0, 1, 2, 0, 2, 3]) { v.push(...q[k][0]); nv.push(...q[k][1]); }
+  }
+  return { pos: Float64Array.from(v), nrm: Float64Array.from(nv), mat: 3 };
 }
 
 // per-corner normals, averaged over neighbouring faces within the crease angle
@@ -84,18 +103,15 @@ const unit = (x, y, z) => { const l = Math.hypot(x, y, z); return [x / l, y / l,
 const BOX = unit(-0.6, 0.65, 0.45), STRIP = unit(0.85, 0.25, 0.45), BOUNCE = unit(0.3, -0.85, 0.42);
 const dot = (a, x, y, z) => a[0] * x + a[1] * y + a[2] * z;
 
-// the chrome world along reflected ray (camera space: x right, y up, z toward the viewer):
-// bright sky above a horizon, dark ground below, soft boxes on top. Same world as web/star.js.
+// a dark studio along reflected ray (camera space: x right, y up, z toward the viewer):
+// mostly black, so the finish reads as black chrome, with soft boxes that catch the
+// edges and a faint lift up and to the left across the faces
 function studio(x, y, z) {
-  const d = -y, HZ = 0.1;   // star.js measures y downward
-  const sky = 0.52 + 0.48 * sstep(HZ, -0.75, d);
-  const ground = 0.12 + 0.3 * sstep(0.3, 0.9, d);
-  const k = sstep(HZ - 0.012, HZ + 0.03, d);
-  const rim = 0.3 * Math.exp(-(((d - HZ + 0.03) / 0.02) ** 2));
-  const base = (sky + rim) * (1 - k) + ground * k;
-  const lights = 1.1 * sstep(0.8, 0.94, dot(BOX, x, y, z)) + 0.8 * sstep(0.9, 0.97, dot(STRIP, x, y, z));
-  const bounce = 0.25 * sstep(0.84, 0.95, dot(BOUNCE, x, y, z));
-  return [base * 0.93 + lights + bounce * 0.7, base * 0.96 + lights + bounce * 0.9, base * 1.02 + lights + bounce];
+  const room = 0.03 + 0.05 * sstep(-0.2, 0.8, y) + 0.2 * sstep(0.25, -0.4, x - y) * sstep(0.6, 1, z);
+  const floor = 0.14 * sstep(-0.15, -0.6, y);
+  const lights = 1.3 * sstep(0.8, 0.94, dot(BOX, x, y, z)) + 0.9 * sstep(0.9, 0.97, dot(STRIP, x, y, z));
+  const bounce = 0.28 * sstep(0.84, 0.95, dot(BOUNCE, x, y, z));
+  return [room + floor + lights + bounce * 0.7, room + floor + lights + bounce * 0.9, room * 1.05 + floor + lights + bounce];
 }
 
 // ─── rendering ───────────────────────────────────────────
@@ -175,6 +191,9 @@ function render(meshes, view) {
       r *= 0.16; g *= 0.16; bl *= 0.16;
       const [mx, my] = apply(inv, (x + 0.5 - cx) / scale, -(y + 0.5 - cy) / scale, zb[i]);
       glow = eyeGlow(mx, my, view.rotZ);
+    } else if (mat[i] === 3) {
+      // the steel ring: bright, the same studio with a lifted base
+      r = r * 1.4 + 0.3; g = g * 1.4 + 0.31; bl = bl * 1.4 + 0.33;
     } else {
       const fres = 0.8 + 0.2 * Math.pow(1 - Math.max(0, nv), 5);
       const occ = 1 - Math.min(0.65, Math.max(0, (zBlur[i] - zb[i]) * 0.9));
@@ -186,25 +205,28 @@ function render(meshes, view) {
 
   // downsample, over a light ground with a soft contact shadow
   const out = Buffer.alloc(SIZE * SIZE * 3);
-  const cover = new Float32Array(SIZE * SIZE);
+  const cover = new Float32Array(SIZE * SIZE), body = new Float32Array(SIZE * SIZE);
   const rgb = new Float32Array(SIZE * SIZE * 3);
   for (let y = 0; y < SIZE; y++) for (let x = 0; x < SIZE; x++) {
-    let ar = 0, ag = 0, ab = 0, aa = 0;
+    let ar = 0, ag = 0, ab = 0, aa = 0, bb = 0;
     for (let j = 0; j < SS; j++) for (let k = 0; k < SS; k++) {
       const i = (y * SS + j) * N + x * SS + k;
       if (!alpha[i]) continue;
       aa++; ar += col[i * 3]; ag += col[i * 3 + 1]; ab += col[i * 3 + 2];
+      if (mat[i] !== 3) bb++;
     }
     const o = y * SIZE + x;
     cover[o] = aa / (SS * SS);
+    body[o] = bb / (SS * SS);   // the star alone, without the keyring
     if (aa) { rgb[o * 3] = ar / aa; rgb[o * 3 + 1] = ag / aa; rgb[o * 3 + 2] = ab / aa; }
   }
-  // holes the ground shows through (vents, the mic port) would be dark inside the real star
+  // holes the ground shows through (vents, the mic port) would be dark inside the real star.
+  // Enclosure is judged by the star alone: the space inside the keyring loop is open air.
   const open = new Uint8Array(SIZE * SIZE), stack = [];
   for (let i = 0; i < SIZE; i++) stack.push(i, (SIZE - 1) * SIZE + i, i * SIZE, i * SIZE + SIZE - 1);
   while (stack.length) {
     const o = stack.pop();
-    if (open[o] || cover[o] > 0.5) continue;
+    if (open[o] || body[o] > 0.5) continue;
     open[o] = 1;
     const x = o % SIZE, y = (o - x) / SIZE;
     if (x > 0) stack.push(o - 1);
@@ -212,12 +234,19 @@ function render(meshes, view) {
     if (y > 0) stack.push(o - SIZE);
     if (y < SIZE - 1) stack.push(o + SIZE);
   }
-  // only inside the star itself: the keyring loop's hole is real and stays open
+  // only inside the star itself, and never the keyring hole: that one really goes through
   const ox0 = cx / SS, oy0 = cy / SS, inR = (34 * scale) / SS;
+  const key = [];
+  for (let z = -10.25; z <= 10.25; z += 0.5) {
+    const [kx, ky] = apply(M, KEYHOLE[0], KEYHOLE[1], z);
+    key.push([(cx + kx * scale) / SS, (cy - ky * scale) / SS]);
+  }
+  const keyR = ((KEYHOLE_D / 2 + 0.6) * scale) / SS;
   for (let o = 0; o < SIZE * SIZE; o++) {
     if (open[o] || cover[o] >= 1) continue;
     const x = o % SIZE, y = (o - x) / SIZE;
     if (Math.hypot(x - ox0, y - oy0) > inR) continue;
+    if (key.some(([kx, ky]) => Math.hypot(x - kx, y - ky) < keyR)) continue;
     for (let ch = 0; ch < 3; ch++) rgb[o * 3 + ch] = rgb[o * 3 + ch] * cover[o] + 0.035 * (1 - cover[o]);
     cover[o] = 1;
   }
@@ -312,13 +341,14 @@ const front = smoothNormals(loadSTL('starboy_front.stl', 1), 35);
 const bezel = smoothNormals(loadSTL('starboy_bezel.stl', 1), 35);
 const back = smoothNormals(loadSTL('starboy_back.stl', 1), 35);
 const glass = glassDisc();
+const ring = keyring();
 
 const SHOTS = {
   // straight on, keyring up and right, the screen opening centred at 31.8% of the width (the page lays the live eyes over it)
   // (both shells together: the assembled star, so the keyring loop is whole and holes show the inside)
   shell_flat: { meshes: [front, back, bezel, glass], view: { rotZ: 18, tiltX: 0, turnY: 0, scale: (SIZE * 0.318) / SCREEN_D, center: [0, 0, 0], bg: 248, shadow: { dy: 22, blur: 16, alpha: 0.22 } } },
-  shell_front: { meshes: [front, back, bezel, glass], view: { rotZ: 18, tiltX: -38, turnY: 24, fill: 0.72, bg: 255, shadow: { dy: 34, dx: 6, blur: 22, alpha: 0.2 } } },
-  shell_back: { meshes: [back, front], view: { rotZ: 18, flip: true, tiltX: -38, turnY: -24, fill: 0.72, bg: 255, shadow: { dy: 34, dx: -6, blur: 22, alpha: 0.2 } } },
+  shell_front: { meshes: [front, back, bezel, glass, ring], view: { rotZ: 18, tiltX: -38, turnY: 24, fill: 0.72, bg: 255, shadow: { dy: 34, dx: 6, blur: 22, alpha: 0.2 } } },
+  shell_back: { meshes: [back, front, ring], view: { rotZ: 18, flip: true, tiltX: -38, turnY: -24, fill: 0.72, bg: 255, shadow: { dy: 34, dx: -6, blur: 22, alpha: 0.2 } } },
 };
 
 const only = process.argv.slice(2);

@@ -169,9 +169,18 @@ charge_port_z     = 3.05;  // mm, centre of the XIAO's USB-C when the board
 // keyring/carabiner threads through it exactly like the reference:
 // the loop lies flat against the star's face, hole runs front-to-back,
 // and material tapers smoothly from the star tip out into the loop.
-bail_offset  = 6.5;   // mm beyond the tip, where the loop is centered
-bail_maj_r   = 5.5;   // mm, loop radius (tube-center to loop-center)
-bail_min_r   = 2.0;   // mm, thickness of the loop's material
+// "hole": a keyring hole through the 0 deg point itself (like the reference
+//         photo: the ring passes through the star, nothing sticks out)
+// "loop": the older standalone loop sitting past the tip
+bail_style   = "hole";
+bail_offset  = 6.5;   // mm beyond the tip, where the loop is centered ("loop")
+bail_maj_r   = 5.5;   // mm, loop radius (tube-center to loop-center) ("loop")
+bail_min_r   = 2.0;   // mm, thickness of the loop's material ("loop")
+keyhole_d    = 5.0;   // mm, through-hole for a split ring / jump ring ("hole")
+keyhole_r    = 27.5;  // mm from centre along the 0 deg arm. The arm is ~13mm
+                      // wide here, leaving ~3.3mm of wall each side of the hole
+keyhole_wall = 1.6;   // mm, solid sleeve round the hole through the hollow
+                      // inside, so the electronics bay stays closed
 
 /* [Back medallion] */
 // Reference proportion: the disc reads ~55% of the star's width, with two
@@ -233,6 +242,15 @@ assert(bevel_scale * inner_radius > screen_diameter/2 + bezel_wall,
        "Chamfer pulls the front face in past the display bezel. Raise bevel_scale.");
 assert(screen_lip_depth < screen_pocket_depth,
        "Screen lip must be shallower than the full pocket.");
+// half-width of the 0 deg arm at the keyhole: the straight edge from the tip
+// to the neighbouring valley, measured at keyhole_r (a slight underestimate,
+// since the valleys are rounded outward). The sleeve needs 1.5mm of wall past it.
+keyhole_arm_half = inner_radius*sin(180/star_points)
+                   * (outer_radius - keyhole_r) / (outer_radius - inner_radius*cos(180/star_points));
+assert(bail_style != "hole" || keyhole_d/2 + keyhole_wall + 1.5 <= keyhole_arm_half,
+       "Keyring hole is too close to the sides of its arm. Move keyhole_r toward the centre or shrink keyhole_d.");
+assert(bail_style != "hole" || keyhole_r - keyhole_d/2 - keyhole_wall > screen_pcb_dia/2 + 1,
+       "Keyring hole's sleeve runs into the display pocket. Move keyhole_r outward.");
 
 // ------------------------------------------------------------
 // Rounded/puffy star profile (2D) — double-offset so BOTH the
@@ -320,9 +338,31 @@ tip0     = star_pt(0);
 tip0_len = norm(tip0);
 tip0_dir = tip0 / tip0_len;
 bail_c   = tip0 + tip0_dir * bail_offset;
+keyhole_c = tip0_dir * keyhole_r;
+
+// hole style: a sleeve bridging the hollow cavity (unioned after the cavity cut)
+module keyhole_sleeve() {
+    z0 = -body_thickness/2 + back_wall;
+    z1 = body_thickness/2 - wall;
+    translate([keyhole_c[0], keyhole_c[1], z0])
+        cylinder(r = keyhole_d/2 + keyhole_wall, h = z1 - z0, $fn = 48);
+}
+
+// hole style: the through-hole, with a small chamfer at both faces
+module keyhole_cut() {
+    ch = 0.8;
+    t = body_thickness/2;
+    translate([keyhole_c[0], keyhole_c[1], 0]) {
+        cylinder(d = keyhole_d, h = body_thickness * 3, center = true, $fn = 48);
+        translate([0, 0, t - ch]) cylinder(d1 = keyhole_d, d2 = keyhole_d + 2*ch + 0.2, h = ch + 0.1, $fn = 48);
+        translate([0, 0, -t - 0.1]) cylinder(d1 = keyhole_d + 2*ch + 0.2, d2 = keyhole_d, h = ch + 0.1, $fn = 48);
+    }
+}
 
 module bail_assembly(add=true) {
-    if (add) {
+    if (bail_style == "hole") {
+        if (!add) keyhole_cut();
+    } else if (add) {
         union() {
             // smooth tapered bridge from the tip into the loop's footprint —
             // rod matches the core slab's thickness so it fuses cleanly
@@ -347,7 +387,8 @@ module bail_assembly(add=true) {
 // Cosmetic-only mockup of a bought keyring hooked through the bail,
 // so the assembled preview matches the reference photos. Not printed.
 module keyring_mockup() {
-    translate([bail_c[0], bail_c[1], 0])
+    c = bail_style == "hole" ? keyhole_c : bail_c;
+    translate([c[0], c[1], 0])
         rotate([90,0,0])
             rotate_extrude($fn=48)
                 translate([bail_maj_r*1.55, 0])
@@ -528,25 +569,30 @@ module full_star() {
     // the badge is unioned AFTER the cuts: it sits on the medallion floor,
     // which is inside the recess volume, so if it were part of the input
     // union the recess would simply carve it straight back off again
-    union() {
-        difference() {
-            union() {
-                puffy_body();
-                bail_assembly(add=true);
+    // the keyring hole is cut last, through everything: in "hole" style it runs
+    // through a sleeve that is added back after the cavity is hollowed out
+    difference() {
+        union() {
+            difference() {
+                union() {
+                    puffy_body();
+                    bail_assembly(add=true);
+                }
+                hollow_cavity();
+                screen_pocket();
+                camera_pocket();
+                temp_vent();
+                mic_port();
+                charge_port();
+                back_medallion_recess();
+                // mirrored in X: the back face is read from the far side, which
+                // reverses handedness, so un-mirrored text comes out backwards
+                mirror([1,0,0]) back_decor();
             }
-            hollow_cavity();
-            screen_pocket();
-            camera_pocket();
-            temp_vent();
-            mic_port();
-            charge_port();
-            back_medallion_recess();
-            // mirrored in X: the back face is read from the far side, which
-            // reverses handedness, so un-mirrored text comes out backwards
-            mirror([1,0,0]) back_decor();
-            bail_assembly(add=false);
+            back_badge();
+            if (bail_style == "hole") keyhole_sleeve();
         }
-        back_badge();
+        bail_assembly(add=false);
     }
 }
 
