@@ -10,12 +10,11 @@
 <meta property="og:image" content="shell_back.png">
 <script>
   // decide before first paint whether the intro plays, so the page never flashes first:
-  // once per session, not for deep links, not for reduced motion. ?intro always plays it.
+  // every visit, except links straight to a section and reduced motion. ?intro always plays it.
   (function () {
-    var force = /[?&]intro\b/.test(location.search), seen = false;
-    try { seen = sessionStorage.getItem('starboy-intro') === '1'; } catch (e) {}
+    var force = /[?&]intro\b/.test(location.search);
     var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (force || (!seen && !calm && !location.hash)) document.documentElement.classList.add('intro-on');
+    if (force || (!calm && !location.hash)) document.documentElement.classList.add('intro-on');
   })();
 </script>
 <link rel="preconnect" href="https://fonts.googleapis.com">

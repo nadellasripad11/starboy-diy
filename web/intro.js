@@ -1,7 +1,7 @@
 // First-visit intro: starboy hops onto a dark stage, a spotlight clunks on and
 // finds him, and "leap into the experience" sends him flying into the camera.
 // His screen fills the view, then opens like an iris onto the page.
-// Plays once per browser session. ?intro forces it; ?intro=3.5 freezes it at
+// Plays on every visit to the homepage. ?intro forces it; ?intro=3.5 freezes it at
 // 3.5s and ?intro=5,0.6 freezes 0.6s into the leap (for checking frames).
 (function () {
   const root = document.documentElement;
@@ -12,7 +12,6 @@
     el.remove();
     return;
   }
-  try { sessionStorage.setItem('starboy-intro', '1'); } catch (e) { /* private mode: it just plays again */ }
 
   const Star = window.StarboyStar;
   const canvas = el.querySelector('canvas');
