@@ -133,7 +133,7 @@
   function makeStar(canvas, readout) {
     const g = canvas.getContext('2d');
     const star = {
-      design: { colorway: E.COLORWAYS.findIndex((c) => c.name === 'starlight'), shape: 2 },
+      design: window.StarboyStar ? StarboyStar.HERO : { cw: E.COLORWAYS[0], shape: 1 },
       cur: { ...NEUTRAL }, mode: 'idle', modeT0: 0, rareFx: null,
       glance: { at: 0, next: 1200, gx: 0, gy: 0 }, blink: { at: -1e4, next: 2500 },
       idleMood: { until: 0, mood: null }, dart: { at: 0, gx: 0, gy: 0 }, label: '',
@@ -242,7 +242,7 @@
       }
       const eye = { ...star.cur, blinkT: Math.max(star.cur.blinkT, blink), colOvr, fx, fxP: now / 1000 * (fx === 11 ? 3.6 : 1.5) };
       eye.blinkB = eye.blinkT * 0.45;
-      E.render(g, eye, star.design.shape, E.COLORWAYS[star.design.colorway], now);
+      E.render(g, eye, star.design.shape, star.design.cw, now);
       if (label !== star.label) { star.label = label; readout.textContent = label; }
     };
     return star;

@@ -8,6 +8,16 @@
 <meta property="og:title" content="starboy diy">
 <meta property="og:description" content="a tiny wearable pet built by hand. shake it, chill it, yell at it, and it reacts.">
 <meta property="og:image" content="shell_back.png">
+<script>
+  // decide before first paint whether the intro plays, so the page never flashes first:
+  // once per session, not for deep links, not for reduced motion. ?intro always plays it.
+  (function () {
+    var force = /[?&]intro\b/.test(location.search), seen = false;
+    try { seen = sessionStorage.getItem('starboy-intro') === '1'; } catch (e) {}
+    var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (force || (!seen && !calm && !location.hash)) document.documentElement.classList.add('intro-on');
+  })();
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@600;700;800&family=Nunito:wght@600;700;800&display=swap">
@@ -82,9 +92,17 @@
   .chip[aria-pressed="true"] { background: var(--ink); color: #fff; }
   .sticky { position: sticky; top: 28px; display: grid; justify-items: center; gap: 16px; }
   .bezel { width: 100%; aspect-ratio: 1; border-radius: 50%; padding: 4.5%;
-    background: conic-gradient(from 210deg, #fbfbfd, #8d8f99, #e7e8ed, #6d6f79, #f6f6f9, #9c9ea8, #fbfbfd);
-    box-shadow: 0 30px 60px -30px rgba(0, 0, 0, .35); }
-  .bezel canvas { display: block; width: 100%; height: 100%; border-radius: 50%; background: #000; }
+    position: relative;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(255,255,255,.6), rgba(255,255,255,0) 18%),
+      radial-gradient(circle at 74% 84%, rgba(160,200,230,.35), rgba(160,200,230,0) 20%),
+      conic-gradient(from 200deg, #0d0e11, #5a5d67, #121317, #b9bcc5, #16171b, #44474f, #0d0e11, #7c7f89, #0d0e11);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.2), inset 0 -8px 16px rgba(0,0,0,.55), 0 30px 60px -28px rgba(0,0,0,.5); }
+  /* the glass: glowing mint rim, depth toward the edge, a soft glare */
+  .bezel canvas { display: block; width: 100%; height: 100%; border-radius: 50%; background: #000;
+    box-shadow: 0 0 0 3px rgba(143,243,234,.85), 0 0 22px 3px rgba(143,243,234,.45); }
+  .bezel::after { content: ""; position: absolute; inset: 4.5%; border-radius: 50%; pointer-events: none;
+    background: radial-gradient(circle at 32% 24%, rgba(255,255,255,.16), rgba(255,255,255,0) 42%), radial-gradient(circle, rgba(0,0,0,0) 62%, rgba(0,0,0,.45)); }
   .readout { color: var(--muted); font-size: 15px; min-height: 1.5em; }
 
   /* inside */
@@ -102,7 +120,8 @@
   .demo { margin: 0 0 14px; }
   .demo-stage { position: relative; aspect-ratio: 1; border-radius: 18px; overflow: hidden; background: #f8f8f8; }
   .demo-stage img { display: block; width: 100%; height: auto; }
-  .demo-stage canvas { position: absolute; left: 50%; top: 50%; width: 31.8%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: #000; }
+  .demo-stage canvas { position: absolute; left: 50%; top: 50%; width: 31.8%; aspect-ratio: 1; transform: translate(-50%, -50%); border-radius: 50%; background: #000;
+    box-shadow: 0 0 0 2px rgba(143,243,234,.85), 0 0 16px 2px rgba(143,243,234,.4); }
   .demo figcaption { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 2px 0; color: var(--muted); font-size: 15px; }
 
   footer { border-top: 1px solid var(--line); padding: 36px 0 60px; display: flex; flex-wrap: wrap; gap: 14px; justify-content: space-between; color: var(--muted); font-size: 15px; }
@@ -119,16 +138,42 @@
     .story { padding-top: 60px; }
     .looks, .section { padding: 80px 0; }
   }
+  /* first-visit intro (intro.js) */
+  #intro { display: none; }
+  html.intro-on, html.intro-on body { overflow: hidden; }
+  html.intro-on #intro { display: block; position: fixed; inset: 0; z-index: 1000; background: #07070a; }
+  html.intro-on #cursor-ball { display: none; }
+  #intro canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  #intro.fade { opacity: 0; transition: opacity .35s; }
+  #intro .leap { position: absolute; left: 50%; bottom: max(9vh, 44px); display: inline-flex; align-items: center; gap: 12px; white-space: nowrap;
+    font: 800 clamp(19px, 2.4vw, 26px)/1 var(--display); letter-spacing: -.025em; color: var(--ink); background: var(--ground);
+    border: 0; border-radius: 999px; padding: 20px 28px; cursor: pointer;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, .25), 0 18px 60px -14px rgba(255, 240, 210, .5);
+    opacity: 0; pointer-events: none; transform: translate(-50%, 18px); transition: opacity .5s, transform .55s cubic-bezier(.3, 1.6, .5, 1), background .2s; }
+  #intro .leap svg { width: .8em; height: .8em; }
+  #intro .leap.show { opacity: 1; pointer-events: auto; transform: translate(-50%, 0); }
+  #intro .leap.show:hover { background: #fff; transform: translate(-50%, -2px); }
+  #intro .leap.gone { opacity: 0; pointer-events: none; transform: translate(-50%, 10px) scale(.96); transition-duration: .2s; }
+  #intro .skip { position: absolute; top: 14px; right: 14px; font: 700 14px/1 var(--body); color: #8e8f95; background: none; border: 0; padding: 12px 14px; cursor: pointer; }
+  #intro .skip:hover { color: var(--ground); }
+  #intro :focus-visible { outline-color: var(--ground); }
+
   @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .bubble { transition: none; } }
 </style>
 </head>
 <body>
+<div id="intro" role="dialog" aria-modal="true" aria-label="starboy hops in">
+  <canvas aria-hidden="true"></canvas>
+  <button class="skip" type="button" id="intro-skip">skip intro</button>
+  <button class="leap" type="button" id="intro-leap">leap into the experience
+    <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12L12 4M5.5 4H12v6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+</div>
 <div id="cursor-ball" aria-hidden="true"></div>
 
 <div class="wrap">
   <nav>
     <a class="brand" href="#top">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#2b2c2f" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><defs><linearGradient id="brand-chrome" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8a8d97"/><stop offset=".38" stop-color="#15161a"/><stop offset=".58" stop-color="#a9acb5"/><stop offset=".8" stop-color="#1b1c21"/><stop offset="1" stop-color="#55585f"/></linearGradient></defs><path fill="url(#brand-chrome)" d="M12 1.8l2.9 6.6 7.2.7-5.4 4.8 1.6 7.1L12 17.3 5.7 21l1.6-7.1L1.9 9.1l7.2-.7z"/></svg>
       starboy diy
     </a>
     <div class="navlinks">
@@ -222,6 +267,8 @@
 </div>
 
 <script src="eyes.js"></script>
+<script src="star.js"></script>
+<script src="intro.js"></script>
 <script src="app.js"></script>
 <script src="textfx.js"></script>
 </body>
