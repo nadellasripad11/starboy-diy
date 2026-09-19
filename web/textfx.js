@@ -1,4 +1,4 @@
-// Letter-by-letter text reveal, plus a little squish when you hover a letter.
+// Letter-by-letter text reveal.
 //   data-fx="heading"  big text: letters rise in one by one when scrolled into view
 //   data-fx="text"     paragraphs (or a section of them): a quicker ripple through the words
 // Links and other inline elements inside the text keep working.
@@ -10,10 +10,8 @@
   const style = document.createElement('style');
   style.textContent = `
     [data-fx] .fx-word { display: inline-block; white-space: nowrap; }
-    [data-fx] .fx-char { display: inline-block; opacity: 0; transform: translateY(12.5%);
-      transition: scale .5s ease-out; }
+    [data-fx] .fx-char { display: inline-block; opacity: 0; transform: translateY(12.5%); }
     [data-fx].fx-in .fx-char { animation: fx-rise var(--fx-dur, 1.2s) cubic-bezier(.16, 1, .3, 1) forwards; }
-    [data-fx] .fx-char.fx-bump { scale: .93; transition: scale .1s ease-in; }
     @keyframes fx-rise { to { opacity: 1; transform: translateY(0); } }
   `;
   document.head.appendChild(style);
@@ -68,15 +66,7 @@
     }
   }
 
-  // hover squish, one listener per block
-  for (const el of blocks) {
-    el.addEventListener('mouseover', (e) => {
-      const c = e.target.closest('.fx-char');
-      if (!c || !el.contains(c)) return;
-      c.classList.add('fx-bump');
-      setTimeout(() => c.classList.remove('fx-bump'), 100);
-    });
-  }
+  // (hovering letters sends a ripple through them: see hoverfx.js)
 
   // Reveal when scrolled into view. The check runs on load, on scroll/resize and
   // from an IntersectionObserver, so text can't get stuck invisible if one of
