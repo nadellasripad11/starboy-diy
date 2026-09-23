@@ -8,7 +8,8 @@
 // still read whole words. Load after the page's own scripts (they build some buttons).
 (function () {
   if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  // any mouse will do: a touchscreen laptop still reports a fine pointer, a phone doesn't
+  if (!matchMedia('(any-hover: hover)').matches && !matchMedia('(any-pointer: fine)').matches) return;
 
   const style = document.createElement('style');
   style.textContent = `
