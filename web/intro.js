@@ -22,7 +22,8 @@
   const optsEl = el.querySelector('.intro-opts');
   // where they were headed, if they landed on another page first (pages of this site only)
   const nextRaw = new URLSearchParams(location.search).get('next');
-  const next = nextRaw && /^[\w-]+\.html([?#]\S*)?$/.test(nextRaw) ? nextRaw : null;
+  // one page of this site, with or without .html (the live site serves /sandbox)
+  const next = nextRaw && /^[\w-]+(\.html)?([?#]\S*)?$/.test(nextRaw) ? nextRaw : null;
   const CW = Star.HERO.cw, SHAPE = Star.HERO.shape;
   const BASE = { gx: 0, gy: 0, blinkT: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
 
