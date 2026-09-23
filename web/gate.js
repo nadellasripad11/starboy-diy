@@ -10,9 +10,12 @@
   function read(store, key) { try { return window[store].getItem(key); } catch (e) { return null; } }
   function write(store, key, val) { try { if (val == null) window[store].removeItem(key); else window[store].setItem(key, val); } catch (e) { /* storage blocked */ } }
 
+  // '1' = the visitor turned the intro off, '0' = they turned it on by hand
+  // (which also overrides their device's reduced-motion setting)
   var force = /[?&]intro\b/.test(location.search);
-  var off = read('localStorage', OFF) === '1';
-  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var pref = read('localStorage', OFF);
+  var off = pref === '1';
+  var calm = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches && pref !== '0';
 
   // came from another page of this site? (referrer, or a marker for browsers that strip it)
   var internal = Date.now() - (+read('sessionStorage', NAV) || 0) < 10000;
@@ -32,7 +35,7 @@
       btn.textContent = on ? 'on' : 'off';
       btn.setAttribute('aria-pressed', String(on));
     };
-    btn.addEventListener('click', function () { write('localStorage', OFF, read('localStorage', OFF) === '1' ? null : '1'); show(); });
+    btn.addEventListener('click', function () { write('localStorage', OFF, read('localStorage', OFF) === '1' ? '0' : '1'); show(); });
     show();
   });
 

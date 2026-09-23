@@ -7,9 +7,12 @@
 // letters are aria-hidden and their element keeps a label, so screen readers
 // still read whole words. Load after the page's own scripts (they build some buttons).
 (function () {
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  // any mouse will do: a touchscreen laptop still reports a fine pointer, a phone doesn't
-  if (!matchMedia('(any-hover: hover)').matches && !matchMedia('(any-pointer: fine)').matches) return;
+  // Reduced motion turns this off, unless the visitor switched the intro on by hand.
+  // No device check: hover simply never fires on a touch screen, and some desktop
+  // browsers report themselves as coarse, which used to switch all of this off.
+  let pref = null;
+  try { pref = localStorage.getItem('starboy-intro-off'); } catch (e) { /* storage blocked */ }
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches && pref !== '0') return;
 
   const style = document.createElement('style');
   style.textContent = `
