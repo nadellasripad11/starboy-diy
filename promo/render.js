@@ -22,7 +22,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 async function main() {
   fs.mkdirSync(outDir, { recursive: true });
   const short = process.argv.includes('--short') ? '?short' : '';
-  const sceneUrl = 'file:///' + path.join(__dirname, 'scene.html').replace(/\\/g, '/') + short;
+  const sceneUrl = 'file:///' + path.join(__dirname, arg('--scene', 'scene.html')).replace(/\\/g, '/') + short;
   const edge = spawn(EDGE, [
     '--headless=new', '--disable-gpu', '--hide-scrollbars', '--mute-audio',
     `--remote-debugging-port=${port}`, `--user-data-dir=${profile}`,

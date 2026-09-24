@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>starboy diy seed wall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Figtree:wght@700;800&family=JetBrains+Mono:wght@700&display=swap">
+<style>html, body { margin: 0; background: #08080a; } canvas { display: block; }</style>
+</head>
+<body>
+<!-- 1600x1000 line-up of seed-rolled looks. Each one is what a real star would show
+     if it powered up with that seed: the same LCG and weights as the firmware.
+     Screenshot it with headless Edge, or open it and save the canvas. -->
+<canvas id="c" width="1600" height="1000"></canvas>
+<script src="../web/eyes.js"></script>
+<script src="../web/seed.js"></script>
+<script>
+(function () {
+  const E = window.StarboyEyes, S = window.StarboySeed;
+  const ctx = document.getElementById('c').getContext('2d');
+  const FONT = 'Figtree, "Segoe UI", sans-serif', MONO = '"JetBrains Mono", Consolas, monospace';
+  const WEIGHTS = E.COLORWAYS.map((c) => c.w);
+  const eye = document.createElement('canvas');
+  eye.width = eye.height = 240;
+  const eg = eye.getContext('2d');
+  const BASE = { gx: 0, gy: 0, blinkT: 0, blinkB: 0, pupR: 1, irX: 1, irY: 1, bwL: 0, bwR: 0, bwY: 0, smile: 0, colMix: 0, colOvr: '#000000', fx: 0, fxP: 0 };
+
+  // walk seeds until we have eight clearly different looks (different colourways,
+  // and every shape represented) — all of them seeds a real star could roll
+  const picks = [];
+  const seenCw = new Set(), seenShape = new Set();
+  let roll = 0x5f3a1c07;   // fixed start, so the wall is the same every time it's drawn
+  for (let n = 0; picks.length < 8 && n < 400000; n++) {
+    roll = (Math.imul(roll, 1664525) + 1013904223) >>> 0;
+    const seed = roll || 1;
+    const d = S.designFromSeed(seed, WEIGHTS, E.SHAPE_WEIGHT);
+    if (seenCw.has(d.colorway)) continue;
+    const needShape = picks.length >= 4 && seenShape.size < 4 && seenShape.has(d.shape);
+    if (needShape) continue;
+    seenCw.add(d.colorway);
+    seenShape.add(d.shape);
+    picks.push({ seed: seed >>> 0, ...d });
+  }
+
+  function chrome(r, angle) {
+    const g = ctx.createLinearGradient(Math.cos(angle) * -r, Math.sin(angle) * -r, Math.cos(angle) * r, Math.sin(angle) * r);
+    [[0, '#15161a'], [0.2, '#787b85'], [0.36, '#1b1d22'], [0.52, '#b6b9c2'], [0.68, '#191a1f'], [0.85, '#5f626b'], [1, '#101114']]
+      .forEach(([o, c]) => g.addColorStop(o, c));
+    return g;
+  }
+
+  function tile(p, x, y, d) {
+    const cw = E.COLORWAYS[p.colorway];
+    E.render(eg, BASE, p.shape, cw, 0);
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.arc(0, 0, d / 2 + d * 0.055, 0, Math.PI * 2);
+    ctx.fillStyle = chrome(d / 2, 0.7 + p.seed * 0.7);
+    ctx.fill();
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, d / 2, 0, Math.PI * 2);
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    ctx.clip();
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(eye, -d / 2, -d / 2, d, d);
+    ctx.restore();
+    ctx.restore();
+
+    const pct = E.rarity(p.colorway) * E.SHAPE_WEIGHT[p.shape] / 100;
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#e8e9ee';
+    ctx.font = `700 26px ${MONO}`;
+    ctx.fillText('seed ' + S.toHex(p.seed), x, y + d / 2 + 66);
+    ctx.fillStyle = '#9a9ba3';
+    ctx.font = `700 24px ${FONT}`;
+    ctx.fillText(`${E.SHAPES[p.shape]} ${cw.name} · ${pct < 1 ? pct.toFixed(2) : pct.toFixed(1)}%`, x, y + d / 2 + 100);
+  }
+
+  function draw() {
+    ctx.fillStyle = '#08080a';
+    ctx.fillRect(0, 0, 1600, 1000);
+    const glow = ctx.createRadialGradient(800, 430, 0, 800, 430, 900);
+    glow.addColorStop(0, 'rgba(123,67,245,0.16)');
+    glow.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = glow;
+    ctx.fillRect(0, 0, 1600, 1000);
+
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `800 62px ${FONT}`;
+    ctx.fillText('every star rolls its own eyes', 90, 120);
+    ctx.fillStyle = '#9a9ba3';
+    ctx.font = `700 28px ${FONT}`;
+    ctx.fillText('the seed a star picks the first time it boots decides its look, for good. 100 colourways × 4 shapes = 400 looks.', 90, 166);
+
+    picks.forEach((p, i) => tile(p, 290 + (i % 4) * 340, 360 + Math.floor(i / 4) * 340, 220));
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#6d6e75';
+    ctx.font = `700 24px ${FONT}`;
+    ctx.fillText('drawn by the same eye code the firmware runs · seeds are real: type one into the serial console and the star wears it', 800, 960);
+  }
+
+  window.seedwallReady = (async () => {
+    try { await Promise.all([document.fonts.load('800 62px Figtree'), document.fonts.load('700 26px "JetBrains Mono"')]); } catch (e) { /* system fonts */ }
+    await document.fonts.ready;
+    draw();
+    return true;
+  })();
+})();
+</script>
+</body>
+</html>
