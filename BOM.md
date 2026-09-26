@@ -19,7 +19,7 @@ everything i need to build **two** stars, bought from the cheapest reliable plac
 | rust-oleum plastic primer 12oz | 1 | $6.97 | [amazon](https://www.amazon.com/dp/B003CT498U) | lets the chrome stick to the print |
 | rust-oleum bright coat chrome 11oz | 1 | $6.47 | [amazon](https://www.amazon.com/dp/B000Z8DGXK) | chrome finish |
 | creality petg 1.75mm 1kg | 1 | $14.81 | [aliexpress](https://www.aliexpress.us/item/3256812523172305.html) | star shells and bezel rings |
-| prototype board 5×7cm, 1.2mm (10) | 1 | $4.25 | [aliexpress](https://www.aliexpress.us/item/3256807718543888.html) | the board everything solders onto, cut to fit |
+| prototype board 5×7cm, 1.2mm (10) | 1 | $4.25 | [aliexpress](https://www.aliexpress.us/item/3256807718543888.html) | the board everything solders onto, cut into a circle to sit behind the display |
 | | | **$91.88** | | |
 
 ## what changed and why
@@ -27,7 +27,7 @@ everything i need to build **two** stars, bought from the cheapest reliable plac
 - **aliexpress for the modules.** the display, mpu6050, mic amp, wire and keyrings cost a fraction of the amazon multi-packs. i went by listings with hundreds or thousands of sales and good ratings, not the cheapest one, and priced them at the normal price, not the one-time new-shopper deal.
 - **seeed's own store for the xiao.** $4.99 instead of $9.90, and it's the genuine board. the cheap 3-packs on aliexpress don't say they're seeed, and this build depends on the xiao's battery charger.
 - **lcsc for the temperature sensor and resistor.** lcsc sells real parts with datasheets. cheap ds18b20s on aliexpress are commonly clones.
-- **a prototype board instead of loose wires.** the modules solder onto a small perfboard cut to fit the shell, so everything is mounted instead of hanging on wires. i went with 1.2mm boards, the thinnest common size, because the shell is tight on depth.
+- **a prototype board instead of loose wires.** the modules solder onto a small perfboard cut into a circle to sit behind the display (round blank ones aren't sold, so cutting one from a rectangle is the normal way), so everything is mounted instead of hanging on wires. i went with 1.2mm boards, the thinnest common size, because the shell is tight on depth.
 - **the battery stays the eemb.** decent aliexpress cells were only about $1 cheaper, with no certification. it's a lithium cell worn on a belt loop, so it's not worth saving $2 on.
 - **paint stays on amazon.** spray cans can't be shipped by air from china.
 
