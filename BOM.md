@@ -2,7 +2,7 @@
 
 everything i need to build **two** stars, bought from the cheapest reliable place for each part. prices checked 2026-09-25.
 
-**total: $87.63** in parts, down from $134.74 when everything came from amazon → [BOM.csv](BOM.csv)
+**total: $91.88** in parts, down from $134.74 when everything came from amazon → [BOM.csv](BOM.csv)
 
 | part | qty | price | where | what it's for |
 |------|-----|-------|-------|---------------|
@@ -19,14 +19,15 @@ everything i need to build **two** stars, bought from the cheapest reliable plac
 | rust-oleum plastic primer 12oz | 1 | $6.97 | [amazon](https://www.amazon.com/dp/B003CT498U) | lets the chrome stick to the print |
 | rust-oleum bright coat chrome 11oz | 1 | $6.47 | [amazon](https://www.amazon.com/dp/B000Z8DGXK) | chrome finish |
 | creality petg 1.75mm 1kg | 1 | $14.81 | [aliexpress](https://www.aliexpress.us/item/3256812523172305.html) | star shells and bezel rings |
-| custom pcb | | tbd | jlcpcb | added once the board is designed |
-| | | **$87.63** | | |
+| prototype board 5×7cm, 1.2mm (10) | 1 | $4.25 | [aliexpress](https://www.aliexpress.us/item/3256807718543888.html) | the board everything solders onto, cut to fit |
+| | | **$91.88** | | |
 
 ## what changed and why
 
 - **aliexpress for the modules.** the display, mpu6050, mic amp, wire and keyrings cost a fraction of the amazon multi-packs. i went by listings with hundreds or thousands of sales and good ratings, not the cheapest one, and priced them at the normal price, not the one-time new-shopper deal.
 - **seeed's own store for the xiao.** $4.99 instead of $9.90, and it's the genuine board. the cheap 3-packs on aliexpress don't say they're seeed, and this build depends on the xiao's battery charger.
-- **lcsc for the temperature sensor and resistor.** lcsc sells real parts with datasheets. cheap ds18b20s on aliexpress are commonly clones. lcsc will also ship with the pcb order from jlcpcb.
+- **lcsc for the temperature sensor and resistor.** lcsc sells real parts with datasheets. cheap ds18b20s on aliexpress are commonly clones.
+- **a prototype board instead of loose wires.** the modules solder onto a small perfboard cut to fit the shell, so everything is mounted instead of hanging on wires. i went with 1.2mm boards, the thinnest common size, because the shell is tight on depth.
 - **the battery stays the eemb.** decent aliexpress cells were only about $1 cheaper, with no certification. it's a lithium cell worn on a belt loop, so it's not worth saving $2 on.
 - **paint stays on amazon.** spray cans can't be shipped by air from china.
 
@@ -36,7 +37,7 @@ the total above is parts only. what gets added at checkout:
 
 - **aliexpress:** shipping and any us import charges are shown in the cart. several of these listings advertise free shipping, and grouping them in one order helps
 - **seeed studio:** shipping is shown at checkout
-- **lcsc:** shipping plus us tariffs, shown in the cart. ordering these two parts together with the jlcpcb pcb means one shipment instead of two
+- **lcsc:** shipping plus us tariffs, shown in the cart. it's only two cheap parts, so if lcsc's shipping ends up more than they're worth, an aliexpress ds18b20 pack with good reviews is the fallback
 - **amazon:** free shipping on the battery and paint with prime or over $35
 
 ## how the parts work together
@@ -44,7 +45,8 @@ the total above is parts only. what gets added at checkout:
 - everything runs on the xiao's 3.3v rail, and the display, mpu6050, max4466 and ds18b20 are all rated for 3.3v
 - the xiao charges the lipo over usb-c, so there's no separate charger board
 - the battery's protection circuit handles over-charge, over-discharge and shorts
-- the ds18b20 needs one 4.7kΩ pull-up on its data line
+- the ds18b20 needs one 4.7kΩ pull-up on its data line, soldered on the prototype board
+- the prototype board adds 1.2mm to the stack inside the shell, so the shell has to leave room for it
 - the to-92 ds18b20 is small enough to sit in the 4mm temperature vent
 - 30awg silicone wire folds into the shell without stressing the solder joints
 

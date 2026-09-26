@@ -3,7 +3,7 @@ Seeed Studio XIAO ESP32C3,2,4.99,9.98,Seeed Studio,https://www.seeedstudio.com/S
 GC9A01 1.28in Round TFT 240x240 SPI,2,4.48,8.96,AliExpress,https://www.aliexpress.us/item/3256808098235758.html,The eye; 4.6 stars and 1000+ sold; one per star
 GY-521 MPU6050 Accelerometer/Gyro,2,1.88,3.76,AliExpress,https://www.aliexpress.us/item/3256808332288788.html,Shake and tilt over I2C; 4.7 stars and 500+ sold
 MAX4466 Electret Mic Amplifier,2,1.74,3.48,AliExpress,https://www.aliexpress.us/item/3256805885526362.html,Loud sound detection; pick the MAX4466 option (the listing also sells MAX9814); 4.8 stars
-DS18B20 TO-92 Temperature Sensor (UMW),2,0.5751,1.15,LCSC,https://www.lcsc.com/product-detail/C376006.html,LCSC C376006; a real second-source part (cheap AliExpress DS18B20s are often clones)
+DS18B20 TO-92 Temperature Sensor (UMW),2,0.5751,1.15,LCSC,https://www.lcsc.com/product-detail/C376006.html,LCSC C376006; a real compatible part (cheap AliExpress DS18B20s are often clones)
 4.7k Ohm 1/4W Through-Hole Resistor (100 pcs),1,0.62,0.62,LCSC,https://lcsc.com/product-detail/Carbon-Film-Resistors_4-7KR-472-5_C120071.html,LCSC C120071; DS18B20 pull-up; 100 is LCSC's minimum at $0.0062 each
 EEMB 402535 3.7V 320mAh LiPo Battery,2,9.99,19.98,Amazon,https://www.amazon.com/dp/B08215N9R8,Kept on purpose: UL certified with a protection circuit; AliExpress cells saved about $1 each and are uncertified
 30AWG Silicone Wire (5 colors),1,6.96,6.96,AliExpress,https://www.aliexpress.us/item/3256808281675998.html,Pick the 30AWG option; 4.8 stars and 5000+ sold
@@ -12,6 +12,6 @@ Stainless Steel Split Key Rings 25mm (10 pcs),1,1.53,1.53,AliExpress,https://www
 Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Aerosol: can't ship from AliExpress or LCSC
 Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Aerosol: can't ship from AliExpress or LCSC
 Creality PETG Filament 1.75mm 1kg,1,14.81,14.81,AliExpress,https://www.aliexpress.us/item/3256812523172305.html,Official Creality store; shells and bezels for both stars
-Custom PCB,,,,JLCPCB,,Add once the board is designed; order the LCSC parts with it to share one shipment
+Prototype Board 5x7cm 1.2mm Single-Sided (10 pcs),1,4.25,4.25,AliExpress,https://www.aliexpress.us/item/3256807718543888.html,The modules solder onto this instead of hanging on loose wires; cut to fit; 1.2mm is the thinnest common size; 4.9 stars and 10000+ sold
 ,,,,,,
-TOTAL (parts only),,,87.63,,,Before shipping and import fees (see BOM.md); the old all-Amazon list was $134.74
+TOTAL (parts only),,,91.88,,,Before shipping and import fees (see BOM.md); the old all-Amazon list was $134.74
