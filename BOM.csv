@@ -1,14 +1,17 @@
 Item Name,Quantity,Unit Price (USD),Total Price (USD),Supplier,Link,Notes
-Seeed Studio XIAO ESP32C3,2,9.90,19.80,Amazon,https://www.amazon.com/dp/B0B94JZ2YF,Main board with built-in LiPo charger and USB-C; one per star
-Teyleten Robot GC9A01 1.28in Round TFT 240x240 SPI (3-pack),1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0B7TFRNN1,The eye; round 38mm PCB; one pack covers both stars
-EC Buying GY-521 MPU6050 Accelerometer/Gyro (3-pack),1,9.59,9.59,Amazon,https://www.amazon.com/dp/B0B3D6D1KD,Shake and tilt detection over I2C; one pack covers both stars
-Weewooday MAX4466 Electret Mic Amplifier (6-pack),1,9.99,9.99,Amazon,https://www.amazon.com/dp/B08N4FNFTR,Sound detection with adjustable gain; one pack covers both stars
-DAOKAI DS18B20 TO-92 Temperature Sensor + 4.7k Resistors (10-pack),1,6.99,6.99,Amazon,https://www.amazon.com/dp/B0BTH1DRVJ,Cold detection; includes the 4.7k pull-up resistors; one pack covers both stars
-EEMB 402535 3.7V 320mAh LiPo Battery,2,9.99,19.98,Amazon,https://www.amazon.com/dp/B08215N9R8,25.5x36x4.3mm; UL certified with protection circuit; one per star
-CBAZY 30AWG Silicone Hook-Up Wire Kit 6 Colors x 10m,1,13.99,13.99,Amazon,https://www.amazon.com/dp/B073RDGTPB,Internal wiring for both stars
-Aluminum D Mini Carabiners + Key Rings (10 + 10),1,4.98,4.98,Amazon,https://www.amazon.com/dp/B095NBHTTH,Keyring and pants clip for both stars
-Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Base coat so the chrome bonds to the printed shells
-Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Chrome finish for both shells
-Polymaker PETG Filament 1.75mm 1kg White,1,17.99,17.99,Amazon,https://www.amazon.com/dp/B0FG3FHG29,Printed star shells and bezel rings for both stars
+Seeed Studio XIAO ESP32C3,2,4.99,9.98,Seeed Studio,https://www.seeedstudio.com/Seeed-XIAO-ESP32C3-p-5431.html,Genuine board with the built-in LiPo charger; one per star (was $9.90 each on Amazon)
+GC9A01 1.28in Round TFT 240x240 SPI,2,4.48,8.96,AliExpress,https://www.aliexpress.us/item/3256808098235758.html,The eye; 4.6 stars and 1000+ sold; one per star
+GY-521 MPU6050 Accelerometer/Gyro,2,1.88,3.76,AliExpress,https://www.aliexpress.us/item/3256808332288788.html,Shake and tilt over I2C; 4.7 stars and 500+ sold
+MAX4466 Electret Mic Amplifier,2,1.74,3.48,AliExpress,https://www.aliexpress.us/item/3256805885526362.html,Loud sound detection; pick the MAX4466 option (the listing also sells MAX9814); 4.8 stars
+DS18B20 TO-92 Temperature Sensor (UMW),2,0.5751,1.15,LCSC,https://www.lcsc.com/product-detail/C376006.html,LCSC C376006; a real second-source part (cheap AliExpress DS18B20s are often clones)
+4.7k Ohm 1/4W Through-Hole Resistor (100 pcs),1,0.62,0.62,LCSC,https://lcsc.com/product-detail/Carbon-Film-Resistors_4-7KR-472-5_C120071.html,LCSC C120071; DS18B20 pull-up; 100 is LCSC's minimum at $0.0062 each
+EEMB 402535 3.7V 320mAh LiPo Battery,2,9.99,19.98,Amazon,https://www.amazon.com/dp/B08215N9R8,Kept on purpose: UL certified with a protection circuit; AliExpress cells saved about $1 each and are uncertified
+30AWG Silicone Wire (5 colors),1,6.96,6.96,AliExpress,https://www.aliexpress.us/item/3256808281675998.html,Pick the 30AWG option; 4.8 stars and 5000+ sold
+Round Spring Carabiner Keyrings (10 pcs),1,2.96,2.96,AliExpress,https://www.aliexpress.us/item/3256807751442375.html,Pants and bag clip; 4.9 stars and 1000+ sold
+Stainless Steel Split Key Rings 25mm (10 pcs),1,1.53,1.53,AliExpress,https://www.aliexpress.us/item/3256805611374476.html,Goes through the keyring hole in the star's point; 4.8 stars
+Rust-Oleum 249323 Automotive Plastic Primer 12oz,1,6.97,6.97,Amazon,https://www.amazon.com/dp/B003CT498U,Aerosol: can't ship from AliExpress or LCSC
+Rust-Oleum Bright Coat Metallic Chrome Spray 11oz,1,6.47,6.47,Amazon,https://www.amazon.com/dp/B000Z8DGXK,Aerosol: can't ship from AliExpress or LCSC
+Creality PETG Filament 1.75mm 1kg,1,14.81,14.81,AliExpress,https://www.aliexpress.us/item/3256812523172305.html,Official Creality store; shells and bezels for both stars
+Custom PCB,,,,JLCPCB,,Add once the board is designed; order the LCSC parts with it to share one shipment
 ,,,,,,
-TOTAL,,,134.74,,,
+TOTAL (parts only),,,87.63,,,Before shipping and import fees (see BOM.md); the old all-Amazon list was $134.74
